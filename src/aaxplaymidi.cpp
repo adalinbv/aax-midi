@@ -59,11 +59,11 @@ help()
     printf("Plays a MIDI file to an audio output device.\n");
 
     printf("\nOptions:\n");
-    printf("  -i, --input <file>\t\tplayback audio from a file\n");
+    printf("  -i, --input <file>\t\tplay back audio from a file\n");
     printf("  -d, --device <device>\t\tplayback device (default if not specified)\n");
-    printf("  -s, --select <name|num>\tonly play the track with this name or number\n");
-    printf("  -t, --time\t\t\ttime offset in seconds or (hh:)mm:ss\n");
-    printf("  -l, --load <instr>\t\tmidi isntrument configration overlay file\n");
+    printf("  -s, --select <name|track>\tonly play the track with this name or number\n");
+    printf("  -t, --time <offs>\t\ttime offset in seconds or (hh:)mm:ss\n");
+    printf("  -l, --load <instr>\t\tmidi instrument configuration overlay file\n");
     printf("  -m, --mono\t\t\tplay back in mono mode\n");
 //  printf("  -b, --batched\t\t\tprocess the file in batched (high-speed) mode.\n");
     printf("  -v, --verbose <0-4>\t\tshow extra playback information\n");
@@ -72,8 +72,8 @@ help()
     printf("\nVerbosity levels:\n");
     printf("1: General playback information and lyrics.\n");
     printf("2: Loading instrument messages.\n");
-    printf("3: MIDI Text message.\n");
-    printf("4: Instrument not found, trying another bank messages.\n");
+    printf("3: MIDI Text messages.\n");
+    printf("4: Instrument not found, trying a different bank messages.\n");
 
     printf("\nUse aaxplay for playing other audio file formats.\n");
 

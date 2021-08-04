@@ -8,20 +8,44 @@ aaxplay \- Plays a midi file to an audio output device.
 [\fIOPTION\fR]...
 .SH DESCRIPTION
 .PP
-Plays a midi file to an audio output device.
+Plays a MIDI file to an audio output device.
 .TP
 \fB\-i\fR, \fB\-\-input \fRFILE\fR
-playback audio from a file
+play back audio from a file
 .TP
 \fB\-d\fR, \fB\-\-device \fRDEVICE\fR
 playback device (default if not specified)
 .TP
-\fB\-v\fR, \fB\-\-verbose
+\fB\-s\fR, \fB\-\-select \fRNAME|TRACK\fR
+only play the track with this name or track number
+.TP
+\fB\-t\fR, \fB\-\-time \fROFFSET\fR
+time offset in seconds or (hh:)mm:ss
+.TP
+\fB\-l\fR, \fB\-\-load \fRCONFIG\fR
+midi instrument configuration overlay file
+.TP
+\fB\-m\fR, \fB\-\-mono
+play back in mono mode
+.TP
+\fB\-v\fR, \fB\-\-verbose \fRLEVEL\fR
 show extra playback information
 .TP
 \fB\-h\fR, \fB\-\-help
 print this message and exit
-.PP
+.TP
+Verbosity levels:
+.RS
+.IP \fB1\fP
+\- General playback information and lyrics.
+.IP \fB2\fP
+\- Loading instrument messages.
+.IP \fB3\fP
+\- MIDI Text messages.
+.IP \fB4\fP
+\- Instrument not found, trying a different bank messages.
+.RE
+.SH AUTHOR
 Written by Erik Hofman <tech@adalin.com>
 .SH SEE ALSO
 aaxplay(1), aaxinfo(1)
