@@ -1,1 +1,3 @@
 Library to play MIDI using AeonWave
+ .
+ aaxplaymidi can play MIDI files using the synthesizer provided by AeonWave.

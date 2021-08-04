@@ -184,13 +184,6 @@ IF(NOT SINGLE_PACKAGE)
   include (CPack)
 ENDIF(NOT SINGLE_PACKAGE)
 
-add_custom_target(midi_package
-  WORKING_DIRECTORY ${aax-midi_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} -E tar "cf" "${aax-midi_BINARY_DIR}/midi_source.zip" --format=zip
-  midi/*.[ch]pp
-  src/aaxplaymidi.cpp
-)
-
 message("Build type: ${CMAKE_BUILD_TYPE}")
 message("C flags: ${CMAKE_C_FLAGS}")
 message("C++ flags: ${CMAKE_CXX_FLAGS}")
