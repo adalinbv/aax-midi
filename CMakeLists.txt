@@ -163,9 +163,9 @@ ENDIF()
 
 IF(WIN32)
   set(KERNEL_LIBRARY Kernel32)
-  set(EXTRA_LIBS "-ldriver -lwinmm")
+  set(EXTRA_LIBS "-lwinmm")
 ELSE(WIN32)
-  set(EXTRA_LIBS "-ldriver -lm")
+  set(EXTRA_LIBS "-lm")
 ENDIF(WIN32)
 
 include_DIRECTORIES(
