@@ -51,17 +51,14 @@
 
 #include "driver.h"
 
-#define IFILE_PATH		SRC_PATH"/beethoven_opus10_3.mid"
-#define INSTRUMENT		"instruments/piano-accoustic"
-
 void
 help()
 {
     aaxConfig cfgi, cfgo;
 
-    printf("aaxplaymidi version %i.%i.%i\n\n", AAX_UTILS_MAJOR_VERSION,
-                                           AAX_UTILS_MINOR_VERSION,
-                                           AAX_UTILS_MICRO_VERSION);
+    printf("aaxplaymidi version %i.%i.%i\n\n", AAX_MIDI_MAJOR_VERSION,
+                                               AAX_MIDI_MINOR_VERSION,
+                                               AAX_MIDI_MICRO_VERSION);
     printf("Usage: aaxplaymidi [options]\n");
     printf("Plays a MIDI file to an audio output device.\n");
 
@@ -255,7 +252,7 @@ int main(int argc, char **argv)
 
     enum aaxRenderMode render_mode = aaxRenderMode(getMode(argc, argv));
     char *devname = getDeviceName(argc, argv);
-    char *infile = getInputFileExt(argc, argv, ".mid", IFILE_PATH);
+    char *infile = getInputFileExt(argc, argv, ".mid", NULL);
     bool batched = false;
     char mono = false;
     bool csv = false;

@@ -9,9 +9,9 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 include (CheckIncludeFiles)
 
-PROJECT(aax-utils C CXX)
-set(PACKAGE_NAME "AeonWave-utils")
-set(PACKAGE "aaxutils")
+PROJECT(aax-midi C CXX)
+set(PACKAGE_NAME "AeonWave-MIDI")
+set(PACKAGE "aaxmidi")
 
 option(WERROR "Treat compile warnings as errors"   OFF)
 option(RMALLOC "Enable memory debugging functions" OFF)
@@ -24,16 +24,16 @@ ENDIF ()
 
 # read 'version' file into a variable (stripping any newlines or spaces)
 FILE(READ version versionFile)
-STRING(STRIP ${versionFile} AAXUTILS_VERSION)
-set(VERSION AAXUTILS_VERSION)
+STRING(STRIP ${versionFile} AAXMIDI_VERSION)
+set(VERSION AAXMIDI_VERSION)
 
 # split version string into components, note CMAKE_MATCH_0 is the entire regexp match
-STRING(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" CPACK_PACKAGE_VERSION ${AAXUTILS_VERSION})
+STRING(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" CPACK_PACKAGE_VERSION ${AAXMIDI_VERSION})
 
-set(AAX_UTILS_MAJOR_VERSION ${CMAKE_MATCH_1})
-set(AAX_UTILS_MINOR_VERSION ${CMAKE_MATCH_2})
-set(AAX_UTILS_MICRO_VERSION ${CMAKE_MATCH_3})
-set(AAX_UTILS_PATCH_LEVEL ${DATE})
+set(AAX_MIDI_MAJOR_VERSION ${CMAKE_MATCH_1})
+set(AAX_MIDI_MINOR_VERSION ${CMAKE_MATCH_2})
+set(AAX_MIDI_MICRO_VERSION ${CMAKE_MATCH_3})
+set(AAX_MIDI_PATCH_LEVEL ${DATE})
 
 set(CPACK_PACKAGE_VERSION_MAJOR ${CMAKE_MATCH_1})
 set(CPACK_PACKAGE_VERSION_MINOR ${CMAKE_MATCH_2})
@@ -42,7 +42,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${CMAKE_MATCH_3})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Utilities to show the capabilities of AeonWave")
 
 # We have some custom .cmake scripts not in the official distribution.
-set(CMAKE_MODULE_PATH "${aax-utils_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "${aax-midi_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
 include(CPack_Modules)
 include(CPack_Defaults)
@@ -63,7 +63,7 @@ ELSE(WIN32)
 ENDIF(WIN32)
 
 # ZIP
-set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${AAXUTILS_VERSION}" CACHE INTERNAL "tarball basename")
+set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${AAXMIDI_VERSION}" CACHE INTERNAL "tarball basename")
 
 # Add definitions, compiler switches, etc.
 ADD_DEFINITIONS(-DHAVE_CONFIG_H=1)
@@ -134,20 +134,16 @@ else((GCC OR CLANG) AND RMALLOC)
 endif((GCC OR CLANG) AND RMALLOC)
 
 # Add definitions, compiler switches, etc.
-include_directories("${aax-utils_SOURCE_DIR}"
+include_directories("${aax-midi_SOURCE_DIR}"
     include
     ${AAX_include_DIR}
-    "${aax-utils_BINARY_DIR}/include"
+    "${aax-midi_BINARY_DIR}/include"
 )
 
-CHECK_include_FILE(inttypes.h HAVE_INTTYPES_H)
-CHECK_include_FILE(stdint.h HAVE_STDINT_H)
 CHECK_include_FILE(strings.h HAVE_STRINGS_H)
 CHECK_include_FILE(limits.h HAVE_LIMITS_H)
 CHECK_include_FILE(unistd.h HAVE_UNISTD_H)
-CHECK_include_FILE(sys/types.h HAVE_SYS_TYPES_H)
 CHECK_include_FILE(sys/time.h HAVE_SYS_TIME_H)
-CHECK_include_FILE(sys/ioctl.h HAVE_SYS_IOCTL_H)
 CHECK_include_FILE(time.h HAVE_TIME_H)
 
 CONFIGURE_FILE(
@@ -157,36 +153,17 @@ CONFIGURE_FILE(
 # Man pages
 IF (UNIX AND NOT WIN32)
   CONFIGURE_FILE(
-      "${CMAKE_CURRENT_SOURCE_DIR}/admin/aaxcvt.1.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/aaxcvt.1")
-  CONFIGURE_FILE(
-      "${CMAKE_CURRENT_SOURCE_DIR}/admin/aaxplay.1.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/aaxplay.1")
-  CONFIGURE_FILE(
       "${CMAKE_CURRENT_SOURCE_DIR}/admin/aaxplaymidi.1.in"
       "${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1")
-  CONFIGURE_FILE(
-      "${CMAKE_CURRENT_SOURCE_DIR}/admin/aaxinfo.1.in"
-      "${CMAKE_CURRENT_BINARY_DIR}/aaxinfo.1")
 
-  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/aaxcvt.1
-                ${CMAKE_CURRENT_BINARY_DIR}/aaxplay.1
-                ${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1
-                ${CMAKE_CURRENT_BINARY_DIR}/aaxinfo.1
+  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1
           DESTINATION "${CMAKE_INSTALL_PREFIX}/man/man1"
           COMPONENT Applications)
 ENDIF()
 
-set(BASE_OBJS
-     base/logging.c
-     base/geometry.c
-     base/types.c
-)
-
 IF(WIN32)
   set(KERNEL_LIBRARY Kernel32)
   set(EXTRA_LIBS "-ldriver -lwinmm")
-  include_directories(base)
 ELSE(WIN32)
   set(EXTRA_LIBS "-ldriver -lm")
 ENDIF(WIN32)
@@ -195,28 +172,23 @@ include_DIRECTORIES(
   ${PROJECT_SOURCE_DIR}/src
 )
 link_directories(
-  ${PROJECT_BINARY_DIR}/base
   ${PROJECT_BINARY_DIR}/src
   ${PROJECT_BINARY_DIR}/midi
 )
 
-add_subdirectory(base)
 add_subdirectory(src)
 add_subdirectory(midi)
-add_subdirectory(3rdparty)
-add_subdirectory(test)
-add_subdirectory(test++)
+add_subdirectory(utils)
 
 IF(NOT SINGLE_PACKAGE)
   include (CPack)
 ENDIF(NOT SINGLE_PACKAGE)
 
 add_custom_target(midi_package
-  WORKING_DIRECTORY ${aax-utils_SOURCE_DIR}
-  COMMAND ${CMAKE_COMMAND} -E tar "cf" "${aax-utils_BINARY_DIR}/midi_source.zip" --format=zip
+  WORKING_DIRECTORY ${aax-midi_SOURCE_DIR}
+  COMMAND ${CMAKE_COMMAND} -E tar "cf" "${aax-midi_BINARY_DIR}/midi_source.zip" --format=zip
   midi/*.[ch]pp
   src/aaxplaymidi.cpp
-  base/timer.[ch]
 )
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
@@ -232,4 +204,4 @@ message("Linker flags: ${CMAKE_SHARED_LINKER_FLAGS}")
 #  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 #  IMMEDIATE @ONLY)
 #ADD_CUSTOM_TARGET(uninstall
-#  "${CMAKE_COMMAND}" -P "${aax-utils_BINARY_DIR}/cmake_uninstall.cmake")
+#  "${CMAKE_COMMAND}" -P "${aax-midi_BINARY_DIR}/cmake_uninstall.cmake")

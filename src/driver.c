@@ -47,8 +47,6 @@
 # include <sys/time.h>
 #endif
 
-#include <base/logging.h>
-
 #include "driver.h"
 
 

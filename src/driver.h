@@ -42,14 +42,6 @@ extern "C" {
 
 #include <aax/aax.h>
 
-#ifdef NDEBUG
-# include <malloc.h>
-#else
-# include <base/logging.h>
-#endif
-#include <base/types.h>
-#include <base/timer.h>
-
 #define TAB_KEY		0x09
 #define SPACE_KEY	0x20
 

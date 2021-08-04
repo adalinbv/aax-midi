@@ -40,6 +40,8 @@
 #include <strings.h>
 #include <string.h>
 
+#include <base/types.h>
+
 #include "driver.h"
 
 struct params {
@@ -304,9 +306,9 @@ void print_aaxs(const char* outfile, struct params param)
 
 void help()
 {
-    printf("drawbar2aaxs version %i.%i.%i\n\n", AAX_UTILS_MAJOR_VERSION,
-                                                    AAX_UTILS_MINOR_VERSION,
-                                                    AAX_UTILS_MICRO_VERSION);
+    printf("drawbar2aaxs version %i.%i.%i\n\n", AAX_MIDI_MAJOR_VERSION,
+                                                AAX_MIDI_MINOR_VERSION,
+                                                AAX_MIDI_MICRO_VERSION);
     printf("Usage: drawbar2aaxs [options]\n");
     printf("Creates an AAXS configuration file based on the drawbar organ\n");
     printf("drawbar settings.\n");

@@ -1,20 +1,7 @@
-* Tue Feb 19 2019 - <tech@adalin.org>
-- Add aaxplaymidi - play back midi files using AeonWave
-- Add aaxsstandardize - standardize AAXS configuration files
-- Add drawbar2aaxs - convert drawbar settings to an AAXS instrument file
-- Add GM 2.0 ready midi playback code.
-
- -- Erik Hofman <info@adalin.org>  Mon, 24 Dec 2018 10:04:00 +0100
-
-* Thu Aug 04 2016 - <tech@adalin.org>
-- Add test programs for the new C++ API
-
- -- Erik Hofman <info@adalin.org>  Tue, 04 Aug 2016 15:01:00 +0200
-
-* Sat Jul 21 2012 - <tech@adalin.org>
-- AeonWave-utils (0.2.0) stable; urgency=low
+* Wed Aug 4 2012 - <tech@adalin.org>
+- AeonWave-MIDI (0.1.0) stable; urgency=low
 
   * Initial version
 
- -- Erik Hofman <info@adalin.org>  Sat, 21 Jul 2012 11:23:00 +0200
+ -- Erik Hofman <info@adalin.org>  Wed, 4 Aug 2021 09:53:00 +0100
 

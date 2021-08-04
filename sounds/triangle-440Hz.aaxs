@@ -1,7 +1,0 @@
-<?xml version="1.0"?>
-
-<aeonwave>
- <sound frequency="440">
-  <waveform src="triangle"/>
- </sound>
-</aeonwave>
