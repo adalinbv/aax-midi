@@ -814,7 +814,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     LOG(99, "LOG: Unsupported XG Velocity Sense Offset\n");
                     break;
                 case XGMIDI_PAN: // 0: random, L63 - C - R63 (1 - 64 - 127)
-                    if (!midi.get_mono()) {
+                    if (mode != MIDI_MONOPHONIC) {
                         channel.set_pan(((float)value-64.f)/64.f);
                     }
                     break;

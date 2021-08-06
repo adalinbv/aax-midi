@@ -163,7 +163,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         case GSMIDI_REVERB_DELAY:
                         case GSMIDI_REVERB_PAN_DELAY:
                         default:
-                            LOG(99, "LOG: Unsupported reverb type: 0x%x (%d)\n",
+                            LOG(99, "LOG: Unsupported GS sysex reverb type: 0x%x (%d)\n",
                                     type, type);
                             break;
                         }
@@ -188,7 +188,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         break;
                     }
                     case GSMIDI_REVERB_DELAY_FEEDBACK:
-                        LOG(99, "LOG: Unsupported Reverb Delay Feedback\n");
+                        LOG(99, "LOG: Unsupported GS sysex Reverb Delay Feedback\n");
                         break;
                     case GSMIDI_CHORUS_MACRO:
                         switch (value)
@@ -226,13 +226,13 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             INFO("Switching to GS short delay with feedback");
                             break;
                         default:
-                            LOG(99, "LOG: Unsupported GS chorus type: 0x%x (%d)\n",
+                            LOG(99, "LOG: Unsupported GS sysex chorus type: 0x%x (%d)\n",
                                 type, type);
                             break;
                         }
                         break;
                     case GSMIDI_CHORUS_PRE_LPF:
-                        LOG(99, "LOG: Unsupported GS Chorus Pre-LPF\n");
+                        LOG(99, "LOG: Unsupported GS sysex chorus pre-LPF\n");
                         break;
                     case GSMIDI_CHORUS_LEVEL:
                     {
@@ -244,7 +244,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         midi.set_chorus_feedback(0.763f*value*1e-2f);
                         break;
                     case GSMIDI_CHORUS_DELAY:
-                        LOG(99, "LOG: Unsupported GS Chorus Delay\n");
+                        LOG(99, "LOG: Unsupported GS sysex chorus delay\n");
                         break;
                     case GSMIDI_CHORUS_RATE:
                     {
@@ -262,9 +262,99 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         midi.send_chorus_to_reverb(value/127.0f);
                         break;
                     default:
-                        LOG(99, "LOG: Unsupported GS address: 0x%x 0x%x (%d %d)\n",
-                                addr_mid, addr_low, addr_mid, addr_low);
+                    {
+                        uint8_t part_no = addr_mid & 0xF;
+                        auto& channel = midi.channel(part_no);
+                        switch (addr_mid & 0xF0)
+                        {
+                        case GSMIDI_PART_SET:
+                            switch(addr_low)
+                            {
+                            case GSMIDI_PART_PAN:
+                                if (mode != MIDI_MONOPHONIC) {
+                                    channel.set_pan(((float)value-64.f)/64.f);
+                                }
+                                break;
+                            case GSMIDI_PART_VIBRATO_RATE:
+                            {
+                                float val = 0.5f + (float)value/64.0f;
+                                channel.set_vibrato_rate(val);
+                                break;
+                            }
+                            case GSMIDI_PART_VIBRATO_DEPTH:
+                            {
+                                float val = (float)value/64.0f;
+                                channel.set_vibrato_depth(val);
+                                break;
+                            }
+                            case GSMIDI_PART_VIBRATO_DELAY:
+                            {
+                                float val = (float)value/64.0f;
+                                channel.set_vibrato_delay(val);
+                                break;
+                            }
+                            case GSMIDI_PART_ATTACK_TIME:
+                                channel.set_attack_time(value);
+                                break;
+                            case GSMIDI_PART_DECAY_TIME:
+                                channel.set_decay_time(value);
+                                break;
+                            case GSMIDI_PART_RELEASE_TIME:
+                                channel.set_release_time(value);
+                                break;
+                            case GSMIDI_PART_REVERB_SEND_LEVEL:
+                            {
+                                float val = (float)value/127.0f;
+                                midi.set_reverb_level(part_no, val);
+                                break;
+                            }
+                            case GSMIDI_PART_VOLUME:
+                                channel.set_gain((float)value/127.0f);
+                                break;
+                            case MIDI_PROGRAM_CHANGE:
+                            try {
+                                    midi.new_channel(part_no, bank_no, program_no);
+                                } catch(const std::invalid_argument& e) {
+                                    ERROR("Error: " << e.what());
+                                }
+                                break;
+                            case GSMIDI_PART_POLY_MONO:
+                                midi.process(part_no, MIDI_NOTE_OFF, 0, 0, true);
+                                if (value == 0) {
+                                    mode = MIDI_MONOPHONIC;
+                                    channel.set_monophonic(true);
+                                } else {
+                                    channel.set_monophonic(false);
+                                    mode = MIDI_POLYPHONIC;
+                                }
+                                break;
+                            case GSMIDI_PART_NRPN_SWITCH:
+                            default:
+                                LOG(99, "LOG: Unsupported GS sysex part set\n");
+                                break;
+                            }
+                            break;
+                        case GSMIDI_MODULATION_SET:
+                            switch(addr_low)
+                            {
+                            case GSMIDI_MODULATION_DEPTH:
+                                LOG(99, "LOG: Unsupported GS sysex modulation depth\n");
+                                break;
+                            case GSMIDI_BEND_RANGE:
+                                LOG(99, "LOG: Unsupported GS sysex bend range\n");
+                                break;
+                            default:
+                                LOG(99, "LOG: Unsupported GS sysex modulation type: %x (%d)\n", addr_low, addr_low);
+                                break;
+                            }
+                            break;
+                        default:
+                            LOG(99, "LOG: Unsupported GS sysex address: 0x%x 0x%x (%d %d)\n",
+                                    addr_mid, addr_low, addr_mid, addr_low);
+                            break;
+                        }
                         break;
+                    } // default
                     }
                     break;
                 } // GSMIDI_PARAMETER_CHANGE
@@ -309,14 +399,14 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
             break;
         } // GSMIDI_MODEL_GS
         default:
-            LOG(99, "LOG: Unsupported GS sysex Model ID: 0x%x (%d)\n",
+            LOG(99, "LOG: Unsupported GS sysex model ID: 0x%x (%d)\n",
                      byte, byte);
             break;
         }
         break;
     } // GSMIDI_SYSTEM
     default:
-        LOG(99, "LOG: Unsupported GS category type: 0x%x (%d)\n", byte, byte);
+        LOG(99, "LOG: Unsupported GS sysex category type: 0x%x (%d)\n", byte, byte);
         break;
     }
 
