@@ -717,12 +717,16 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
                 bank_no = 0;
             }
         case MIDI_GENERAL_STANDARD:
+        {   
+            bool sc88pro = ((bank_no & 0x7) == 3);
             if (bank_no & 0x7F) {          // Remove Model-ID
                  bank_no &= ~0x7F;
+                 if (sc88pro) continue;
             } else if (bank_no > 0) {      // fall back to bank-0, (GM-MIDI 1)
                 bank_no = 0;
             }
             break;
+        }
         default: // General MIDI or unspecified
             if (bank_no & 0x7F) {          // LSB (XG-MIDI)
                 bank_no &= ~0x7F;
