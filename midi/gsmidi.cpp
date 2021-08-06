@@ -280,6 +280,8 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                                 break;
                             case GSMIDI_MODULATION_SET:
                                 process_GS_sysex_modulation(part_no, addr_low, value);
+                            case GSMIDI_PART_SWITCH:
+                               LOG(99, "LOG: Unsupported GS sysex part switch\n");
                             default:
                                 LOG(99, "LOG: Unsupported GS sysex address:"
                                         " 0x%x 0x%x (%d %d)\n",
@@ -354,10 +356,7 @@ MIDIStream::process_GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t va
     bool rv = true;
     switch(addr)
     {
-    case GSMIDI_EQUALIZER_FREQUENCY_LOW:
-    case GSMIDI_EQUALIZER_GAIN_LOW:
-    case GSMIDI_EQUALIZER_FREQUENCY_HIGH:
-    case GSMIDI_EQUALIZER_GAIN_HIGH:
+    case GSMIDI_PART_EQUALIZER_SWITCH:
     default:
         LOG(99, "LOG: Unsupported GS sysex equalizer set: %x (%d)\n",
                      addr, addr);
