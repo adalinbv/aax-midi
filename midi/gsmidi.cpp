@@ -266,6 +266,9 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         uint8_t part_no = addr_mid & 0xF;
                         switch (addr_mid)
                         {
+                        case GSMIDI_EQUALIZER:
+                            process_GS_sysex_equalizer(part_no, addr_low, value);
+                            break;
                         case GSMIDI_INSERTION_EFFECT:
                             process_GS_sysex_insertion(part_no, addr_low, value);
                             break;
@@ -344,6 +347,25 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
 
     return rv;
 };
+
+bool
+MIDIStream::process_GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
+{
+    bool rv = true;
+    switch(addr)
+    {
+    case GSMIDI_EQUALIZER_FREQUENCY_LOW:
+    case GSMIDI_EQUALIZER_GAIN_LOW:
+    case GSMIDI_EQUALIZER_FREQUENCY_HIGH:
+    case GSMIDI_EQUALIZER_GAIN_HIGH:
+    default:
+        LOG(99, "LOG: Unsupported GS sysex equalizer set: %x (%d)\n",
+                     addr, addr);
+        rv = false;
+        break;
+    }
+    return rv;
+}
 
 bool
 MIDIStream::process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
