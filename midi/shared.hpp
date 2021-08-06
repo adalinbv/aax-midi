@@ -170,6 +170,8 @@ enum {
 #define GSMIDI_DRUM_PART15					0x1e15
 #define GSMIDI_DRUM_PART16					0x1f15
 
+#define GSMIDI_INSERTION_EFFECT					0x03
+
 #define GSMIDI_PART_SET						0x10
 #define GSMIDI_PART_PAN						0x1c
 #define GSMIDI_PART_VIBRATO_RATE				0x30

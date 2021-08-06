@@ -163,8 +163,8 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         case GSMIDI_REVERB_DELAY:
                         case GSMIDI_REVERB_PAN_DELAY:
                         default:
-                            LOG(99, "LOG: Unsupported GS sysex reverb type: 0x%x (%d)\n",
-                                    type, type);
+                            LOG(99, "LOG: Unsupported GS sysex reverb type:"
+                                    " 0x%x (%d)\n", type, type);
                             break;
                         }
                         break;
@@ -226,8 +226,8 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             INFO("Switching to GS short delay with feedback");
                             break;
                         default:
-                            LOG(99, "LOG: Unsupported GS sysex chorus type: 0x%x (%d)\n",
-                                type, type);
+                            LOG(99, "LOG: Unsupported GS sysex chorus type:"
+                                    " 0x%x (%d)\n", type, type);
                             break;
                         }
                         break;
@@ -264,93 +264,25 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                     default:
                     {
                         uint8_t part_no = addr_mid & 0xF;
-                        auto& channel = midi.channel(part_no);
-                        switch (addr_mid & 0xF0)
+                        switch (addr_mid)
                         {
-                        case GSMIDI_PART_SET:
-                            switch(addr_low)
-                            {
-                            case GSMIDI_PART_PAN:
-                                if (mode != MIDI_MONOPHONIC) {
-                                    channel.set_pan(((float)value-64.f)/64.f);
-                                }
-                                break;
-                            case GSMIDI_PART_VIBRATO_RATE:
-                            {
-                                float val = 0.5f + (float)value/64.0f;
-                                channel.set_vibrato_rate(val);
-                                break;
-                            }
-                            case GSMIDI_PART_VIBRATO_DEPTH:
-                            {
-                                float val = (float)value/64.0f;
-                                channel.set_vibrato_depth(val);
-                                break;
-                            }
-                            case GSMIDI_PART_VIBRATO_DELAY:
-                            {
-                                float val = (float)value/64.0f;
-                                channel.set_vibrato_delay(val);
-                                break;
-                            }
-                            case GSMIDI_PART_ATTACK_TIME:
-                                channel.set_attack_time(value);
-                                break;
-                            case GSMIDI_PART_DECAY_TIME:
-                                channel.set_decay_time(value);
-                                break;
-                            case GSMIDI_PART_RELEASE_TIME:
-                                channel.set_release_time(value);
-                                break;
-                            case GSMIDI_PART_REVERB_SEND_LEVEL:
-                            {
-                                float val = (float)value/127.0f;
-                                midi.set_reverb_level(part_no, val);
-                                break;
-                            }
-                            case GSMIDI_PART_VOLUME:
-                                channel.set_gain((float)value/127.0f);
-                                break;
-                            case MIDI_PROGRAM_CHANGE:
-                            try {
-                                    midi.new_channel(part_no, bank_no, program_no);
-                                } catch(const std::invalid_argument& e) {
-                                    ERROR("Error: " << e.what());
-                                }
-                                break;
-                            case GSMIDI_PART_POLY_MONO:
-                                midi.process(part_no, MIDI_NOTE_OFF, 0, 0, true);
-                                if (value == 0) {
-                                    mode = MIDI_MONOPHONIC;
-                                    channel.set_monophonic(true);
-                                } else {
-                                    channel.set_monophonic(false);
-                                    mode = MIDI_POLYPHONIC;
-                                }
-                                break;
-                            case GSMIDI_PART_NRPN_SWITCH:
-                            default:
-                                LOG(99, "LOG: Unsupported GS sysex part set\n");
-                                break;
-                            }
-                            break;
-                        case GSMIDI_MODULATION_SET:
-                            switch(addr_low)
-                            {
-                            case GSMIDI_MODULATION_DEPTH:
-                                LOG(99, "LOG: Unsupported GS sysex modulation depth\n");
-                                break;
-                            case GSMIDI_BEND_RANGE:
-                                LOG(99, "LOG: Unsupported GS sysex bend range\n");
-                                break;
-                            default:
-                                LOG(99, "LOG: Unsupported GS sysex modulation type: %x (%d)\n", addr_low, addr_low);
-                                break;
-                            }
+                        case GSMIDI_INSERTION_EFFECT:
+                            process_GS_sysex_insertion(part_no, addr_low, value);
                             break;
                         default:
-                            LOG(99, "LOG: Unsupported GS sysex address: 0x%x 0x%x (%d %d)\n",
-                                    addr_mid, addr_low, addr_mid, addr_low);
+                            switch (addr_mid & 0xF0)
+                            {
+                            case GSMIDI_PART_SET:
+                                process_GS_sysex_part(part_no, addr_low, value);
+                                break;
+                            case GSMIDI_MODULATION_SET:
+                                process_GS_sysex_modulation(part_no, addr_low, value);
+                            default:
+                                LOG(99, "LOG: Unsupported GS sysex address:"
+                                        " 0x%x 0x%x (%d %d)\n",
+                                        addr_mid, addr_low, addr_mid, addr_low);
+                                break;
+                            }
                             break;
                         }
                         break;
@@ -412,3 +344,106 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
 
     return rv;
 };
+
+bool
+MIDIStream::process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
+{
+    LOG(99, "LOG: Unsupported GS sysex insertion type: %x (%d)\n",
+                 addr, addr);
+    return false;
+}
+
+bool
+MIDIStream::process_GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
+{
+    bool rv = true;
+    switch(addr)
+    {
+    case GSMIDI_MODULATION_DEPTH:
+        LOG(99, "LOG: Unsupported GS sysex modulation depth\n");
+        break;
+    case GSMIDI_BEND_RANGE:
+        LOG(99, "LOG: Unsupported GS sysex bend range\n");
+        break;
+    default:
+        LOG(99, "LOG: Unsupported GS sysex modulation type: %x (%d)\n",
+                 addr, addr);
+        rv = false;
+        break;
+    }
+    return rv;
+}
+
+bool
+MIDIStream::process_GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
+{
+    auto& channel = midi.channel(part_no);
+    bool rv = true;
+    switch(addr)
+    {
+    case GSMIDI_PART_PAN:
+        if (mode != MIDI_MONOPHONIC) {
+            channel.set_pan(((float)value-64.f)/64.f);
+        }
+        break;
+    case GSMIDI_PART_VIBRATO_RATE:
+    {
+        float val = 0.5f + (float)value/64.0f;
+        channel.set_vibrato_rate(val);
+        break;
+    }
+    case GSMIDI_PART_VIBRATO_DEPTH:
+    {
+        float val = (float)value/64.0f;
+        channel.set_vibrato_depth(val);
+        break;
+    }
+    case GSMIDI_PART_VIBRATO_DELAY:
+    {
+        float val = (float)value/64.0f;
+        channel.set_vibrato_delay(val);
+        break;
+    }
+    case GSMIDI_PART_ATTACK_TIME:
+        channel.set_attack_time(value);
+        break;
+    case GSMIDI_PART_DECAY_TIME:
+        channel.set_decay_time(value);
+        break;
+    case GSMIDI_PART_RELEASE_TIME:
+        channel.set_release_time(value);
+        break;
+    case GSMIDI_PART_REVERB_SEND_LEVEL:
+    {
+        float val = (float)value/127.0f;
+        midi.set_reverb_level(part_no, val);
+        break;
+    }
+    case GSMIDI_PART_VOLUME:
+        channel.set_gain((float)value/127.0f);
+        break;
+    case MIDI_PROGRAM_CHANGE:
+        try {
+            midi.new_channel(part_no, bank_no, program_no);
+        } catch(const std::invalid_argument& e) {
+            ERROR("Error: " << e.what());
+        }
+        break;
+    case GSMIDI_PART_POLY_MONO:
+        midi.process(part_no, MIDI_NOTE_OFF, 0, 0, true);
+        if (value == 0) {
+            mode = MIDI_MONOPHONIC;
+            channel.set_monophonic(true);
+        } else {
+            channel.set_monophonic(false);
+            mode = MIDI_POLYPHONIC;
+        }
+        break;
+    case GSMIDI_PART_NRPN_SWITCH:
+    default:
+        LOG(99, "LOG: Unsupported GS sysex part set: %x (%d)\n", addr, addr);
+        rv = false;
+        break;
+    }
+    return rv;
+}

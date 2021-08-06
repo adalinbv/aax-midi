@@ -134,6 +134,9 @@ private:
     bool process_GM_sysex_non_realtime(uint64_t);
 
     bool process_GS_sysex(uint64_t);
+    bool process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value);
+    bool process_GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value);
+    bool process_GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value);
 
     void display_XG_data(uint32_t, uint8_t, std::string&);
     bool process_XG_sysex(uint64_t);
