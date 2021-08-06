@@ -280,8 +280,10 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                                 break;
                             case GSMIDI_MODULATION_SET:
                                 process_GS_sysex_modulation(part_no, addr_low, value);
+                               break;
                             case GSMIDI_PART_SWITCH:
                                LOG(99, "LOG: Unsupported GS sysex part switch\n");
+                               break;
                             default:
                                 LOG(99, "LOG: Unsupported GS sysex address:"
                                         " 0x%x 0x%x (%d %d)\n",
