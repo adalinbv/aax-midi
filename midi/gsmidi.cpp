@@ -86,6 +86,9 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             rv = true;
                         }
                         break;
+                    case GSMIDI_MASTER_VOLUME:
+                        midi.set_gain((float)value/127.0f);
+                        break;
                     case GSMIDI_VOICE_RESERVE_PART1:
                     case GSMIDI_VOICE_RESERVE_PART2:
                     case GSMIDI_VOICE_RESERVE_PART3:
