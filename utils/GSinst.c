@@ -13,36 +13,49 @@ typedef struct {
   int sc55_voices;
 } _inst_t;
 
+/*
+ * Roland E-16 manual:
+ * w = with panning using 2 voices (some old manuals calling this 'wide')
+ * o = with key off. You can really hear the 'note off' as a disc88reet event.
+ * d = dark
+ * v = velocity mix
+ */
 _inst_t inst_table[] = {
  {   1,   0, "Piano 1", 1, "Piano 1", 1, "Piano 1", 1 },
  {   1,   8, "Piano 1 (wide)", 1, "Piano 1 (wide)", 1, "Piano 1 (wide)", 1 },
- {   1,  16, "European Pf", 1, "Piano 1d", 1, "Piano 1d", 1 },
- {   1,  24, "Piano+Strings (key-off)", 2 , NULL, 0, NULL, 0 },
+ {   1,  16, "European Pianoforte", 1, "Piano 1 (dark)", 1, "Piano 1 (dark)", 1 },
+ {   1,  24, "Piano+Strings", 2 , NULL, 0, NULL, 0 },
+ {   1,  25, "Piano+Strings 2", 2 , NULL, 0, NULL, 0 },
+ {   1,  26, "Piano+Choir", 2 , NULL, 0, NULL, 0 },
+ {   1,  27, "Piano+Choir 2", 2 , NULL, 0, NULL, 0 },
  {   2,   0, "Piano 2", 2, "Piano 2", 1, "Piano 2", 1 },
- {   2,   8, "Piano 2 (wide)", 2, "Piano 2 (wide)", 1, "Piano 2 (wide)", 1 },
+ {   2,   1, "Pop Piano", 2 , NULL, 0, NULL, 0 },
+ {   2,   2, "Rock Piano", 2 , NULL, 0, NULL, 0 },
+ {   2,   8, "Pop Piano (wide)", 2, "Piano 2 (wide)", 1, "Piano 2 (wide)", 1 },
+ {   2,   9, "Rock Piano (wide)", 2 , NULL, 0, NULL, 0 },
  {   2,  16, "Dance Piano", 2, NULL, 0 },
  {   3,   0, "Piano 3", 2, "Piano 3", 1, "Piano 3", 1 },
- {   3,   1, "EG+ Rhodes 1", 2, "EG+ Rhodes 1", 2, NULL, 0 },
- {   3,   2, "EG+ Rhodes 2", 2, "EG+ Rhodes 2", 2, NULL, 0 },
+ {   3,   1, "Electric Grand Piano+Rhodes 1", 2, "Electric Grand Piano+Rhodes 1", 2, NULL, 0 },
+ {   3,   2, "Electric Grand Piano+Rhodes 2", 2, "Electric Grand Piano+Rhodes 2", 2, NULL, 0 },
  {   3,   8, "Piano 3 (wide)", 2, "Piano 3 (wide)", 1, "Piano 3 (wide)", 1 },
  {   4,   0, "Honky-tonk", 2, "Honky-tonk", 2, "Honky-tonk", 2 },
  {   4,   8, "Honky-tonk 2", 2, "Old Upright", 2, "Honky Tonk (wide)", 2 },
  {   5,   0, "Electric Piano 1", 1, "Electric Piano 1", 2, "Electric Piano 1", 1 },
- {   5,   8, "Stereo Soft Electric Piano", 2, "Stereo Soft Electric Piano", 2, "Detuned Electric Piano1", 2 },
+ {   5,   8, "Stereo Soft Electric Piano", 2, "Stereo Soft Electric Piano", 2, "Detuned Electric Piano 1", 2 },
  {   5,   9, "Chorused Electric Piano", 2, NULL, 0 },
  {   5,  10, "Silent Rhodes", 2, NULL, 0 },
- {   5,  16, "FM+SA Electric Piano", 2, "FM+SA Electric Piano", 2, "Electric Piano 1v", 2 },
- {   5,  17, "Dist Electric Piano", 2, NULL, 0 },
- {   5,  24, "Wurly", 2, "60's Electric Piano", 1, "60s Electric Piano", 1 },
+ {   5,  16, "FM+SA Electric Piano", 2, "FM+SA Electric Piano", 2, "Electric Piano 1 (velocity)", 2 },
+ {   5,  17, "Distorted Electric Piano", 2, NULL, 0 },
+ {   5,  24, "Wurly", 2, "60's Electric Piano", 1, "60's Electric Piano", 1 },
  {   5,  25, "Hard Rhodes", 2, "Hard Rhodes", 2, NULL, 0 },
  {   5,  26, "Mellow Rhodes", 2, "Mellw Rhodes", 2, NULL, 0 },
  {   6,   0, "Electric Piano 2", 2, "Electric Piano 2", 2, "Electric Piano 2", 1 },
- {   6,   8, "Detuned Electric Piano 2", 2, "Detuned Electric Piano2", 2, "Detuned Electric Piano2", 2 },
- {   6,  16, "Stereo FM Electric Piano", 2, "Stereo FM Electric Piano", 2, "Electric Piano 2v", 2 },
+ {   6,   8, "Detuned Electric Piano 2", 2, "Detuned Electric Piano 2", 2, "Detuned Electric Piano 2", 2 },
+ {   6,  16, "Stereo FM Electric Piano", 2, "Stereo FM Electric Piano", 2, "Electric Piano 2 (velocity)", 2 },
  {   6,  24, "Hard FM Electric Piano", 2, "Hard FM Electric Piano", 2, NULL, 0 },
  {   7,   0, "Harpsichord", 1, "Harpsichord", 1, "Harpsichord", 1 },
  {   7,   1, "Harpsichord 2", 2, NULL, 0 },
- {   7,   8, "Coupled Harpsichord (key-off)", 2, "Coupled Hps", 2, "Coupled Hps", 2 },
+ {   7,   8, "Coupled Harpsichord (key-off)", 2, "Coupled Harpsichord", 2, "Coupled Harpsichord", 2 },
  {   7,  16, "Harpsichord (wide)", 1, "Harpsichord (wide)", 1, "Harpsichord (wide)", 1 },
  {   7,  24, "Harpsichord (key-off)", 2, "Harpsichord (key-off)", 2, "Harpsichord (key-off)", 2 },
  {   7,  32, "Synth Harpsichord", 2, NULL, 0 },
@@ -161,8 +174,8 @@ _inst_t inst_table[] = {
  {  30,   1, "Overdrive 2", 2, NULL, 0 },
  {  30,   2, "Overdrive 3", 2, NULL, 0 },
  {  30,   3, "More Drive", 2, NULL, 0 },
- {  30,   8, "LP Over Drv Guitar", 2, NULL, 0 },
- {  30,   9, "LP Over Drv", 2 , NULL, 0, NULL, 0 },
+ {  30,   8, "LP Over Drive Guitar", 2, NULL, 0 },
+ {  30,   9, "LP Over Drive", 2 , NULL, 0, NULL, 0 },
  {  31,   0, "Distortion Guitar", 2, "Distortion Guitar", 1, "Distortion Guitar (key-off)", 1 },
  {  31,   1, "Distortion Guitar 2", 2, "Distortion Guitar 2", 2, NULL, 0 },
  {  31,   2, "Dazed Guitar", 2, "Dazed Guitar", 2, NULL, 0 },
@@ -223,14 +236,14 @@ _inst_t inst_table[] = {
  {  39,  11, "TB303 Bass 2", 1, NULL, 0 },
  {  39,  12, "Kicked TB303", 2, NULL, 0 },
  {  39,  13, "TB303 Sawtooth Bass", 1, NULL, 0 },
- {  39,  14, "Rubber303 Bass", 1, NULL, 0 },
+ {  39,  14, "Rubber 303 Bass", 1, NULL, 0 },
  {  39,  15, "Resonant 303 Bass", 1, NULL, 0 },
  {  39,  16, "Resonant SH Bass", 1, "Resonant SHBass", 1, NULL, 0 },
  {  39,  17, "303 Square Bass", 1, NULL, 0 },
- {  39,  18, "TB303 Dist Bass", 1, NULL, 0 },
+ {  39,  18, "TB303 Distorted Bass", 1, NULL, 0 },
  {  39,  24, "Arpeggio Bass", 1, NULL, 0 },
  {  40,   0, "Synth Bass 2", 2, "Synth Bass 2", 2, "Synth Bass 2", 2 },
- {  40,   1, "Synth Bass201", 2, "Synth Bass201", 2, NULL, 0 },
+ {  40,   1, "Synth Bass 201", 2, "Synth Bass 201", 2, NULL, 0 },
  {  40,   2, "Modular Bass", 2, "Modular Bass", 2, NULL, 0 },
  {  40,   3, "Sequenced Bass", 2, "Sequenced Bass", 2, NULL, 0 },
  {  40,   4, "MG Bass", 1, NULL, 0 },
@@ -496,7 +509,7 @@ _inst_t inst_table[] = {
  {  85,  18, "Rock Lead", 2, NULL, 0 },
  {  85,  19, "5th Deca Sync", 2, NULL, 0 },
  {  85,  20, "Dirty Sync", 1, NULL, 0 },
- {  85,  24, "JUNO Sub Oscilator", 1, NULL, 0 },
+ {  85,  24, "JUNO Sub Osc88ilator", 1, NULL, 0 },
  {  86,   0, "Solo Vox", 2, "Solo Vox", 2, "Solo Vox", 2 },
  {  86,   8, "Vox Lead", 2, NULL, 0 },
  {  86,   9, "LFO Vox", 2, NULL, 0 },
@@ -588,7 +601,7 @@ _inst_t inst_table[] = {
  { 100,   2, "Nylon Harp", 2, "Nylon Harp", 2, NULL, 0 },
  { 100,   3, "Harpvox", 2, "Harpvox", 2, NULL, 0 },
  { 100,   4, "Hollow Release", 2, "Hollow Release (key-off)", 2, NULL, 0 },
- { 100,   5, "Nylon+ Rhodes", 2, "Nylon Rhodes", 2, NULL, 0 },
+ { 100,   5, "Nylon+Rhodes", 2, "Nylon Rhodes", 2, NULL, 0 },
  { 100,   6, "Ambient Pad", 2, "Ambient Pad", 2, NULL, 0 },
  { 100,   7, "Invisible", 2, NULL, 0 },
  { 100,   8, "Pulsey Key", 2, NULL, 0 },
@@ -873,7 +886,7 @@ int main()
       } while (inst_table[++i].pc);
       if (f) printf("  </bank>\n\n");
    }
- 
+
    // SC-88
    printf("  <!-- SC-88 -->\n");
    for (b=0; b<49; ++b)
