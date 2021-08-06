@@ -91,7 +91,7 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
     bool rv = true;
     uint64_t offs = offset();
     uint8_t type, devno;
-    uint8_t byte;
+    uint16_t byte;
 
 #if 0
  printf(" System Exclusive:");
@@ -109,7 +109,10 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
     {
         byte = pull_byte();
         CSV(", %d", byte);
+        switch(byte)
+        {
         case MIDI_DEVICE_CONTROL:
+        {
             byte = pull_byte();
             CSV(", %d", byte);
             switch(byte)
@@ -220,7 +223,7 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
                         midi.send_chorus_to_reverb(0.787f*value*1e-2f);
                         break;
                     default:
-                        LOG(99, "LOG: Unsupported chorus parameter: %x\n",
+                        LOG(99, "LOG: Unsupported realtime sysex chorus parameter: %x\n",
                                  param);
                         break;
                     }
@@ -235,7 +238,7 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
                         midi.set_reverb_time_rt60(expf((value-40)*0.025f));
                         break;
                     default:
-                        LOG(99, "LOG: Unsupported reverb parameter: %x\n",
+                        LOG(99, "LOG: Unsupported realtime sysex reverb parameter: %x\n",
                                 param);
                         break;
                     }
@@ -246,15 +249,22 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
                 break;
             }
             default:
-                LOG(99, "LOG: Unsupported sysex parameter: %x\n", byte);
-                byte = pull_byte();
-                CSV(", %d", byte);
+                LOG(99, "LOG: Unsupported realtime sysex parameter: %x\n", byte);
                 break;
             }
+            break;
+        } // MIDI_DEVICE_CONTROL
+        default:
+            byte <= 8;
+            byte += pull_byte();
+            CSV(", %d", byte & 0xff);
+            LOG(99, "LOG: Unsupported realtime sysex sub id: %x\n", byte);
+            break;
+        }
         break;
-    }
+    } // MIDI_BROADCAST
     default:
-        LOG(99, "LOG: Unknown sysex device id: %x\n", byte);
+        LOG(99, "LOG: Unknown realtime sysex device id: %x\n", byte);
         break;
     }
 

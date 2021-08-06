@@ -50,11 +50,13 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
     switch (type & 0xF0)
     {
     case GSMIDI_SYSTEM:
+    {
         byte = pull_byte();
         CSV(", %d", byte);
         switch (byte)
         {
         case GSMIDI_MODEL_GS:
+        {
             byte = pull_byte();
             CSV(", %d", byte);
             switch (byte)
@@ -70,6 +72,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                 switch (addr_high)
                 {
                 case GSMIDI_PARAMETER_CHANGE:
+                {
                     switch(addr)
                     {
                     case GSMIDI_GS_RESET:
@@ -246,26 +249,42 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         break;
                     }
                     break;
+                } // GSMIDI_PARAMETER_CHANGE
+                case GSMIDI_SYSTEM_PARAMETER_CHANGE:
+                    switch (addr)
+                    {
+                    case GSMIDI_SYSTEM_MODE_SET:
+                        LOG(99, "LOG: Unsupported GS sysex system mode set: MODE-%i\n", value+1);
+                        break;
+                    default:
+                        LOG(99, "LOG: Unsupported GS sysex system parameter change\n");
+                        break;
+                    }
+                    break;
                 default:
-                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%x (%d)\n",
-                            addr_high, addr_high);
+                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%x 0x%x 0x%x\n",
+                            addr_high, addr_mid, addr_low);
                    break;
                 }
                 break;
-            }
+            } // GSMIDI_DATA_SET1
             case GSMIDI_DATA_REQUEST1:
+                LOG(99, "LOG: Unsupported GS sysex data request\n");
+                break;
             default:
                 LOG(99, "LOG: Unsupported GS sysex parameter category: 0x%x (%d)\n",
                      byte, byte);
                 break;
             }
             break;
+        } // GSMIDI_MODEL_GS
         default:
             LOG(99, "LOG: Unsupported GS sysex Model ID: 0x%x (%d)\n",
                      byte, byte);
             break;
         }
         break;
+    } // GSMIDI_SYSTEM
     default:
         LOG(99, "LOG: Unsupported GS category type: 0x%x (%d)\n", byte, byte);
         break;

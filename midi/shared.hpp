@@ -87,11 +87,13 @@ enum {
 /* parameter type */
 #define GSMIDI_SYSTEM						0x10
 
+#define GSMIDI_SYSTEM_PARAMETER_CHANGE				0x00
 #define GSMIDI_PARAMETER_CHANGE					0x40
 #define GSMIDI_DRUM_SETUP_PARAMETER_CHANGE			0x41
 #define GSMIDI_MODEL_GS						0x42
 
 /* GS parameter map */
+#define GSMIDI_SYSTEM_MODE_SET					0x007f
 #define GSMIDI_GS_RESET						0x007f
 #define GSMIDI_EQUALIZER_TYPE					0x0200
 #define GSMIDI_MULTI_PART					0x1100
