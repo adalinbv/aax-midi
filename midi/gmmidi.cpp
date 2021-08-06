@@ -254,11 +254,17 @@ bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
             }
             break;
         } // MIDI_DEVICE_CONTROL
+        case MIDI_SCALE_ADJUST:
+            LOG(99, "LOG: Unsupported realtime sysex scale adjust\n");
+            break;
+        case MIDI_CONTROLLER_DESTINATION:
+        case MIDI_KEY_BASED_INSTRUMENT:
         default:
             byte <= 8;
             byte += pull_byte();
             CSV(", %d", byte & 0xff);
-            LOG(99, "LOG: Unsupported realtime sysex sub id: %x\n", byte);
+            LOG(99, "LOG: Unsupported realtime sysex sub id: %x %x (%d %d)\n",
+                     byte >> 8, byte & 0xf, byte >> 8, byte & 0xf);
             break;
         }
         break;

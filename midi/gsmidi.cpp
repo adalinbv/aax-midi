@@ -86,6 +86,24 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             rv = true;
                         }
                         break;
+                    case GSMIDI_VOICE_RESERVE_PART1:
+                    case GSMIDI_VOICE_RESERVE_PART2:
+                    case GSMIDI_VOICE_RESERVE_PART3:
+                    case GSMIDI_VOICE_RESERVE_PART4:
+                    case GSMIDI_VOICE_RESERVE_PART5:
+                    case GSMIDI_VOICE_RESERVE_PART6:
+                    case GSMIDI_VOICE_RESERVE_PART7:
+                    case GSMIDI_VOICE_RESERVE_PART8:
+                    case GSMIDI_VOICE_RESERVE_PART9:
+                    case GSMIDI_VOICE_RESERVE_PART10:
+                    case GSMIDI_VOICE_RESERVE_PART11:
+                    case GSMIDI_VOICE_RESERVE_PART12:
+                    case GSMIDI_VOICE_RESERVE_PART13:
+                    case GSMIDI_VOICE_RESERVE_PART14:
+                    case GSMIDI_VOICE_RESERVE_PART15:
+                    case GSMIDI_VOICE_RESERVE_PART16:
+                        LOG(99, "LOG: Unsupported GS sysex voice reserve\n");
+                        break;
                     case GSMIDI_DRUM_PART1:
                     case GSMIDI_DRUM_PART2:
                     case GSMIDI_DRUM_PART3:
@@ -250,6 +268,15 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                     }
                     break;
                 } // GSMIDI_PARAMETER_CHANGE
+                case GSMIDI_DISPLAY_DATA:
+                {
+                    std::string text;
+                    for (int i=offset()-offs; i<size; ++i) {
+                        toUTF8(text, pull_byte());
+                    }
+                    MESSAGE("Display: %s\n", text.c_str());
+                    break;
+                }
                 case GSMIDI_SYSTEM_PARAMETER_CHANGE:
                     switch (addr)
                     {
@@ -261,8 +288,11 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         break;
                     }
                     break;
+                case GSMIDI_SYSTEM_INFORMATION:
+                    break;
                 default:
-                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%x 0x%x 0x%x\n",
+                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%x 0x%x 0x%x (%d %d %d)\n",
+                            addr_high, addr_mid, addr_low,
                             addr_high, addr_mid, addr_low);
                    break;
                 }
