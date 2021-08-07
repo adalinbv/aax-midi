@@ -39,7 +39,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
 #if 0
  printf(" System Exclusive:");
  push_byte(); push_byte(); push_byte();
- while ((byte = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" %x", byte);
+ while ((byte = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" 0x%02x", byte);
  printf("\n");
  byte_stream::rewind( offset() - offs);
 #endif
@@ -431,7 +431,7 @@ MIDIStream::GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
     {
     case GSMIDI_PART_EQUALIZER_SWITCH:
     default:
-        LOG(99, "LOG: Unsupported GS sysex equalizer set: %x (%d)\n",
+        LOG(99, "LOG: Unsupported GS sysex equalizer set: 0x%02x (%d)\n",
                      addr, addr);
         rv = false;
         break;
@@ -442,7 +442,7 @@ MIDIStream::GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
 bool
 MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
 {
-    LOG(99, "LOG: Unsupported GS sysex insertion type: %x (%d)\n",
+    LOG(99, "LOG: Unsupported GS sysex insertion type: 0x%02x (%d)\n",
                  addr, addr);
     return false;
 }
@@ -460,7 +460,7 @@ MIDIStream::GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
         LOG(99, "LOG: Unsupported GS sysex bend range\n");
         break;
     default:
-        LOG(99, "LOG: Unsupported GS sysex modulation type: %x (%d)\n",
+        LOG(99, "LOG: Unsupported GS sysex modulation type: 0x%02x (%d)\n",
                  addr, addr);
         rv = false;
         break;
@@ -535,7 +535,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
         break;
     case GSMIDI_PART_NRPN_SWITCH:
     default:
-        LOG(99, "LOG: Unsupported GS sysex part set: %x (%d)\n", addr, addr);
+        LOG(99, "LOG: Unsupported GS sysex part set: 0x%02x (%d)\n", addr, addr);
         rv = false;
         break;
     }
