@@ -133,6 +133,7 @@ private:
     bool process_GM_sysex_realtime(uint64_t);
     bool process_GM_sysex_non_realtime(uint64_t);
 
+    uint8_t GS_mode = 0;
     bool process_GS_sysex(uint64_t);
     bool process_GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value);
     bool process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value);

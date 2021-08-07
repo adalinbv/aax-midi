@@ -86,55 +86,32 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             rv = true;
                         }
                         break;
-                    case GSMIDI_MASTER_VOLUME:
-                        midi.set_gain((float)value/127.0f);
-                        break;
-                    case GSMIDI_VOICE_RESERVE_PART1:
-                    case GSMIDI_VOICE_RESERVE_PART2:
-                    case GSMIDI_VOICE_RESERVE_PART3:
-                    case GSMIDI_VOICE_RESERVE_PART4:
-                    case GSMIDI_VOICE_RESERVE_PART5:
-                    case GSMIDI_VOICE_RESERVE_PART6:
-                    case GSMIDI_VOICE_RESERVE_PART7:
-                    case GSMIDI_VOICE_RESERVE_PART8:
-                    case GSMIDI_VOICE_RESERVE_PART9:
-                    case GSMIDI_VOICE_RESERVE_PART10:
-                    case GSMIDI_VOICE_RESERVE_PART11:
-                    case GSMIDI_VOICE_RESERVE_PART12:
-                    case GSMIDI_VOICE_RESERVE_PART13:
-                    case GSMIDI_VOICE_RESERVE_PART14:
-                    case GSMIDI_VOICE_RESERVE_PART15:
-                    case GSMIDI_VOICE_RESERVE_PART16:
-                        LOG(99, "LOG: Unsupported GS sysex voice reserve\n");
-                        break;
-                    case GSMIDI_DRUM_PART1:
-                    case GSMIDI_DRUM_PART2:
-                    case GSMIDI_DRUM_PART3:
-                    case GSMIDI_DRUM_PART4:
-                    case GSMIDI_DRUM_PART5:
-                    case GSMIDI_DRUM_PART6:
-                    case GSMIDI_DRUM_PART7:
-                    case GSMIDI_DRUM_PART8:
-                    case GSMIDI_DRUM_PART9:
-                    case GSMIDI_DRUM_PART11:
-                    case GSMIDI_DRUM_PART12:
-                    case GSMIDI_DRUM_PART13:
-                    case GSMIDI_DRUM_PART14:
-                    case GSMIDI_DRUM_PART15:
-                    case GSMIDI_DRUM_PART16:
-                    {
-                        uint8_t part_no = addr_mid & 0xf;
-                        if (value == 0x02)
-                        {
-                            byte = pull_byte();
-                            CSV(",%d", byte); 
-                            if (byte == 0x10) {
-                                midi.channel(part_no).set_drums(true);
-                                rv = true;
-                            }
+                    case GSMIDI_MASTER_TUNE:
+                    {   // 1st bit3-0: bit7-4, 2nd bit3-0: bit3-0
+                        int8_t tune = (value << 4);
+                        float level;
+                        byte = pull_byte();
+                        CSV(", %d", byte);
+                        tune |= byte & 0xf;
+                        level = cents2pitch(0.1f*tune, channel_no);
+                        for(auto& it : midi.get_channels()) {
+                            it.second->set_detune(level);
                         }
                         break;
                     }
+                    case GSMIDI_MASTER_VOLUME:
+                        midi.set_gain((float)value/127.0f);
+                        break;
+                    case GSMIDI_MASTER_KEY_SHIFT:
+                        LOG(99, "LOG: Unsupported GS sysex Key-Shift\n");
+                        break;
+                    case GSMIDI_MASTER_PAN:
+                        if (mode != MIDI_MONOPHONIC) {
+                            for(auto& it : midi.get_channels()) {
+                                it.second->set_pan(((float)value-64.f)/64.f);
+                            }
+                        }
+                        break;
                     case GSMIDI_REVERB_MACRO:
                     case GSMIDI_REVERB_CHARACTER:
                         switch (value)
@@ -166,7 +143,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         case GSMIDI_REVERB_DELAY:
                         case GSMIDI_REVERB_PAN_DELAY:
                         default:
-                            LOG(99, "LOG: Unsupported GS sysex reverb type:"
+                            LOG(99, "LOG: Unsupported GS sysex Reverb type:"
                                     " 0x%x (%d)\n", type, type);
                             break;
                         }
@@ -229,13 +206,13 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             INFO("Switching to GS short delay with feedback");
                             break;
                         default:
-                            LOG(99, "LOG: Unsupported GS sysex chorus type:"
+                            LOG(99, "LOG: Unsupported GS sysex Chorus type:"
                                     " 0x%x (%d)\n", type, type);
                             break;
                         }
                         break;
                     case GSMIDI_CHORUS_PRE_LPF:
-                        LOG(99, "LOG: Unsupported GS sysex chorus pre-LPF\n");
+                        LOG(99, "LOG: Unsupported GS sysex Chorus pre-LPF\n");
                         break;
                     case GSMIDI_CHORUS_LEVEL:
                     {
@@ -247,7 +224,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         midi.set_chorus_feedback(0.763f*value*1e-2f);
                         break;
                     case GSMIDI_CHORUS_DELAY:
-                        LOG(99, "LOG: Unsupported GS sysex chorus delay\n");
+                        LOG(99, "LOG: Unsupported GS sysex Chorus delay\n");
                         break;
                     case GSMIDI_CHORUS_RATE:
                     {
@@ -264,13 +241,85 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                     case GSMIDI_CHORUS_SEND_LEVEL_TO_REVERB:
                         midi.send_chorus_to_reverb(value/127.0f);
                         break;
+                    case GSMIDI_DRUM_PART1:
+                    case GSMIDI_DRUM_PART2:
+                    case GSMIDI_DRUM_PART3:
+                    case GSMIDI_DRUM_PART4:
+                    case GSMIDI_DRUM_PART5:
+                    case GSMIDI_DRUM_PART6:
+                    case GSMIDI_DRUM_PART7:
+                    case GSMIDI_DRUM_PART8:
+                    case GSMIDI_DRUM_PART9:
+                    case GSMIDI_DRUM_PART11:
+                    case GSMIDI_DRUM_PART12:
+                    case GSMIDI_DRUM_PART13:
+                    case GSMIDI_DRUM_PART14:
+                    case GSMIDI_DRUM_PART15:
+                    case GSMIDI_DRUM_PART16:
+                    {
+                        uint8_t part_no = addr_mid & 0xf;
+                        if (value == 0x02)
+                        {
+                            byte = pull_byte();
+                            CSV(",%d", byte);
+                            if (byte == 0x10) {
+                                midi.channel(part_no).set_drums(true);
+                                rv = true;
+                            }
+                        }
+                        break;
+                    }
+                    case GSMIDI_VOICE_RESERVE_PART1:
+                    case GSMIDI_VOICE_RESERVE_PART2:
+                    case GSMIDI_VOICE_RESERVE_PART3:
+                    case GSMIDI_VOICE_RESERVE_PART4:
+                    case GSMIDI_VOICE_RESERVE_PART5:
+                    case GSMIDI_VOICE_RESERVE_PART6:
+                    case GSMIDI_VOICE_RESERVE_PART7:
+                    case GSMIDI_VOICE_RESERVE_PART8:
+                    case GSMIDI_VOICE_RESERVE_PART9:
+                    case GSMIDI_VOICE_RESERVE_PART10:
+                    case GSMIDI_VOICE_RESERVE_PART11:
+                    case GSMIDI_VOICE_RESERVE_PART12:
+                    case GSMIDI_VOICE_RESERVE_PART13:
+                    case GSMIDI_VOICE_RESERVE_PART14:
+                    case GSMIDI_VOICE_RESERVE_PART15:
+                    case GSMIDI_VOICE_RESERVE_PART16:
+                        LOG(99, "LOG: Unsupported GS sysex Voice Reserve\n");
+                        break;
+                    case GSMIDI_TX_CHANNEL:
+                        LOG(99, "LOG: Unsupported GS sysex Tx Channel");
+                        break;
+                    case GSMIDI_RCV_CHANNEL:
+                        LOG(99, "LOG: Unsupported GS sysex Rcv Channel\n");
+                        break;
+                    case GSMIDI_BREATH_CONTROL_NUMBER:
+                        LOG(99, "LOG: Unsupported GS sysex Breath Control Number\n");
+                        break;
+                    case GSMIDI_BREATH_CONTROL_CURVE:
+                        LOG(99, "LOG: Unsupported GS sysex Breath Control Curve\n");
+                        break;
+                    case GSMIDI_BREATH_SET_LOCK:
+                        LOG(99, "LOG: Unsupported GS sysex Breath Set Lock\n");
+                        break;
+                    case GSMIDI_BREATH_MODE:
+                        LOG(99, "LOG: Unsupported GS sysex Breath Mode\n");
+                        break;
+                    case GSMIDI_VELOCITY_DEPTH:
+                        LOG(99, "LOG: Unsupported GS sysex Velocity Depth\n");
+                        break;
+                    case GSMIDI_VELOCITY_OFFSET:
+                        LOG(99, "LOG: Unsupported GS sysex Velocity Offset\n");
+                        break;
                     default:
                     {
                         uint8_t part_no = addr_mid & 0xF;
                         switch (addr_mid)
                         {
                         case GSMIDI_EQUALIZER:
-                            process_GS_sysex_equalizer(part_no, addr_low, value);
+                            if (GS_mode != 1) {
+                                process_GS_sysex_equalizer(part_no, addr_low, value);
+                            }
                             break;
                         case GSMIDI_INSERTION_EFFECT:
                             process_GS_sysex_insertion(part_no, addr_low, value);
@@ -285,7 +334,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                                 process_GS_sysex_modulation(part_no, addr_low, value);
                                break;
                             case GSMIDI_PART_SWITCH:
-                               LOG(99, "LOG: Unsupported GS sysex part switch\n");
+                               LOG(99, "LOG: Unsupported GS sysex Part Switch\n");
                                break;
                             default:
                                 LOG(99, "LOG: Unsupported GS sysex address:"
@@ -313,12 +362,31 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                     switch (addr)
                     {
                     case GSMIDI_SYSTEM_MODE_SET:
-                        LOG(99, "LOG: Unsupported GS sysex system mode set: MODE-%i\n", value+1);
+                        GS_mode = value;
+                        LOG(99, "LOG: Unsupported GS sysex system Mode Set: MODE-%i\n", value+1);
                         break;
                     default:
                         LOG(99, "LOG: Unsupported GS sysex system parameter change\n");
                         break;
                     }
+                    break;
+                case GSMIDI_DISPLAY_BITMAP:
+                    LOG(99, "LOG: Unsupported GS sysex Display Bitmap\n");
+                    break;
+                case GSMIDI_USER_INSTRUMENT:
+                    LOG(99, "LOG: Unsupported GS sysex User Instrument\n");
+                    break;
+                case GSMIDI_USER_DRUM_SET:
+                    LOG(99, "LOG: Unsupported GS sysex User Drum Set\n");
+                    break;
+                case GSMIDI_USER_EFFECT:
+                    LOG(99, "LOG: Unsupported GS sysex User Effect\n");
+                    break;
+                case GSMIDI_USER_PATCH:
+                    LOG(99, "LOG: Unsupported GS sysex User Patch\n");
+                    break;
+                case GSMIDI_USER_PART_PATCH:
+                    LOG(99, "LOG: Unsupported GS sysex User Patch Part\n");
                     break;
                 case GSMIDI_SYSTEM_INFORMATION:
                     break;
@@ -331,7 +399,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                 break;
             } // GSMIDI_DATA_SET1
             case GSMIDI_DATA_REQUEST1:
-                LOG(99, "LOG: Unsupported GS sysex data request\n");
+                LOG(99, "LOG: Unsupported GS sysex data Request\n");
                 break;
             default:
                 LOG(99, "LOG: Unsupported GS sysex parameter category: 0x%x (%d)\n",
@@ -455,7 +523,7 @@ MIDIStream::process_GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
             ERROR("Error: " << e.what());
         }
         break;
-    case GSMIDI_PART_POLY_MONO:
+    case GSMIDI_PART_POLY_MODE:
         midi.process(part_no, MIDI_NOTE_OFF, 0, 0, true);
         if (value == 0) {
             mode = MIDI_MONOPHONIC;
