@@ -102,7 +102,8 @@ enum {
 
 #define GSMIDI_MASTER_TUNE					0x0000
 #define GSMIDI_MASTER_VOLUME					0x0004
-#define GSMIDI_TRANSPOSE					0x0006
+#define GSMIDI_MASTER_KEY_SHIFT					0x0005
+#define GSMIDI_MASTER_PAN					0x0006
 #define GSMIDI_TX_CHANNEL					0x0009
 #define GSMIDI_RCV_CHANNEL					0x000a
 #define GSMIDI_BREATH_CONTROL_NUMBER				0x000b
@@ -130,11 +131,6 @@ enum {
 #define GSMIDI_VOICE_RESERVE_PART16				0x011f
 
 #define GSMIDI_MULTI_PART					0x1100
-
-/* system parameters */
-#define GSMIDI_MASTER_KEY_SHIFT					0x0005
-#define GSMIDI_MASTER_PAN					0x0006
-#define GSMIDI_MODE_SET						0x007f
 
 /* patch parameters */
 #define GSMIDI_REVERB_MACRO					0x0130
