@@ -292,7 +292,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                         rv = true;
                        break;
                     default:
-                        LOG(99, "LOG: Unsupported XG reverb type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex reverb type: 0x%x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -339,15 +339,15 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     if (param > XGMIDI_REVERB_PARAMETER10) {
                         param -= (XGMIDI_REVERB_PARAMETER1 - XGMIDI_REVERB_PARAMETER10);
                     }
-                    LOG(99, "LOG: Unsupported XG Reverb Parameter %d\n",
+                    LOG(99, "LOG: Unsupported XG sysex Reverb Parameter %d\n",
                             param);
                     break;
                 }
                 case XGMIDI_REVERB_RETURN:
-                    LOG(99, "LOG: Unsupported XG Reverb Return\n");
+                    LOG(99, "LOG: Unsupported XG sysex Reverb Return\n");
                     break;
                 case XGMIDI_REVERB_PAN:
-                    LOG(99, "LOG: Unsupported XG Reverb Pan\n");
+                    LOG(99, "LOG: Unsupported XG sysex Reverb Pan\n");
                     break;
                 case XGMIDI_CHORUS_TYPE:
                 {
@@ -428,7 +428,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                         rv = true;
                         break;
                     default:
-                        LOG(99, "LOG: Unsupported XG chorus type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex Chorus type: 0x%x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -455,17 +455,17 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     if (param > XGMIDI_CHORUS_PARAMETER10) {
                         param -= (XGMIDI_CHORUS_PARAMETER11 - XGMIDI_CHORUS_PARAMETER10);
                     }
-                    LOG(99, "LOG: Unsupported XG Chorus Parameter %d\n",
+                    LOG(99, "LOG: Unsupported XG sysex Chorus Parameter %d\n",
                             param);
                     break;
                 }
                 case XGMIDI_CHORUS_RETURN:
                     // -inf dB...0dB...+6dB(0...64...127)
-                    LOG(99, "LOG: Unsupported XG Chorus Return\n");
+                    LOG(99, "LOG: Unsupported XG sysex Chorus Return\n");
                     break;
                 case XGMIDI_CHORUS_PAN:
                     // L63...C...R63(1...64...127)
-                    LOG(99, "LOG: Unsupported XG Chorus Pan\n");
+                    LOG(99, "LOG: Unsupported XG sysex Chorus sysex Pan\n");
                     break;
                 case XGMIDI_CHORUS_SEND_TO_REVERB:
                     // -inf dB...0dB...+6dB(0...64...127)
@@ -482,210 +482,210 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     case XGMIDI_NO_EFFECT:
                         break;
                     case XGMIDI_REVERB_HALL1:
-                        LOG(99, "LOG: Unsupported XG variation type: Hall 1 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Hall 1 reverb\n");
                         break;
                     case XGMIDI_REVERB_HALL2:
-                        LOG(99, "LOG: Unsupported XG variation type: Hall 2 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Hall 2 reverb\n");
                         break;
                     case XGMIDI_REVERB_ROOM1:
-                        LOG(99, "LOG: Unsupported XG variation type: Room 1 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Room 1 reverb\n");
                         break;
                     case XGMIDI_REVERB_ROOM2:
-                        LOG(99, "LOG: Unsupported XG variation type: Room 2 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Room 2 reverb\n");
                         break;
                     case XGMIDI_REVERB_ROOM3:
-                        LOG(99, "LOG: Unsupported XG variation type: Room 3 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Room 3 reverb\n");
                         break;
                     case XGMIDI_REVERB_STAGE1:
-                        LOG(99, "LOG: Unsupported XG variation type: Stage 1 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Stage 1 reverb\n");
                         break;
                     case XGMIDI_REVERB_STAGE2:
-                        LOG(99, "LOG: Unsupported XG variation type: Stage 2 reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Stage 2 reverb\n");
                         break;
                     case XGMIDI_REVERB_PLATE:
-                        LOG(99, "LOG: Unsupported XG variation type: Plate reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Plate reverb\n");
                         break;
                     case XGMIDI_REVERB_WHITE_ROOM:
-                        LOG(99, "LOG: Unsupported XG variation type: Whiteroom reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Whiteroom reverb\n");
                         break;
                     case XGMIDI_REVERB_TUNNEL:
-                        LOG(99, "LOG: Unsupported XG variation type: Tunnel reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Tunnel reverb\n");
                         break;
                     case XGMIDI_REVERB_CANYON:
-                        LOG(99, "LOG: Unsupported XG variation type: Canyon reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Canyon reverb\n");
                         break;
                     case XGMIDI_REVERB_BASEMENT:
-                        LOG(99, "LOG: Unsupported XG variation type: Basement reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Basement reverb\n");
                         break;
                     case XGMIDI_DELAY_LCR:
-                        LOG(99, "LOG: Unsupported XG variation type: Delay L/C/R\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Delay L/C/R\n");
                         break;
                     case XGMIDI_DELAY_LR:
-                        LOG(99, "LOG: Unsupported XG variation type: Delay L/R\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Delay L/R\n");
                         break;
                     case XGMIDI_ECHO:
-                        LOG(99, "LOG: Unsupported XG variation type: Echo\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Echo\n");
                         break;
                     case XGMIDI_X_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Crossed feedback Delay\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Crossed feedback Delay\n");
                         break;
                     case XGMIDI_ER1:
-                        LOG(99, "LOG: Unsupported XG variation type: Early Reflections 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Early Reflections 1\n");
                         break;
                     case XGMIDI_ER2:
-                        LOG(99, "LOG: Unsupported XG variation type: Early Reflections 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Early Reflections 2\n");
                         break;
                     case XGMIDI_GATED_REVERB:
-                        LOG(99, "LOG: Unsupported XG variation type: Gated Reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Gated Reverb\n");
                         break;
                     case XGMIDI_REVERSE_GATE:
-                        LOG(99, "LOG: Unsupported XG variation type: Reversed Gate Reverb\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Reversed Gate Reverb\n");
                         break;
                     case XGMIDI_KARAOKE1:
-                        LOG(99, "LOG: Unsupported XG variation type: Karaoke type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Karaoke type 1\n");
                         break;
                     case XGMIDI_KARAOKE2:
-                        LOG(99, "LOG: Unsupported XG variation type: Karaoke type 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Karaoke type 2\n");
                         break;
                     case XGMIDI_KARAOKE3:
-                        LOG(99, "LOG: Unsupported XG variation type: Karaoke type 3\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Karaoke type 3\n");
                         break;
                     case XGMIDI_CHORUS1:
-                        LOG(99, "LOG: Unsupported XG variation type: Chorus type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Chorus type 1\n");
                         break;
                     case XGMIDI_CHORUS2:
-                        LOG(99, "LOG: Unsupported XG variation type: Chorus type 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Chorus type 2\n");
                         break;
                     case XGMIDI_CHORUS3:
-                        LOG(99, "LOG: Unsupported XG variation type: Chorus type 3\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Chorus type 3\n");
                         break;
                     case XGMIDI_CHORUS4:
-                        LOG(99, "LOG: Unsupported XG variation type: Chorus type 4\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Chorus type 4\n");
                         break;
                     case XGMIDI_CELESTE1:
-                        LOG(99, "LOG: Unsupported XG variation type: Celeste type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Celeste type 1\n");
                         break;
                     case XGMIDI_CELESTE2:
-                        LOG(99, "LOG: Unsupported XG variation type: Celeste type 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Celeste type 2\n");
                         break;
                     case XGMIDI_CELESTE3:
-                        LOG(99, "LOG: Unsupported XG variation type: Celeste type 3\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Celeste type 3\n");
                         break;
                     case XGMIDI_CELESTE4:
-                        LOG(99, "LOG: Unsupported XG variation type: Celeste type 4\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Celeste type 4\n");
                         break;
                     case XGMIDI_FLANGING1:
-                        LOG(99, "LOG: Unsupported XG variation type: Flamger type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Flamger type 1\n");
                         break;
                     case XGMIDI_FLANGING2:
-                        LOG(99, "LOG: Unsupported XG variation type: Flanger type 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Flanger type 2\n");
                         break;
                     case XGMIDI_FLANGING3:
-                        LOG(99, "LOG: Unsupported XG variation type: Flanger type 3\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Flanger type 3\n");
                         break;
                     case XGMIDI_SYMPHONIC:
-                        LOG(99, "LOG: Unsupported XG variation type: Symphonic\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Symphonic\n");
                         break;
                     case XGMIDI_THRU:
-                        LOG(99, "LOG: Unsupported XG variation type: Thru\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Thru\n");
                         break;
                     case XGMIDI_ROTARY_SPEAKER:
-                        LOG(99, "LOG: Unsupported XG variation type: Rotary Speaker\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Rotary Speaker\n");
                         break;
                     case XGMIDI_ROTARY_SPEAKER_2_WAY:
-                        LOG(99, "LOG: Unsupported XG variation type: 2-Way Rotary Speaker\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: 2-Way Rotary Speaker\n");
                         break;
                     case XGMIDI_TREMOLO:
-                        LOG(99, "LOG: Unsupported XG variation type: Tremolo\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Tremolo\n");
                         break;
                     case XGMIDI_AUTO_PAN:
-                        LOG(99, "LOG: Unsupported XG variation type: Auto Pan\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Auto Pan\n");
                         break;
                     case XGMIDI_PHASER1:
-                        LOG(99, "LOG: Unsupported XG variation type: Phaser type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Phaser type 1\n");
                         break;
                     case XGMIDI_PHASER2:
-                        LOG(99, "LOG: Unsupported XG variation type: Phaser type 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Phaser type 2\n");
                         break;
                     case XGMIDI_DISTORTION:
-                        LOG(99, "LOG: Unsupported XG variation type: Distortion\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Distortion\n");
                         break;
                     case XGMIDI_OVER_DRIVE:
-                        LOG(99, "LOG: Unsupported XG variation type: Over Drive\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Over Drive\n");
                         break;
                     case XGMIDI_AMP_SIMULATOR:
-                        LOG(99, "LOG: Unsupported XG variation type: Amp Simulator\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Amp Simulator\n");
                         break;
                     case XGMIDI_3_BAND_EQ:
-                        LOG(99, "LOG: Unsupported XG variation type: 3 band EQ\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: 3 band EQ\n");
                         break;
                     case XGMIDI_2_BAND_EQ:
-                        LOG(99, "LOG: Unsupported XG variation type: 2 band EQ\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: 2 band EQ\n");
                         break;
                     case XGMIDI_AUTO_WAH:
-                        LOG(99, "LOG: Unsupported XG variation type: Auto Wah\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Auto Wah\n");
                         break;
                     case XGMIDI_AUTO_WAH_DISTORTION:
-                        LOG(99, "LOG: Unsupported XG variation type: Auto Wah and Distortion\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Auto Wah and Distortion\n");
                         break;
                     case XGMIDI_AUTO_WAH_OVER_DRIVE:
-                        LOG(99, "LOG: Unsupported XG variation type: Auto Wah and Over Drive\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Auto Wah and Over Drive\n");
                         break;
                     case XGMIDI_PITCH_CHANGE1:
-                        LOG(99, "LOG: Unsupported XG variation type: Pitch Change 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Pitch Change 1\n");
                         break;
                     case XGMIDI_PITCH_CHANGE2:
-                        LOG(99, "LOG: Unsupported XG variation type: Pitch Change 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Pitch Change 2\n");
                         break;
                     case XGMIDI_AURAL_ENHANCER:
-                        LOG(99, "LOG: Unsupported XG variation type: Aural Enhancer\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Aural Enhancer\n");
                         break;
                     case XGMIDI_TOUCH_WAH1:
-                        LOG(99, "LOG: Unsupported XG variation type: Touch Wah 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Touch Wah 1\n");
                         break;
                     case XGMIDI_TOUCH_WAH2:
-                        LOG(99, "LOG: Unsupported XG variation type: Touch Wah 2\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Touch Wah 2\n");
                         break;
                     case XGMIDI_TOUCH_WAH_DISTORTION:
-                        LOG(99, "LOG: Unsupported XG variation type: Touch Wah and Distortion\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Touch Wah and Distortion\n");
                         break;
                     case XGMIDI_TOUCH_WAH_OVER_DRIVE:
-                        LOG(99, "LOG: Unsupported XG variation type: Touch Wah and over Drive\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Touch Wah and over Drive\n");
                         break;
                     case XGMIDI_COMPRESSOR:
-                        LOG(99, "LOG: Unsupported XG variation type: Compressor\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Compressor\n");
                         break;
                     case XGMIDI_NOISE_GATE:
-                        LOG(99, "LOG: Unsupported XG variation type: Noise Gate\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Noise Gate\n");
                         break;
                     case XGMIDI_VOICE_CANCEL:
-                        LOG(99, "LOG: Unsupported XG variation type: Voice Cancel\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Voice Cancel\n");
                         break;
                     case XGMIDI_TALKING_SIMULATOR:
-                        LOG(99, "LOG: Unsupported XG variation type: Talk Box Simulator\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Talk Box Simulator\n");
                         break;
                     case XGMIDI_LO_FI:
-                        LOG(99, "LOG: Unsupported XG variation type: Lo-Fi\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Lo-Fi\n");
                         break;
                     case XGMIDI_DISTORTION_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Distortion and Delay\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Distortion and Delay\n");
                         break;
                     case XGMIDI_OVER_DRIVE_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Over Drive and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Over Drive and Delay\n");                        
                         break;
                     case XGMIDI_COMPRESSOR_DISTORTION_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Compressor and Distortion and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Compressor and Distortion and Delay\n");                        
                         break;
                     case XGMIDI_COMPRESSOR_OVER_DRIVE_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Compressor and Over Drive and Delay\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Compressor and Over Drive and Delay\n");
                         break;
                     case XGMIDI_WAH_DISTORTION_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Wah and Distortion and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Wah and Distortion and Delay\n");                        
                         break;
                     case XGMIDI_WAH_OVER_DRIVE_DELAY:
-                        LOG(99, "LOG: Unsupported XG variation type: Wah and Over Drive and Delay\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Wah and Over Drive and Delay\n");
                     default:
-                        LOG(99, "LOG: Unsupported XG variation type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex variation type: 0x%x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -703,45 +703,45 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                 case XGMIDI_VARIATION_PARAMETER10:
                 {
                     uint8_t param = (addr - XGMIDI_VARIATION_TYPE )/2;
-                    LOG(99, "LOG: Unsupported XG Variation Parameter %d\n",
+                    LOG(99, "LOG: Unsupported XG sysex Variation Parameter %d\n",
                             param);
                     break;
                 }
                 case XGMIDI_VARIATION_RETURN:
-                    LOG(99, "LOG: Unsupported XG Variation Return\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Return\n");
                     break;
                 case XGMIDI_VARIATION_PAN:
-                    LOG(99, "LOG: Unsupported XG Variation Pan\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Pan\n");
                     break;
                 case XGMIDI_VARIATION_SEND_TO_REVERB:
-                    LOG(99, "LOG: Unsupported XG Variation Send to Reverb\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Send to Reverb\n");
                     break;
                 case XGMIDI_VARIATION_SEND_TO_CHORUS:
-                    LOG(99, "LOG: Unsupported XG Variation Send to Chorus\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Send to Chorus\n");
                     break;
                 case XGMIDI_VARIATION_CONNECTION:
-                    LOG(99, "LOG: Unsupported XG Variation Connection\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Connection\n");
                     break;
                 case XGMIDI_VARIATION_PART_NUMBER:
-                    LOG(99, "LOG: Unsupported XG Variation Part Number\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Part Number\n");
                     break;
                 case XGMIDI_MW_VARIATION_CONTROL_DEPTH:
-                    LOG(99, "LOG: Unsupported XG Variation Mod Wheel Contgrol Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Mod Wheel Contgrol Depth\n");
                     break;
                 case XGMIDI_BEND_VARIATION_CONTROL_DEPTH:
-                    LOG(99, "LOG: Unsupported XG Variation Bend Control Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Bend Control Depth\n");
                     break;
                 case XGMIDI_CAT_VARIATION_CONTROL_DEPTH:
-                    LOG(99, "LOG: Unsupported XG Variation Cat Control Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Cat Control Depth\n");
                     break;
                 case XGMIDI_AC1_VARIATION_CONTROL_DEPTH:
-                    LOG(99, "LOG: Unsupported XG Variation AC1 Control Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation AC1 Control Depth\n");
                     break;
                 case XGMIDI_AC2_VARIATION_CONTROL_DEPTH:
-                    LOG(99, "LOG: Unsupported XG Variation AC2 Control Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation AC2 Control Depth\n");
                     break;
                 default:
-                    LOG(99, "LOG: Unsupported XG Effect1 address: 0x%x 0x%x (%d %d)\n",
+                    LOG(99, "LOG: Unsupported XG sysex Effect1 address: 0x%x 0x%x (%d %d)\n",
                             addr_mid, addr_low, addr_mid, addr_low);
                     break;
                 }
@@ -783,7 +783,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     }
                     break;
                 case XGMIDI_KEY_ON_ASSIGN: // 0: multi, 1: inst (for drum)
-                    LOG(99, "LOG: Unsupported XG Same Note Number Key On Assign\n");
+                    LOG(99, "LOG: Unsupported XG sysex Same Note Number Key On Assign\n");
                     break;
                 case XGMIDI_PART_MODE: // 0: normal, 1: drum, 2-5: drums1-4
                     // http://www.studio4all.de/htmle/main93.html
@@ -791,7 +791,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     else channel.set_drums(false);
                     break;
                 case XGMIDI_NOTE_SHIFT: // -24 - +24 semitones
-                    LOG(99, "LOG: Unsupported XG Note Shift\n");
+                    LOG(99, "LOG: Unsupported XG sysex Note Shift\n");
                     break;
                 case XGMIDI_DETUNE: // -12.8 - 12.7 cent
                 {   // 1st bit3-0: bit7-4, 2nd bit3-0: bit3-0
@@ -808,10 +808,10 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     channel.set_gain((float)value/127.0f);
                     break;
                 case XGMIDI_VELOCITY_SENSE_DEPTH: // 0-127
-                    LOG(99, "LOG: Unsupported XG Velocity Sense Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Velocity Sense Depth\n");
                     break;
                 case XGMIDI_VELOCITY_SENSE_OFFSET: // 0-127
-                    LOG(99, "LOG: Unsupported XG Velocity Sense Offset\n");
+                    LOG(99, "LOG: Unsupported XG sysex Velocity Sense Offset\n");
                     break;
                 case XGMIDI_PAN: // 0: random, L63 - C - R63 (1 - 64 - 127)
                     if (mode != MIDI_MONOPHONIC) {
@@ -819,14 +819,14 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     }
                     break;
                 case XGMIDI_NOTE_LIMIT_LOW: // C2 - G8
-                    LOG(99, "LOG: Unsupported XG Note Limit Low\n");
+                    LOG(99, "LOG: Unsupported XG sysex Note Limit Low\n");
                     break;
                 case XGMIDI_NOTE_LIMIT_HIGH: // C2 - G8
-                    LOG(99, "LOG: Unsupported XG Note Limit High\n");
+                    LOG(99, "LOG: Unsupported XG sysex Note Limit High\n");
                     break;
                 case XGMIDI_DRY_LEVEL: // 0-127
-                     LOG(99, "LOG: Unsupported XG Dry Level\n");
-                     break;
+                    LOG(99, "LOG: Unsupported XG sysex Dry Level\n");
+                    break;
                 case XGMIDI_CHORUS_SEND: // 0-127
                 {
                     float val = (float)value/127.0f;
@@ -840,7 +840,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     break;
                 }
                 case XGMIDI_VARIATION_SEND: // 0-127
-                    LOG(99, "LOG: Unsupported XG Variation Send\n");
+                    LOG(99, "LOG: Unsupported XG sysex Variation Send\n");
                     break;
                 case XGMIDI_VIBRATO_RATE: // -64 - +63
                 {
@@ -889,40 +889,40 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     break;
                 }
                 case XGMIDI_MW_FILTER_CONTROL: // -9600 - +9450 cents
-                    LOG(99, "LOG: Unsupported XG Mod Wheel Filter Control\n");
+                    LOG(99, "LOG: Unsupported XG sysex Mod Wheel Filter Control\n");
                     break;
                 case XGMIDI_MW_AMPLITUDE_CONTROL: // -100 - +100%
-                    LOG(99, "LOG: Unsupported XG Mod Wheel Amplitude Control\n");
+                    LOG(99, "LOG: Unsupported XG sysex Mod Wheel Amplitude Control\n");
                     break;
                 case XGMIDI_MW_LFO_PMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG Mod Wheel LFO Phase Modulation Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Mod Wheel LFO Phase Modulation Depth\n");
                     break;
                 case XGMIDI_MW_LFO_FMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG Mod Wheel LFO Frequency Modulation Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Mod Wheel LFO Frequency Modulation Depth\n");
                     break;
                 case XGMIDI_MW_LFO_AMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG Mod Wheel LFO Amplitude Modulation Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Mod Wheel LFO Amplitude Modulation Depth\n");
                     break;
                 case XGMIDI_BEND_PITCH_CONTROL: // // -24 - +24 semitones
-                    LOG(99, "LOG: Unsupported XG Bend Pitch Control\n");
+                    LOG(99, "LOG: Unsupported XG sysex Bend Pitch Control\n");
                     break;
                 case XGMIDI_BEND_FILTER_CONTROL: // -9600 - +9450 cents
-                    LOG(99, "LOG: Unsupported XG Bend Filter Control\n");
+                    LOG(99, "LOG: Unsupported XG sysex Bend Filter Control\n");
                     break;
                 case XGMIDI_BEND_AMPLITUDE_CONTROL: // -100 - +100%
-                    LOG(99, "LOG: Unsupported XG Bend Amplitude Control\n");
+                    LOG(99, "LOG: Unsupported XG sysex Bend Amplitude Control\n");
                     break;
                 case XGMIDI_BEND_LFO_PMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG Bend LFO Phase Modulation Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Bend LFO Phase Modulation Depth\n");
                     break;
                 case XGMIDI_BEND_LFO_FMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG Bend LFO Frequency Modulation  Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex Bend LFO Frequency Modulation  Depth\n");
                     break;
                 case XGMIDI_BEND_LFO_AMOD_DEPTH: // 0 - 127
-                    LOG(99, "LOG: Unsupported XG bend LFO Amplitude Modulation Depth\n");
+                    LOG(99, "LOG: Unsupported XG sysex bend LFO Amplitude Modulation Depth\n");
                     break;
                 default:
-                    LOG(99, "LOG: Unsupported XG multi part type: 0x%x (%d)\n",
+                    LOG(99, "LOG: Unsupported XG sysex multi part type: 0x%x (%d)\n",
                             addr_mid, addr_mid);
                     break;
                 }
@@ -989,7 +989,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
         }
         break;
     default:
-        LOG(99, "LOG: Unsupported XG category type: 0x%x (%d)\n", type, type);
+        LOG(99, "LOG: Unsupported XG sysex category type: 0x%x (%d)\n", type, type);
         break;
     }
 
