@@ -545,7 +545,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         channel.set_gain((float)value/127.0f);
         break;
     case MIDI_ALL_NOTES_OFF:
-        for(auto& it : midi.channel())
+        for(auto& it : midi.get_channels())
         {
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
             channel.set_semi_tones(2.0f);

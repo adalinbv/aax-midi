@@ -79,7 +79,7 @@ public:
 
     MIDIInstrument& channel(uint16_t channel_no);
 
-    inline _channel_map_t& channel() {
+    inline _channel_map_t& get_channels() {
         return channels;
     }
 
