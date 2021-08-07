@@ -29,7 +29,7 @@ using namespace aax;
 
 
 
-bool MIDIStream::process_GS_sysex(uint64_t size)
+bool MIDIStream::GS_process_sysex(uint64_t size)
 {
     bool rv = false;
     uint64_t offs = offset();
@@ -144,7 +144,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         case GSMIDI_REVERB_PAN_DELAY:
                         default:
                             LOG(99, "LOG: Unsupported GS sysex Reverb type:"
-                                    " 0x%x (%d)\n", type, type);
+                                    " 0x%02x (%d)\n", type, type);
                             break;
                         }
                         break;
@@ -207,7 +207,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                             break;
                         default:
                             LOG(99, "LOG: Unsupported GS sysex Chorus type:"
-                                    " 0x%x (%d)\n", type, type);
+                                    " 0x%02x (%d)\n", type, type);
                             break;
                         }
                         break;
@@ -318,27 +318,27 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                         {
                         case GSMIDI_EQUALIZER:
                             if (GS_mode != 1) {
-                                process_GS_sysex_equalizer(part_no, addr_low, value);
+                                GS_sysex_equalizer(part_no, addr_low, value);
                             }
                             break;
                         case GSMIDI_INSERTION_EFFECT:
-                            process_GS_sysex_insertion(part_no, addr_low, value);
+                            GS_sysex_insertion(part_no, addr_low, value);
                             break;
                         default:
                             switch (addr_mid & 0xF0)
                             {
                             case GSMIDI_PART_SET:
-                                process_GS_sysex_part(part_no, addr_low, value);
+                                GS_sysex_part(part_no, addr_low, value);
                                 break;
                             case GSMIDI_MODULATION_SET:
-                                process_GS_sysex_modulation(part_no, addr_low, value);
+                                GS_sysex_modulation(part_no, addr_low, value);
                                break;
                             case GSMIDI_PART_SWITCH:
                                LOG(99, "LOG: Unsupported GS sysex Part Switch\n");
                                break;
                             default:
                                 LOG(99, "LOG: Unsupported GS sysex address:"
-                                        " 0x%x 0x%x (%d %d)\n",
+                                        " 0x%02x 0x%02x (%d %d)\n",
                                         addr_mid, addr_low, addr_mid, addr_low);
                                 break;
                             }
@@ -391,7 +391,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                 case GSMIDI_SYSTEM_INFORMATION:
                     break;
                 default:
-                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%x 0x%x 0x%x (%d %d %d)\n",
+                    LOG(99, "LOG: Unsupported GS sysex effect type: 0x%02x 0x%02x 0x%02x (%d %d %d)\n",
                             addr_high, addr_mid, addr_low,
                             addr_high, addr_mid, addr_low);
                    break;
@@ -402,21 +402,21 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
                 LOG(99, "LOG: Unsupported GS sysex data Request\n");
                 break;
             default:
-                LOG(99, "LOG: Unsupported GS sysex parameter category: 0x%x (%d)\n",
+                LOG(99, "LOG: Unsupported GS sysex parameter category: 0x%02x (%d)\n",
                      byte, byte);
                 break;
             }
             break;
         } // GSMIDI_MODEL_GS
         default:
-            LOG(99, "LOG: Unsupported GS sysex model ID: 0x%x (%d)\n",
+            LOG(99, "LOG: Unsupported GS sysex model ID: 0x%02x (%d)\n",
                      byte, byte);
             break;
         }
         break;
     } // GSMIDI_SYSTEM
     default:
-        LOG(99, "LOG: Unsupported GS sysex category type: 0x%x (%d)\n", byte, byte);
+        LOG(99, "LOG: Unsupported GS sysex category type: 0x%02x (%d)\n", byte, byte);
         break;
     }
 
@@ -424,7 +424,7 @@ bool MIDIStream::process_GS_sysex(uint64_t size)
 };
 
 bool
-MIDIStream::process_GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
 {
     bool rv = true;
     switch(addr)
@@ -440,7 +440,7 @@ MIDIStream::process_GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t va
 }
 
 bool
-MIDIStream::process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
 {
     LOG(99, "LOG: Unsupported GS sysex insertion type: %x (%d)\n",
                  addr, addr);
@@ -448,7 +448,7 @@ MIDIStream::process_GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t va
 }
 
 bool
-MIDIStream::process_GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
 {
     bool rv = true;
     switch(addr)
@@ -469,7 +469,7 @@ MIDIStream::process_GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t v
 }
 
 bool
-MIDIStream::process_GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
 {
     auto& channel = midi.channel(part_no);
     bool rv = true;

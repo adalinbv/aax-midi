@@ -26,7 +26,7 @@
 
 using namespace aax;
 
-bool MIDIStream::process_GM_sysex_non_realtime(uint64_t size)
+bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
 {
     bool rv = true;
     uint64_t offs = offset();
@@ -86,7 +86,7 @@ bool MIDIStream::process_GM_sysex_non_realtime(uint64_t size)
     return rv;
 }
 
-bool MIDIStream::process_GM_sysex_realtime(uint64_t size)
+bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
 {
     bool rv = true;
     uint64_t offs = offset();

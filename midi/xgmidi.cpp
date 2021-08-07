@@ -140,7 +140,7 @@ static XGMIDI_effect_t XGMIDI_EQ_types[XGMIDI_MAX_EQ_TYPES] = {
 using namespace aax;
 
 void
-MIDIStream::display_XG_data(uint32_t size, uint8_t padding, std::string &text)
+MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
 {
     if (size > 6)
     {
@@ -172,7 +172,7 @@ MIDIStream::display_XG_data(uint32_t size, uint8_t padding, std::string &text)
     }
 }
 
-bool MIDIStream::process_XG_sysex(uint64_t size)
+bool MIDIStream::XG_process_sysex(uint64_t size)
 {
     bool rv = false;
     uint64_t offs = offset();
@@ -292,7 +292,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                         rv = true;
                        break;
                     default:
-                        LOG(99, "LOG: Unsupported XG sysex reverb type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex reverb type: 0x%02x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -428,7 +428,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                         rv = true;
                         break;
                     default:
-                        LOG(99, "LOG: Unsupported XG sysex Chorus type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex Chorus type: 0x%02x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -685,7 +685,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     case XGMIDI_WAH_OVER_DRIVE_DELAY:
                         LOG(99, "LOG: Unsupported XG sysex variation type: Wah and Over Drive and Delay\n");
                     default:
-                        LOG(99, "LOG: Unsupported XG sysex variation type: 0x%x (%d)\n",
+                        LOG(99, "LOG: Unsupported XG sysex variation type: 0x%02x (%d)\n",
                                 type, type);
                         break;
                     }
@@ -741,7 +741,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     LOG(99, "LOG: Unsupported XG sysex Variation AC2 Control Depth\n");
                     break;
                 default:
-                    LOG(99, "LOG: Unsupported XG sysex Effect1 address: 0x%x 0x%x (%d %d)\n",
+                    LOG(99, "LOG: Unsupported XG sysex Effect1 address: 0x%02x 0x%02x (%d %d)\n",
                             addr_mid, addr_low, addr_mid, addr_low);
                     break;
                 }
@@ -922,7 +922,7 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                     LOG(99, "LOG: Unsupported XG sysex bend LFO Amplitude Modulation Depth\n");
                     break;
                 default:
-                    LOG(99, "LOG: Unsupported XG sysex multi part type: 0x%x (%d)\n",
+                    LOG(99, "LOG: Unsupported XG sysex multi part type: 0x%02x (%d)\n",
                             addr_mid, addr_mid);
                     break;
                 }
@@ -943,11 +943,11 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
                 for (int i=offset()-offs; i<size; ++i) {
                     toUTF8(text, pull_byte());
                 }
-                display_XG_data(size, addr_low, text);
+                XG_display_data(size, addr_low, text);
                 break;
             }
             default:
-                LOG(99, "LOG: Unsupported XG sysex effect type: 0x%x (%d)\n",
+                LOG(99, "LOG: Unsupported XG sysex effect type: 0x%02x (%d)\n",
                         addr_high, addr_high);
                 break;
             }
@@ -983,13 +983,13 @@ bool MIDIStream::process_XG_sysex(uint64_t size)
             LOG(99, "LOG: Unsupported XG sysex model ID: VL70\n");
             break;
         default:
-            LOG(99, "LOG: Unsupported XG sysex parameter category: 0x%x (%d)\n",
+            LOG(99, "LOG: Unsupported XG sysex parameter category: 0x%02x (%d)\n",
                     byte, byte);
             break;
         }
         break;
     default:
-        LOG(99, "LOG: Unsupported XG sysex category type: 0x%x (%d)\n", type, type);
+        LOG(99, "LOG: Unsupported XG sysex category type: 0x%02x (%d)\n", type, type);
         break;
     }
 

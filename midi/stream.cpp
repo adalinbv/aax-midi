@@ -723,16 +723,16 @@ bool MIDIStream::process_sysex()
     switch(byte)
     {
     case MIDI_SYSTEM_EXCLUSIVE_ROLAND:
-        process_GS_sysex(size-2);
+        GS_process_sysex(size-2);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_YAMAHA:
-        process_XG_sysex(size-2);
+        XG_process_sysex(size-2);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_NON_REALTIME:
-        process_GM_sysex_non_realtime(size-2);
+        GM_process_sysex_non_realtime(size-2);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_REALTIME:
-        process_GM_sysex_realtime(size-2);
+        GM_process_sysex_realtime(size-2);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_E_MU:
         LOG(99, "Unsupported sysex vendor: E-Mu\n");
