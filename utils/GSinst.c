@@ -19,6 +19,13 @@ typedef struct {
  * o = with key off. You can really hear the 'note off' as a disc88reet event.
  * d = dark
  * v = velocity mix
+ *
+ * Bank Select LSB
+ * 0 - native mode
+ * 1 - SC-55 compatibility map
+ * 2 - SC-88 compatibility map
+ * 3 - SC-88Pro compatibility map
+ * 4 - SC-8850 compatibility map
  */
 _inst_t inst_table[] = {
  {   1,   0, "Piano 1", 1, "Piano 1", 1, "Piano 1", 1 },
