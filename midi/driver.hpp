@@ -42,11 +42,13 @@ struct wide_t
 {
     wide_t() = default;
     wide_t(int w, float s) : wide(w), spread(s) {};
+    wide_t(int w, float s, bool st) : wide(w), spread(s), stereo(st) {};
 
     ~wide_t() = default;
 
     int wide = 0;
     float spread = 1.0f;
+    bool stereo = false;
 };
 
 using inst_t = std::pair<std::string,struct wide_t>;
@@ -303,6 +305,7 @@ private:
     Param chorus_depth = Param(6300.0f, AAX_MICROSECONDS);
     Status chorus_state = AAX_FALSE;
     aax::Mixer chorus = aax::Mixer(*this);
+    float chorus_to_reverb = 0.0f;
 
     uint8_t reverb_type = 4;
     float reverb_time = 0.0f;

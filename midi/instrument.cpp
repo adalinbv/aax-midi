@@ -151,6 +151,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     }
                     midi.channel(channel_no).set_wide(inst.second.wide);
                     midi.channel(channel_no).set_spread(inst.second.spread);
+                    midi.channel(channel_no).set_stereo(inst.second.stereo);
                 }
             }
         }

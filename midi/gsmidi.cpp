@@ -363,7 +363,6 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     {
                     case GSMIDI_SYSTEM_MODE_SET:
                         GS_mode = value;
-                        LOG(99, "LOG: Unsupported GS sysex system Mode Set: MODE-%i\n", value+1);
                         break;
                     default:
                         LOG(99, "LOG: Unsupported GS sysex system parameter change\n");

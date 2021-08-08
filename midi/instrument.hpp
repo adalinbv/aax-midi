@@ -78,6 +78,9 @@ public:
 
     inline void set_track_name(std::string& tname) { track_name = tname; }
 
+    inline void set_stereo(bool s) { stereo = s; }
+    inline bool get_stereo() { return stereo; }
+
     inline Buffer& get_buffer(uint8_t key) {
         auto it = name_map.find(key);
         if (it == name_map.end()) return nullBuffer;
@@ -103,6 +106,7 @@ private:
     uint16_t channel_no = 0;
     uint8_t program_no = 0;
 
+    bool stereo = false;
     bool drum_channel = false;
     bool pressure_volume_bend = true;
     bool pressure_pitch_bend = false;

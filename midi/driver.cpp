@@ -92,17 +92,17 @@ MIDIDriver::set_path()
 void
 MIDIDriver::start()
 {
+    reverb_state = AAX_REVERB_2ND_ORDER;
+    set_reverb_type(4);
+    reverb.set(AAX_INITIALIZED);
+    reverb.set(AAX_PLAYING);
+    AeonWave::add(reverb);
+
     chorus_state = AAX_SINE_WAVE;
     set_chorus_type(2);
     chorus.set(AAX_INITIALIZED);
     chorus.set(AAX_PLAYING);
     AeonWave::add(chorus);
-
-    reverb_state = AAX_REVERB_2ND_ORDER;
-    set_reverb("reverb/concerthall-large");
-    reverb.set(AAX_INITIALIZED);
-    reverb.set(AAX_PLAYING);
-    AeonWave::add(reverb);
 
     midi.set_gain(1.0f);
     midi.set(AAX_PLAYING);
@@ -313,7 +313,6 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
     if (val)
     {
         midi.channel(part_no).set_reverb_level(val);
-
         auto it = reverb_channels.find(part_no);
         if (it == reverb_channels.end())
         {
@@ -477,8 +476,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                             {
                                 long int n = xmlAttributeGetInt(xiid, "n");
                                 float spread = 1.0f;
+                                bool stereo = false;
                                 int wide = 0;
 
+                                stereo = xmlAttributeGetBool(xiid, "stereo");
                                 if (simd64) {
                                     wide = xmlAttributeGetInt(xiid, "wide");
                                 }
@@ -496,7 +497,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{file,{wide,spread}}});
+                                    bank.insert({n,{file,{wide,spread,stereo}}});
 
                                     _patch_map_t p;
                                     p.insert({0,{i,file}});
@@ -511,7 +512,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-                                        bank.insert({n,{file,{wide,spread}}});
+                                        bank.insert({n,{file,{wide,spread,stereo}}});
 
                                         add_patch(file);
                                     }
@@ -889,6 +890,9 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velo
         if (is_track_active(track_no)) {
             try {
                 channel(track_no).play(key, velocity, pitch);
+                if (channel(track_no).get_stereo()) {
+                    set_reverb_level(track_no, 1.0f);
+                }
             } catch (const std::runtime_error &e) {
                 throw(e);
             }
