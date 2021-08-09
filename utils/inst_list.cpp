@@ -24,6 +24,13 @@ void help(const char *path)
 using name_t = std::pair<std::string,std::string>;
 using entry_t = std::map<unsigned,name_t>;
 
+const char *sections[] = {
+ "Piano", "Chromatic Pericussion", "Organ", "Guitar", "Bass",
+ "Strings", "Ensemble", "Brass", "Reed", "Pipe",
+ "Synth Lead", "Synth Pad", "Synth Effects", "Ethnic", "Percussive",
+ "Sound Effects"
+};
+
 unsigned int
 get_elem(const char *dir, std::string &file)
 {
@@ -124,10 +131,15 @@ int main(int argc, char **argv)
 
             if (bank.size())
             {
-                printf(" PC  msb lsb elem  instrument name\n");
-                printf("---  --- --- ----  ------------------------------\n");
                 for (i=0; i<128; ++i)
                 {
+                    if ((i % 8) == 0)
+                    {
+                        printf("\n=== %s\n", sections[i/8]);
+                        printf(" PC  msb lsb elem  instrument name\n");
+                        printf("---  --- --- ----  ------------------------------\n");
+                    }
+
                     for (auto &b : bank)
                     {
                         unsigned int nl = b.first;
@@ -139,7 +151,7 @@ int main(int argc, char **argv)
 
                             elem = get_elem(filename, it->second.second);
                             printf("%3i  %3i %3i  %3i  %s\n",
-                                    i, nl >> 8, nl & 0xf, elem,
+                                    i+1, nl >> 8, nl & 0xf, elem,
                                     it->second.first.c_str());
                         }
                     }
