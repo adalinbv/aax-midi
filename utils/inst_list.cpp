@@ -21,11 +21,43 @@ void help(const char *path)
     exit(-1);
 }
 
-using entry_t = std::map<unsigned,std::string>;
+using name_t = std::pair<std::string,std::string>;
+using entry_t = std::map<unsigned,name_t>;
+
+unsigned int
+get_elem(const char *dir, std::string &file)
+{
+    unsigned int rv = 0;
+    size_t fpos;
+    void *xid;
+
+    std::string path(dir);
+    fpos = path.find_last_of("/\\");
+    if (fpos != std::string::npos) {
+        path = path.substr(0, fpos+1);
+    }
+    path.append(file);
+    path.append(".aaxs");
+
+    xid = xmlOpen(path.c_str());
+    if (xid)
+    {
+        void *xsid = xmlNodeGet(xid, "/aeonwave/sound");
+        if (xsid)
+        {
+            rv = xmlNodeGetNum(xsid, "layer");
+            if (!rv) rv = 1;
+            xmlFree(xsid);
+        }
+        xmlFree(xid);
+    }
+
+    return rv;
+}
 
 int main(int argc, char **argv)
 {
-    std::map<unsigned, entry_t> bank;
+    std::map<unsigned,entry_t> bank;
     const char *filename;
     void *xid;
 
@@ -37,18 +69,19 @@ int main(int argc, char **argv)
     xid = xmlOpen(filename);
     if (xid)
     {
-        char dir[1024];
-        char *name;
+        char file[1024];
+        char name[1024];
+        char *ptr;
         void *xmid;
 
-        snprintf(dir, 255, "%s", filename);
-        name = strrchr(dir, '/');
-        if (!name)
+        snprintf(file, 255, "%s", filename);
+        ptr = strrchr(file, '/');
+        if (!ptr)
         {
-            snprintf(dir, 255, "./%s", filename);
-            name = strrchr(dir, '/');
+            snprintf(file, 255, "./%s", filename);
+            ptr = strrchr(file, '/');
         }
-        name++;
+        ptr++;
 
         xmid = xmlNodeGet(xid, "/aeonwave/midi");
         if (xmid)
@@ -73,8 +106,12 @@ int main(int argc, char **argv)
                         if (xmlNodeGetPos(xbid, xiid, "instrument", i) != 0)
                         {
                             unsigned int pos = xmlAttributeGetInt(xiid, "n");
+
+                            xmlAttributeCopyString(xiid, "file", file, 64);
                             slen = xmlAttributeCopyString(xiid, "name", name, 64);
-                            if (slen) e[pos] = name;
+                            if (slen) {
+                                e[pos] = std::make_pair<std::string,std::string>(name,file);
+                            }
                         }
                     }
                     xmlFree(xiid);
@@ -87,6 +124,8 @@ int main(int argc, char **argv)
 
             if (bank.size())
             {
+                printf(" PC  msb lsb elem  instrument name\n");
+                printf("---  --- --- ----  ------------------------------\n");
                 for (i=0; i<128; ++i)
                 {
                     for (auto &b : bank)
@@ -94,8 +133,14 @@ int main(int argc, char **argv)
                         unsigned int nl = b.first;
                         entry_t &e = b.second;
                         auto it = e.find(i);
-                        if (it != e.end()) {
-                            printf("%3i  %3i %3i %s\n", i, nl >> 8, nl & 0xf, it->second.c_str());
+                        if (it != e.end())
+                        {
+                            unsigned int elem;
+
+                            elem = get_elem(filename, it->second.second);
+                            printf("%3i  %3i %3i  %3i  %s\n",
+                                    i, nl >> 8, nl & 0xf, elem,
+                                    it->second.first.c_str());
                         }
                     }
                 }
