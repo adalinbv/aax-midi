@@ -25,7 +25,7 @@ using name_t = std::pair<std::string,std::string>;
 using entry_t = std::map<unsigned,name_t>;
 
 const char *sections[] = {
- "Piano", "Chromatic Pericussion", "Organ", "Guitar", "Bass",
+ "Piano", "Chromatic Percussion", "Organ", "Guitar", "Bass",
  "Strings", "Ensemble", "Brass", "Reed", "Pipe",
  "Synth Lead", "Synth Pad", "Synth Effects", "Ethnic", "Percussive",
  "Sound Effects"
