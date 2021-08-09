@@ -575,7 +575,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size)
                         LOG(99, "LOG: Unsupported XG sysex variation type: Celeste type 4\n");
                         break;
                     case XGMIDI_FLANGING1:
-                        LOG(99, "LOG: Unsupported XG sysex variation type: Flamger type 1\n");
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Flanger type 1\n");
                         break;
                     case XGMIDI_FLANGING2:
                         LOG(99, "LOG: Unsupported XG sysex variation type: Flanger type 2\n");
