@@ -75,6 +75,10 @@ private:
     float _lin2db(float v) { return 20.0f*log10f(v); }
     float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
 
+    inline float note2freq(uint32_t d) {
+        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
+    }
+
     float key2pitch(MIDIInstrument& channel, uint16_t key);
     int16_t get_key(MIDIInstrument& channel, int16_t key);
     float get_pitch(MIDIInstrument& channel);
