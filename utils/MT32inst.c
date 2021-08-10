@@ -1,4 +1,4 @@
-#include <stdio.h>
+	#include <stdio.h>
 #include <string.h>
 #include <ctype.h>
 
@@ -32,7 +32,7 @@ _inst_t inst_table[] = {
  {  21, 127, "Clavinet 2" },
  {  22, 127, "Clavinet 3 (stevie)" },
  {  23, 127, "Celesta 1" },
- {  24, 127, "Celesta 2" },
+ {  24, 127, "Celesta 2 (Velocity)" },
  {  25, 127, "Synth Brass 1 (LA sheen)" },
  {  26, 127, "Synth Brass 2" },
  {  27, 127, "Synth Brass 3 (80's Soft)" },
