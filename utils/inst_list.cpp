@@ -9,6 +9,8 @@
 
 #include <xml.h>
 
+#include "driver.h"
+
 void help(const char *path)
 {
     const char *pname = strrchr(path, '/');
@@ -23,6 +25,7 @@ void help(const char *path)
 
 using name_t = std::pair<std::string,std::string>;
 using entry_t = std::map<unsigned,name_t>;
+using bank_t = std::map<unsigned,std::pair<std::string,entry_t>>;
 
 const char *sections[] = {
  "Piano", "Chromatic Percussion", "Organ", "Guitar", "Bass",
@@ -62,14 +65,269 @@ get_elem(const char *dir, std::string &file)
     return rv;
 }
 
+int
+fill_bank(bank_t& bank, void *xid, const char *tag)
+{
+    int rv = 0;
+
+    bank.clear();
+
+    void *xmid;
+    xmid = xmlNodeGet(xid, "/aeonwave/midi");
+    if (xmid)
+    {
+        unsigned int bnum = xmlNodeGetNum(xmid, "bank");
+        void *xbid = xmlMarkId(xmid);
+        unsigned int b, i, n;
+        char file[1024];
+        char name[1024];
+
+        for (b=0; b<bnum; ++b)
+        {
+            if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
+            {
+                unsigned int slen, inum = xmlNodeGetNum(xbid, tag);
+                void *xiid = xmlMarkId(xbid);
+
+                std::string bank_name;
+                slen = xmlAttributeCopyString(xiid, "name", name, 64);
+                if (slen) bank_name = name;
+
+                n = xmlAttributeGetInt(xbid, "n") << 8;
+                n += xmlAttributeGetInt(xbid, "l");
+
+                entry_t e;
+                for (i=0; i<inum; ++i)
+                {
+                    if (xmlNodeGetPos(xbid, xiid, tag, i) != 0)
+                    {
+                        unsigned int pos = xmlAttributeGetInt(xiid, "n");
+
+                        xmlAttributeCopyString(xiid, "file", file, 64);
+                        slen = xmlAttributeCopyString(xiid, "name", name, 64);
+                        if (slen)
+                        {
+                            e[pos] = std::make_pair<std::string,std::string>(name,file);
+                            rv++;
+                        }
+                    }
+                }
+                xmlFree(xiid);
+
+                bank[n] = std::make_pair<std::string,entry_t>(std::move(bank_name),std::move(e));
+            }
+        }
+        xmlFree(xbid);
+        xmlFree(xmid);
+    }
+    return rv;
+}
+
+void
+print_instruments(bank_t &bank, const char *dir, bool html)
+{
+    bool found = false;
+
+    for (int i=0; i<128; ++i)
+    {
+        if ((i % 8) == 0)
+        {
+            if (!html)
+            {
+                printf("\n=== %s\n", sections[i/8]);
+                printf(" PC  msb lsb elem  instrument name\n");
+                printf("---  --- --- ----  ------------------------------\n");
+            }
+            else
+            {
+                if (!found)
+                {
+                    printf("<!DOCTYPE html>\n\n");
+                    printf("<html>\n");
+                    printf(" <head>\n");
+                    printf("  <link rel=\"stylesheet\" type=\"text/css\" "
+                                   "href=\"adalin.css\" title=\"style\"/>\n");
+                    printf(" </head>\n");
+                    printf(" <body>\n");
+                    printf("  <table class=\"downloads\">\n");
+                    found = true;
+                }
+
+                printf("   <tr>\n");
+                printf("    <td class=\"head\" colspan=\"5\">%s</td>\n",
+                               sections[i/8]);
+                printf("   </tr>\n");
+
+                printf("   <tr>\n");
+                printf("    <td class=\"head\">PC</td>\n");
+                printf("    <td class=\"head\">msb</td>\n");
+                printf("    <td class=\"head\">lsb</td>\n");
+                printf("    <td class=\"head\">elem</td>\n");
+                printf("    <td class=\"head\">instrument name</td>\n");
+                printf("   </tr>\n");
+            }
+        }
+
+        int num = 0;
+        for (auto &b : bank)
+        {
+            entry_t &e = b.second.second;
+            auto it = e.find(i);
+            if (it != e.end()) num++;
+        }
+
+        bool first = true;
+        for (auto &b : bank)
+        {
+            unsigned int nl = b.first;
+            entry_t &e = b.second.second;
+            auto it = e.find(i);
+            if (it != e.end())
+            {
+                unsigned int elem;
+
+                elem = get_elem(dir, it->second.second);
+                if (!html)
+                {
+                    if (first)
+                    {
+                        printf("%3i  %3i %3i  %3i  %s\n",
+                                i+1, nl >> 8, nl & 0xf, elem,
+                                it->second.first.c_str());
+                        first = false;
+                    }
+                    else
+                    {
+                        printf("%3s  %3i %3i  %3i  %s\n",
+                                "", nl >> 8, nl & 0xf, elem,
+                                it->second.first.c_str());
+
+                    }
+                }
+                else
+                {
+                    printf("   <tr>\n");
+                    if (first) {
+                        printf("    <td class=\"arch\" rowspan=\"%u\">"
+                                        "%u</td>\n", num, i+1);
+                        first = false;
+                    }
+
+                    printf("    <td class=\"arch\">%u</td>\n", nl >> 8);
+                    printf("    <td class=\"arch\">%u</td>\n", nl & 0xf);
+                    printf("    <td class=\"arch\">%u</td>\n", elem);
+                    printf("    <td class=\"arch\">%s</td>\n", it->second.first.c_str());
+                    printf("   </tr>\n");
+                }
+            }
+        }
+    }
+
+    if (found && html) {
+        printf("  </table>\n");
+        printf(" </body>\n");
+        printf("</html>\n");
+    }
+}
+
+void
+print_drums(bank_t &bank, const char *dir, bool html)
+{
+    bool found = false;
+
+    for (auto &b : bank)
+    {
+        unsigned int nl = b.first;
+        entry_t &e = b.second.second;
+
+        if (!html)
+        {
+            printf("\n=== %s\n", b.second.first.c_str());
+            printf(" PC  key elem  instrument name\n");
+            printf("---  --- ----  ------------------------------\n");
+        }
+        else
+        {
+            if (!found)
+            {
+                printf("<!DOCTYPE html>\n\n");
+                printf("<html>\n");
+                printf(" <head>\n");
+                printf("  <link rel=\"stylesheet\" type=\"text/css\" "
+                               "href=\"adalin.css\" title=\"style\"/>\n");
+                printf(" </head>\n");
+                printf(" <body>\n");
+                printf("  <table class=\"downloads\">\n");
+                found = true;
+            }
+
+            printf("   <tr>\n");
+            printf("    <td class=\"head\" colspan=\"5\">%s</td>\n",
+                           b.second.first.c_str());
+            printf("   </tr>\n");
+
+            printf("   <tr>\n");
+            printf("    <td class=\"head\">PC</td>\n");
+            printf("    <td class=\"head\">key</td>\n");
+            printf("    <td class=\"head\">elem</td>\n");
+            printf("    <td class=\"head\">drum name</td>\n");
+            printf("   </tr>\n");
+        }
+
+        bool first = true;
+        for (auto& it : e)
+        {
+            unsigned int elem;
+
+            elem = get_elem(dir, it.second.second);
+            if (!html)
+            {
+                if (first)
+                {
+                    printf("%3i  %3i  %3i  %s\n",
+                            nl >> 8, it.first, elem,
+                            it.second.first.c_str());
+                    first = false;
+                }
+                else {
+                    printf("%3s  %3i  %3i  %s\n",
+                            "", it.first, elem,
+                            it.second.first.c_str());
+                }
+            }
+            else
+            {
+                printf("   <tr>\n");
+                if (first) {
+                    printf("    <td class=\"arch\" rowspan=\"%lu\">"
+                                    "%u</td>\n", e.size(), nl >> 8);
+                    first = false;
+                }
+
+                printf("    <td class=\"arch\">%u</td>\n", it.first);
+                printf("    <td class=\"arch\">%u</td>\n", elem);
+                printf("    <td class=\"arch\">%s</td>\n", it.second.first.c_str());
+                printf("   </tr>\n");
+            }
+        }
+    }
+}
+
 int main(int argc, char **argv)
 {
-    std::map<unsigned,entry_t> bank;
     const char *filename;
+    bool html = false;
+    bank_t bank;
     void *xid;
 
-    if (argc != 2) {
+    if (argc != 2 && argc != 3) {
         help(argv[0]);
+    }
+
+    if (argc == 3)
+    {
+        const char *s = getCommandLineOption(argc, argv, "--html");
+        if (s) html = true;
     }
 
     filename = argv[1];
@@ -77,9 +335,7 @@ int main(int argc, char **argv)
     if (xid)
     {
         char file[1024];
-        char name[1024];
         char *ptr;
-        void *xmid;
 
         snprintf(file, 255, "%s", filename);
         ptr = strrchr(file, '/');
@@ -90,76 +346,16 @@ int main(int argc, char **argv)
         }
         ptr++;
 
-        xmid = xmlNodeGet(xid, "/aeonwave/midi");
-        if (xmid)
+        int num = fill_bank(bank, xid, "instrument");
+        if (num) print_instruments(bank, filename, html);
+        else
         {
-            unsigned int bnum = xmlNodeGetNum(xmid, "bank");
-            void *xbid = xmlMarkId(xmid);
-            unsigned int b, i, n;
-
-            for (b=0; b<bnum; ++b)
-            {
-                if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
-                {
-                    unsigned int slen, inum = xmlNodeGetNum(xbid, "instrument");
-                    void *xiid = xmlMarkId(xbid);
-
-                    n = xmlAttributeGetInt(xbid, "n") << 8;
-                    n += xmlAttributeGetInt(xbid, "l");
-
-                    entry_t e;
-                    for (i=0; i<inum; ++i)
-                    {
-                        if (xmlNodeGetPos(xbid, xiid, "instrument", i) != 0)
-                        {
-                            unsigned int pos = xmlAttributeGetInt(xiid, "n");
-
-                            xmlAttributeCopyString(xiid, "file", file, 64);
-                            slen = xmlAttributeCopyString(xiid, "name", name, 64);
-                            if (slen) {
-                                e[pos] = std::make_pair<std::string,std::string>(name,file);
-                            }
-                        }
-                    }
-                    xmlFree(xiid);
-
-                    bank[n] = std::move(e);
-                }
-            }
-            xmlFree(xbid);
-            xmlFree(xmid);
-
-            if (bank.size())
-            {
-                for (i=0; i<128; ++i)
-                {
-                    if ((i % 8) == 0)
-                    {
-                        printf("\n=== %s\n", sections[i/8]);
-                        printf(" PC  msb lsb elem  instrument name\n");
-                        printf("---  --- --- ----  ------------------------------\n");
-                    }
-
-                    for (auto &b : bank)
-                    {
-                        unsigned int nl = b.first;
-                        entry_t &e = b.second;
-                        auto it = e.find(i);
-                        if (it != e.end())
-                        {
-                            unsigned int elem;
-
-                            elem = get_elem(filename, it->second.second);
-                            printf("%3i  %3i %3i  %3i  %s\n",
-                                    i+1, nl >> 8, nl & 0xf, elem,
-                                    it->second.first.c_str());
-                        }
-                    }
-                }
-            }
+            num = fill_bank(bank, xid, "drum");
+            if (num) print_drums(bank, filename, html);
         }
-        else {
-            printf("/aeonwave/midi not found in %s\n", filename);
+
+        if (!bank.size()) {
+            printf("no insruments or drums found in %s\n", filename);
         }
 
         xmlClose(xid);
