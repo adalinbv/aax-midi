@@ -216,7 +216,7 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                     printf("    <td class=\"arch\">%u</td>\n", nl >> 8);
                     printf("    <td class=\"arch\">%u</td>\n", nl & 0xf);
                     printf("    <td class=\"arch\">%u</td>\n", elem);
-                    printf("    <td class=\"arch\">%s</td>\n", it->second.first.c_str());
+                    printf("    <td class=\"name\">%s</td>\n", it->second.first.c_str());
                     printf("   </tr>\n");
                 }
             }
@@ -243,7 +243,7 @@ print_drums(bank_t &bank, const char *dir, bool html)
         if (!html)
         {
             printf("\n=== %s\n", b.second.first.c_str());
-            printf(" PC  key elem  instrument name\n");
+            printf(" PC  key elem  drum name\n");
             printf("---  --- ----  ------------------------------\n");
         }
         else
@@ -306,7 +306,7 @@ print_drums(bank_t &bank, const char *dir, bool html)
 
                 printf("    <td class=\"arch\">%u</td>\n", it.first);
                 printf("    <td class=\"arch\">%u</td>\n", elem);
-                printf("    <td class=\"arch\">%s</td>\n", it.second.first.c_str());
+                printf("    <td class=\"name\">%s</td>\n", it.second.first.c_str());
                 printf("   </tr>\n");
             }
         }
