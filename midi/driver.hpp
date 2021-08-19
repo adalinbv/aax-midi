@@ -100,7 +100,7 @@ public:
     }
     inline uint16_t no_active_tracks() { return active_track.size(); }
     inline bool is_track_active(uint16_t t) {
-        return active_track.empty() ? true : std::find(active_track.begin(), active_track.end(), t) != active_track.end();
+        return active_track.empty() ? true : is_avail(active_track, t);
     }
 
     void read_instruments(std::string gmidi=std::string(), std::string gmdrums=std::string());

@@ -632,7 +632,16 @@ MIDIDriver::get_drum(uint16_t program_no, uint8_t key_no, bool all)
             auto iti = bank.find(key_no);
             if (iti != bank.end())
             {
-                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first) != selection.end()) {
+                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first) != selection.end())
+                {
+                    if (req_program_no != program_no)
+                    {
+                        auto itrb = drums.find(req_program_no << 7);
+                        if (itrb != drums.end()) {
+                            auto& bank = itrb->second;
+                            bank.insert({key_no,{"",{}}});
+                        }
+                    }
                     return iti->second;
                 } else {
                     return empty_map;
@@ -669,13 +678,16 @@ MIDIDriver::get_drum(uint16_t program_no, uint8_t key_no, bool all)
             DISPLAY(4, "Drum bank %i not found, trying %i\n",
                         prev_program_no, program_no);
             missing_drum_bank.push_back(prev_program_no);
+            if (prev_program_no == req_program_no) {
+               req_program_no = program_no;
+            }
         }
     }
     while (true);
 
     auto itb = drums.find(program_no);
     auto& bank = itb->second;
-    auto iti = bank.insert({key_no,empty_map});
+    auto iti = bank.insert({key_no, std::move(empty_map)});
     return iti.first->second;
 }
 
@@ -758,7 +770,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 
     auto itb = instruments.find(bank_no);
     auto& bank = itb->second;
-    auto iti = bank.insert({program_no,empty_map});
+    auto iti = bank.insert({program_no, std::move(empty_map)});
     return iti.first->second;
 }
 
