@@ -485,7 +485,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 }
                                 if (!wide && xmlAttributeGetBool(xiid, "wide"))
                                 {
-                                    wide = 1;
+                                    wide = -1;
                                 }
                                 if (xmlAttributeExists(xiid, "spread")) {
                                    spread = xmlAttributeGetDouble(xiid, "spread");
