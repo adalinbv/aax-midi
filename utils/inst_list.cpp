@@ -30,7 +30,7 @@ using bank_t = std::map<unsigned,std::pair<std::string,entry_t>>;
 const char *sections[] = {
  "Piano", "Chromatic Percussion", "Organ", "Guitar", "Bass",
  "Strings", "Ensemble", "Brass", "Reed", "Pipe",
- "Synth Lead", "Synth Pad", "Synth Effects", "Ethnic", "Percussive",
+ "Synth Lead", "Synth Pad", "Synth Effects", "Ethnic/World", "Percussive",
  "Sound Effects"
 };
 
