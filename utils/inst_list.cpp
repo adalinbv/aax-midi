@@ -1,7 +1,11 @@
 
 
 #include <map>
+#include <vector>
+#include <iterator>
 #include <algorithm>
+#include <iostream>
+#include <regex>
 
 #include <stdio.h>
 #include <string.h>
@@ -135,28 +139,40 @@ remove_double_spaces(std::string& str)
 }
 
 void
+tokenize_words(std::string& str)
+{
+    std::regex regex{R"( +)"}; // split on a space
+    std::sregex_token_iterator it{str.begin(), str.end(), regex, -1};
+    std::vector<std::string> words{it, {}};
+
+    str = "";
+    for (auto it : words)
+    {
+        it[0] = std::toupper(it[0]);
+        str += it + " ";
+    }
+    if (!str.empty()) str.resize(str.length() - 1);
+}
+
+void
 str_prepend(std::string& name, std::string section, const char *replacement = nullptr)
 {
     std::size_t pos;
 
-    pos = name.find(section);
-    if (pos == std::string::npos)
-    {
-        section[0] = std::toupper(section[0]);
-        pos = name.find(section);
-    }
+    tokenize_words(section);
 
-    if (pos != std::string::npos)
+    pos = name.find(section);
+    if (pos != std::string::npos && !isalpha(name[pos+section.size()]))
     {
         name.replace(pos, section.size(), "");
-        if (!replacement)
+
+        if (replacement)
         {
-            section[0] = std::toupper(section[0]);
-            name = section + " " + name;
+            section = replacement;
+            tokenize_words(section);
         }
-        else name = std::string(replacement) + " " + name;
+        name = section + " " + name;
     }
-    remove_double_spaces(name);
 }
 
 void
@@ -164,13 +180,9 @@ str_append(std::string& name, std::string& suffix, std::string section, const ch
 {
     std::size_t pos;
 
-    pos = name.find(section);
-    if (pos == std::string::npos)
-    {
-        section[0] = std::toupper(section[0]);
-        pos = name.find(section);
-    }
+    tokenize_words(section);
 
+    pos = name.find(section);
     if (pos != std::string::npos)
     {
         if (!suffix.empty()) suffix.append(", ");
@@ -182,7 +194,6 @@ str_append(std::string& name, std::string& suffix, std::string section, const ch
         else suffix.append(replacement);
         name.replace(pos, section.size(), "");
     }
-    remove_double_spaces(name);
 }
 
 void
@@ -191,7 +202,6 @@ str_remove(std::string& name, std::string section)
 
     std::size_t pos = name.find(section);
     if (pos != std::string::npos) name.replace(pos, section.size(), "");
-    remove_double_spaces(name);
 }
 
 std::string
@@ -199,17 +209,19 @@ canonical_name(std::string name)
 {
     std::string suffix;
 
+    tokenize_words(name);
+
     str_prepend(name, "square");
-    str_prepend(name, "sine Wave");
+    str_prepend(name, "sine wave");
     str_prepend(name, "sine");
-    str_prepend(name, "sawtooth");
     str_prepend(name, "pulse");
-    str_prepend(name, "saw ", "Saw");
+    str_prepend(name, "saw");
+    str_prepend(name, "sawtooth");
     str_prepend(name, "double");
     str_prepend(name, "finger");
     str_prepend(name, "pick");
     str_prepend(name, "bass");
-    str_prepend(name, "mallet");
+    str_prepend(name, "Mallet");
     str_prepend(name, "electric");
     str_prepend(name, "acoustic");
     str_prepend(name, "synth");
@@ -220,7 +232,7 @@ canonical_name(std::string name)
     str_prepend(name, "big");
     str_prepend(name, "thick");
     str_prepend(name, "fat");
-    str_prepend(name, "digi ", "digital");
+    str_prepend(name, "digi", "digital");
     str_prepend(name, "digital");
     str_prepend(name, "heavy");
     str_prepend(name, "wire");
@@ -228,16 +240,16 @@ canonical_name(std::string name)
     str_prepend(name, "funk");
     str_prepend(name, "jazzy", "jazz");
     str_prepend(name, "jazz");
-    str_prepend(name, "rock ", "rock");
+    str_prepend(name, "rock", "rock");
     str_prepend(name, "baroque", "chamber");
     str_prepend(name, "chamber");
     str_prepend(name, "smooth");
     str_prepend(name, "soft");
     str_prepend(name, "reverse");
     str_prepend(name, "clean");
-    str_prepend(name, "over Driven");
-    str_prepend(name, "overdriven", "Over Driven");
-    str_prepend(name, "overdrive", "Over Driven");
+    str_prepend(name, "over driven");
+    str_prepend(name, "overdriven", "over driven");
+    str_prepend(name, "overdrive", "over driven");
     str_prepend(name, "distorted");
     str_prepend(name, "distrtion");
     str_prepend(name, "attack");
@@ -257,29 +269,34 @@ canonical_name(std::string name)
     str_prepend(name, "poly");
     str_prepend(name, "choir");
     str_prepend(name, "itopia");
-    str_prepend(name, "new Age");
+    str_prepend(name, "new age");
     str_prepend(name, "voice");
     str_prepend(name, "charang");
     str_prepend(name, "calliope");
     str_prepend(name, "shwimmer");
     str_prepend(name, "chiff");
+    str_prepend(name, "50's", "early");
+    str_prepend(name, "60's", "vintage");
+    str_prepend(name, "70's", "classic");
+    str_prepend(name, "hammond");
 
-    str_append(name, suffix, "wide");
-    str_append(name, suffix, "stereo", "wide");
     str_append(name, suffix, "dark");
-    str_append(name, suffix, "bright ", "bright");
+    str_append(name, suffix, "bright", "bright");
     str_append(name, suffix, "mellow");
     str_append(name, suffix, "warm");
     str_append(name, suffix, "slow");
+    str_append(name, suffix, "slow attack", "slow");
     str_append(name, suffix, "fast");
-    str_append(name, suffix, "octave Mix", "octave");
+    str_append(name, suffix, "stereo", "wide");
+    str_append(name, suffix, "wide");
+    str_append(name, suffix, "octave mix", "octave");
     str_append(name, suffix, "octave mix", "octave");
     str_append(name, suffix, "coupled", "octave");
     str_append(name, suffix, "octave");
     str_append(name, suffix, "phase", "phased");
     str_append(name, suffix, "phased");
-    str_append(name, suffix, "chorused", "chorus");
-    str_append(name, suffix, "chorus");
+    str_append(name, suffix, "chorus", "chorused");
+    str_append(name, suffix, "chorused");
     str_append(name, suffix, "flanger", "flanged");
     str_append(name, suffix, "flanged");
     str_append(name, suffix, "detuned");
@@ -287,28 +304,20 @@ canonical_name(std::string name)
     str_append(name, suffix, "wild", "velocity");
     str_append(name, suffix, "power", "velocity");
     str_append(name, suffix, "expressive", "velocity");
-    str_append(name, suffix, "slow attack", "slow");
     str_append(name, suffix, "attack", "velocity");
     str_append(name, suffix, "velocity mix", "velocity");
     str_append(name, suffix, "velocity");
     str_append(name, suffix, "cross-fade");
-    str_append(name, suffix, "50's", "early");
-    str_append(name, suffix, "60's", "vintage");
-    str_append(name, suffix, "70's", "classic");
     str_append(name, suffix, "key-off");
     str_append(name, suffix, "steel");
     str_append(name, suffix, "nylon");
     str_append(name, suffix, "muted");
     str_append(name, suffix, "modern");
 
-    str_remove(name, "( )");
-    str_remove(name, "(+ )");
-    str_remove(name, ", ");
-    str_remove(name, "( + Lead)");
-    str_remove(name, "( lead)");
-    str_remove(name, "( Pad)");
-    str_remove(name, "( pad)");
+    str_remove(name, " + ");
     str_remove(name, "()");
+
+    tokenize_words(name);
 
     if (!suffix.empty()) {
         name += " (" + suffix + ")";
