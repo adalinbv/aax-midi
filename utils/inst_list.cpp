@@ -385,8 +385,8 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                 char lsb = nl & 0xf;
 
                 if (msb == 0x79) type = "GM2";
-                else if (msb == 127) type = "MT32";
-                else if (nl && msb == 0) type = "XG";
+                else if (msb == 127 && !lsb) type = "MT32";
+                else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
                 else if (msb) type = "GS";
 
                 elem = get_elem(dir, it->second.second);
