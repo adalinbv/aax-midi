@@ -149,6 +149,9 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                         // AAX_AFTERTOUCH_SENSITIVITY == AAX_VELOCITY_FACTOR
                         pressure_sensitivity = 0.01f*buffer.get(AAX_VELOCITY_FACTOR);
                     }
+                    else {
+                        throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
+                    }
                     midi.channel(channel_no).set_wide(inst.second.wide);
                     midi.channel(channel_no).set_spread(inst.second.spread);
                     midi.channel(channel_no).set_stereo(inst.second.stereo);
