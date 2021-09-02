@@ -369,7 +369,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size)
                         break;
                     case XGMIDI_CHORUS3:
                         midi.set_chorus("XG/chorus3");
-                        INFO("Switching to XG type 3chorus");
+                        INFO("Switching to XG type 3 chorus");
                         rv = true;
                         break;
                     case XGMIDI_CHORUS4:
