@@ -107,6 +107,9 @@ public:
 
     void grep(std::string& filename, const char *grep);
     inline void load(std::string& name) { loaded.push_back(name); }
+    inline bool is_loaded(std::string& name) {
+        return (std::find(loaded.begin(), loaded.end(), name) != loaded.end());
+    }
 
     void start();
     void stop();

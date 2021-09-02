@@ -115,7 +115,9 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             uint8_t level = patch.first;
             if (!patch_name.empty())
             {
-                if (!midi.buffer_avail(patch_name)) {
+                if (!midi.buffer_avail(patch_name) &&
+                    !midi.is_loaded(patch_name))
+                {
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                              bank_no >> 7, bank_no & 0x7F, program_no,
                              inst.first.c_str());
