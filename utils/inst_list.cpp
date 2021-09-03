@@ -84,7 +84,7 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
     {
         unsigned int bnum = xmlNodeGetNum(xmid, "bank");
         void *xbid = xmlMarkId(xmid);
-        unsigned int b, i, n;
+        unsigned int b, i, nl;
         char file[1024];
         char name[1024];
 
@@ -99,8 +99,8 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                 slen = xmlAttributeCopyString(xiid, "name", name, 64);
                 if (slen) bank_name = name;
 
-                n = xmlAttributeGetInt(xbid, "n") << 8;
-                n += xmlAttributeGetInt(xbid, "l");
+                nl = xmlAttributeGetInt(xbid, "n") << 8;
+                nl += xmlAttributeGetInt(xbid, "l");
 
                 entry_t e;
                 for (i=0; i<inum; ++i)
@@ -120,7 +120,7 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                 }
                 xmlFree(xiid);
 
-                bank[n] = std::make_pair<std::string,entry_t>(std::move(bank_name),std::move(e));
+                bank[nl] = std::make_pair<std::string,entry_t>(std::move(bank_name),std::move(e));
             }
         }
         xmlFree(xbid);
@@ -193,8 +193,8 @@ print_instruments(bank_t &bank, const char *dir, bool html)
             {
                 const char *type = "GM";
                 unsigned int elem;
-                char msb = nl >> 8;
-                char lsb = nl & 0xf;
+                int msb = nl >> 8;
+                int lsb = nl & 0xff;
 
                 if (msb == 0x79) type = "GM2";
                 else if (msb == 127 && !lsb) type = "MT32";
