@@ -1,30 +1,6 @@
 
-
-#include <map>
-#include <vector>
-#include <iterator>
-#include <algorithm>
-#include <iostream>
+#include <string>
 #include <regex>
-
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
-
-#include <xml.h>
-
-#include "driver.h"
-
-void
-remove_double_spaces(std::string& str)
-{
-    std::string::iterator new_end =
-        std::unique(str.begin(), str.end(),
-        [](char lhs, char rhs){ return (lhs == rhs) && (lhs == ' '); }
-        );
-    str.erase(new_end, str.end());
-}
 
 void
 tokenize_words(std::string& str)
@@ -85,29 +61,26 @@ str_append(std::string& name, std::string& suffix, std::string section, const ch
 }
 
 void
-str_remove(std::string& name, std::string section)
+str_replace(std::string& name, std::string section, const std::string& replacement = "")
 {
-
-    std::size_t pos = name.find(section);
-    if (pos != std::string::npos) name.replace(pos, section.size(), "");
-}
-
-void
-str_replace(std::string& name, std::string section, const std::string& replacement)
-{
-
-    std::size_t pos = name.find(section);
-    if (pos != std::string::npos) name.replace(pos, section.size(), replacement);
+    std::string result;
+    std::regex expr(section);
+    std::regex_replace(std::back_inserter(result), name.begin(), name.end(),
+                       expr, replacement);
+    name = result;
 }
 
 void
 str_cleanup(std::string& name)
 {
-    if (name.compare(0, 1, " ") == 0) name.replace(0, 1, "");
-    if (name.compare(0, 1, "+ ") == 0) name.replace(0, 2, "");
-
-    str_remove(name, "( + )");
-    str_remove(name, "()");
+    str_replace(name, "  +", " ");
+    str_replace(name, "^ ");
+    str_replace(name, "^\\+ ");
+    str_replace(name, "\\+$");
+    str_replace(name, " $");
+    str_replace(name, " ,$");
+    str_replace(name, "( \\+ )");
+    str_replace(name, "()");
 }
 
 std::string
@@ -218,13 +191,10 @@ canonical_name(std::string name)
     str_append(name, suffix, "velocity");
     str_append(name, suffix, "cross-fade");
     str_append(name, suffix, "key-off");
-//  str_append(name, suffix, "steel");
-//  str_append(name, suffix, "nylon");
     str_append(name, suffix, "muted");
     str_append(name, suffix, "modern");
 
     str_cleanup(name);
-    tokenize_words(name);
 
     if (!suffix.empty()) {
         name += " (" + suffix + ")";
