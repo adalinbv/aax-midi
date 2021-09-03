@@ -1,6 +1,11 @@
+
+#include <string>
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+
+#include "canonical_names.hpp"
 
 typedef struct {
   int pc;
@@ -810,27 +815,6 @@ _inst_t inst_table[] = {
  };
 
 
-static char filename[256];
-char *lowercase(const char *name)
-{
-   int i, j ,len = strlen(name);
-   if (len > 256) len = 255;
-
-   j = 1;
-   filename[0] = tolower(name[0]);
-   for (i=1; i<len; ++i)
-   {
-      if (name[i] != '(' && name[i] != ')')
-      {
-         if (name[i] == ' ') filename[j] = '-';
-         else filename[j] = tolower(name[i]);
-         j++;
-      }
-   }
-   filename[j] = 0;
-   return filename;
-}
-
 int main(int argc, char **argv)
 {
    const char *pname = strrchr(argv[0], '/');
@@ -861,10 +845,11 @@ int main(int argc, char **argv)
                f = 1;
             }
 
+            std::string name = canonical_name(inst_table[i].sc88pro);
             printf("   <instrument n=\"%i\" name=\"%s\"",
-                            inst_table[i].pc-1, inst_table[i].sc88pro);
+                            inst_table[i].pc-1, name.c_str());
 
-            printf(" file=\"instruments/%s\"", lowercase(inst_table[i].sc88pro));
+            printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
             if (strstr(inst_table[i].sc88pro, "(wide)")) {
                printf(" wide=\"true\"");
@@ -891,10 +876,11 @@ int main(int argc, char **argv)
                f = 1;
             }
 
+            std::string name = canonical_name(inst_table[i].sc55);
             printf("   <instrument n=\"%i\" name=\"%s\"",
-                            inst_table[i].pc-1, inst_table[i].sc55);
+                            inst_table[i].pc-1, name.c_str());
 
-            printf(" file=\"instruments/%s\"", lowercase(inst_table[i].sc55));
+            printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
             if (strstr(inst_table[i].sc55, "(wide)")) {
                printf(" wide=\"true\"");
@@ -921,10 +907,11 @@ int main(int argc, char **argv)
                f = 1;
             }
 
+            std::string name = canonical_name(inst_table[i].sc88);
             printf("   <instrument n=\"%i\" name=\"%s\"",
-                            inst_table[i].pc-1, inst_table[i].sc88);
+                            inst_table[i].pc-1, name.c_str());
 
-            printf(" file=\"instruments/%s\"", lowercase(inst_table[i].sc88));
+            printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
             if (strstr(inst_table[i].sc88, "(wide)")) {
                printf(" wide=\"true\"");
