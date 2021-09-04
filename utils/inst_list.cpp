@@ -189,6 +189,7 @@ print_xml(bank_t &bank, const char *dir, bool it)
     printf("\n<aeonwave>\n");
     printf("\n <midi name=\"Advanced Grooves\" version=\"@ULTRASYNTH_VERSION@\">\n");
 
+    const char *t = "";
     for (auto &b : bank)
     {
         entry_t &e = b.second.second;
@@ -203,12 +204,22 @@ print_xml(bank_t &bank, const char *dir, bool it)
         else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
         else if (msb) type = "GS";
 
-        printf("\n  <!-- %s -->\n", type);
-        if (lsb) printf("  <bank n=\"%i\" l=\"%i\">\n", msb, lsb);
-        else printf("  <bank n=\"%i\">\n", msb);
+        if (strcmp(t, type))
+        {
+           printf("  <!-- %s -->\n", type);
+           t = type;
+        }
 
+        bool found = false;
         for (auto it : e)
         {
+            if (!found)
+            {
+                if (lsb) printf("  <bank n=\"%i\" l=\"%i\">\n", msb, lsb);
+                else printf("  <bank n=\"%i\">\n", msb);
+                found = true;
+            }
+
             float spread = it.second.spread;
             int wide = it.second.wide;
 
@@ -223,7 +234,7 @@ print_xml(bank_t &bank, const char *dir, bool it)
             printf("/>\n");
         }
 
-        printf("  </bank>\n");
+        if (found) printf("  </bank>\n\n");
     }
 
     printf("\n </midi>\n");
