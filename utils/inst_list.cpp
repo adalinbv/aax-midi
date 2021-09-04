@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -25,11 +26,21 @@ void help(const char *path)
 
     printf("Usage: %s <file>\n", pname);
     printf("\nWhere <file> is either the gmmidi.xml or gmdrums.xml file.\n");
+
+    printf("\nOptions:\n");
+    printf("  --mode=<ascii|html|xml>\tSet the output mode.\n");
+
     printf("\n");
     exit(-1);
 }
 
-using name_t = std::pair<std::string,std::string>;
+using name_t = struct {
+    std::string name;
+    std::string file;
+    int wide;
+    float spread;
+};
+//using name_t = std::pair<std::string,std::string>;
 using entry_t = std::map<unsigned,name_t>;
 using bank_t = std::map<unsigned,std::pair<std::string,entry_t>>;
 
@@ -39,6 +50,39 @@ const char *sections[] = {
  "Synth Lead", "Synth Pad", "Synth Effects", "Ethnic/World", "Percussive",
  "Sound Effects"
 };
+
+enum mode_e {
+   ASCII = 0,
+   HTML,
+   XML
+};
+
+const char *xml_header =
+"<!--\n"
+" * Copyright (C) 2017-@YEAR@ by Erik Hofman.\n"
+" * Copyright (C) 2017-@YEAR@ by Adalin B.V.\n"
+" * All rights reserved.\n"
+" *\n"
+" * Reference: https://en.wikipedia.org/wiki/General_MIDI_Level_2\n"
+" *\n"
+" * GS MIDI:\n"
+" * - Bank Select LSB is used to select a family (1 = SC-55, 2 = SC-88, etc)\n"
+" *\n"
+" * ** instrument only **\n"
+" * - wide=\"true\"\n"
+" *   Spread all notes across the stereo space based on the key number.\n"
+" *   This equals to: spread=\"1.0\" wide=\"127\"\n"
+" *\n"
+" * - wide=\"[+-]<num>\" (e.g. wide=\"-4\")\n"
+" *   Split the stereo space up in <num> sections and assign a key to one of the\n"
+" *   sections based on key number. If the number is negative the left-right\n"
+" *   assignment will be reversed.\n"
+" *\n"
+" * - spread=\"[0.0 .. 1.0]\"\n"
+" *   Limit the stereo spread arounf the center. Setting spread to \"0.5\" will\n"
+" *   limit the stereo spread between -0.5 left and +0.5 right\n"
+"-->\n";
+
 
 unsigned int
 get_elem(const char *dir, std::string &file)
@@ -53,7 +97,7 @@ get_elem(const char *dir, std::string &file)
         path = path.substr(0, fpos+1);
     }
     path.append(file);
-    path.append(".aaxs");
+    path.append(".xml");
 
     xid = xmlOpen(path.c_str());
     if (xid)
@@ -113,7 +157,14 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                         slen = xmlAttributeCopyString(xiid, "name", name, 64);
                         if (slen)
                         {
-                            e[pos] = std::make_pair<std::string,std::string>(name,file);
+                            float spread;
+                            int wide;
+
+                            wide = xmlAttributeGetInt(xiid, "wide");
+                            if (!wide) wide = xmlAttributeGetBool(xiid, "wide");
+
+                            spread = xmlAttributeGetDouble(xiid, "spread");
+                            e[pos] = {name,file,wide,spread};
                             rv++;
                         }
                     }
@@ -130,7 +181,57 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
 }
 
 void
-print_instruments(bank_t &bank, const char *dir, bool html)
+print_xml(bank_t &bank, const char *dir, bool it)
+{
+    const char *inst = it ? "instrument" : "drum";
+    printf("<?xml version=\"1.0\"?>\n");
+    printf("%s\n", xml_header);
+    printf("\n<aeonwave>\n");
+    printf("\n <midi name=\"Advanced Grooves\" version=\"@ULTRASYNTH_VERSION@\">\n");
+
+    for (auto &b : bank)
+    {
+        entry_t &e = b.second.second;
+        unsigned int nl = b.first;
+        const char *type = "GM";
+        int msb = nl >> 8;
+        int lsb = nl & 0xff;
+        int i = 0;
+
+        if (msb == 0x79) type = "GM2";
+        else if (msb == 127 && !lsb) type = "MT32";
+        else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
+        else if (msb) type = "GS";
+
+        printf("\n  <!-- %s -->\n", type);
+        if (lsb) printf("  <bank n=\"%i\" l=\"%i\">\n", msb, lsb);
+        else printf("  <bank n=\"%i\">\n", msb);
+
+        for (auto it : e)
+        {
+            float spread = it.second.spread;
+            int wide = it.second.wide;
+
+            std::string name = canonical_name(it.second.name);
+            printf("   <%s n=\"%i\" name=\"%s\" file=\"%s\"", inst, i++,
+                        name.c_str(), it.second.file.c_str());
+            if (wide) {
+               if (wide == -1) printf(" wide=\"true\"");
+               else printf(" wide=\"%i\"", wide);
+            }
+            if (spread) printf(" spread=\"%2.1f\"", spread);
+            printf("/>\n");
+        }
+
+        printf("  </bank>\n");
+    }
+
+    printf("\n </midi>\n");
+    printf("\n</aeonwave>\n");
+}
+
+void
+print_instruments(bank_t &bank, const char *dir, enum mode_e mode)
 {
     bool found = false;
 
@@ -138,14 +239,14 @@ print_instruments(bank_t &bank, const char *dir, bool html)
     {
         if ((i % 8) == 0)
         {
-            if (!html)
+            switch (mode)
             {
+            case ASCII:
                 printf("\n=== %s\n", sections[i/8]);
                 printf(" PC  msb lsb elem  instrument name\n");
                 printf("---  --- --- ----  ------------------------------\n");
-            }
-            else
-            {
+                break;
+            case HTML:
                 if (!found)
                 {
                     printf("<!DOCTYPE html>\n\n");
@@ -172,6 +273,9 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                 printf("    <td class=\"head\" width=\"100%%\">instrument name</td>\n");
                 printf("    <td class=\"head\">type</td>\n");
                 printf("   </tr>\n");
+                break;
+            default:
+                break;
             }
         }
 
@@ -201,10 +305,11 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                 else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
                 else if (msb) type = "GS";
 
-                elem = get_elem(dir, it->second.second);
-                std::string name = canonical_name(it->second.first);
-                if (!html)
+                elem = get_elem(dir, it->second.file);
+                std::string name = canonical_name(it->second.name);
+                switch(mode)
                 {
+                case ASCII:
                     if (first)
                     {
                         printf("%3i  %3i %3i  %3i  %s\n", i+1, msb, lsb, elem,
@@ -216,9 +321,8 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                         printf("%3s  %3i %3i  %3i  %s\n", "", msb, lsb, elem,
                                 name.c_str());
                     }
-                }
-                else
-                {
+                    break;
+                case HTML:
                     printf("   <tr class=\"section\">\n");
                     if (first) {
                         printf("    <td class=\"%s\" rowspan=\"%u\">%u</td>\n",
@@ -233,20 +337,31 @@ print_instruments(bank_t &bank, const char *dir, bool html)
                     printf("    <td class=\"name\">%s</td>\n", name.c_str());
                     printf("    <td class=\"%s\">%s</td>\n", type, type);
                     printf("   </tr>\n");
+                    break;
+                default:
+                    break;
                 }
             }
         }
     }
 
-    if (found && html) {
-        printf("  </table>\n");
-        printf(" </body>\n");
-        printf("</html>\n");
+    if (found)
+    {
+        switch(mode)
+        {
+        case HTML:
+            printf("  </table>\n");
+            printf(" </body>\n");
+            printf("</html>\n");
+            break;
+        default:
+            break;
+        }
     }
 }
 
 void
-print_drums(bank_t &bank, const char *dir, bool html)
+print_drums(bank_t &bank, const char *dir, enum mode_e mode)
 {
     bool found = false;
 
@@ -255,14 +370,14 @@ print_drums(bank_t &bank, const char *dir, bool html)
         unsigned int nl = b.first;
         entry_t &e = b.second.second;
 
-        if (!html)
+        switch(mode)
         {
+        case ASCII:
             printf("\n=== %s\n", b.second.first.c_str());
             printf(" PC  key elem  drum name\n");
             printf("---  --- ----  ------------------------------\n");
-        }
-        else
-        {
+            break;
+        case HTML:
             if (!found)
             {
                 printf("<!DOCTYPE html>\n\n");
@@ -287,6 +402,9 @@ print_drums(bank_t &bank, const char *dir, bool html)
             printf("    <td class=\"head\">elem</td>\n");
             printf("    <td class=\"head\">drum name</td>\n");
             printf("   </tr>\n");
+            break;
+        default:
+            break;
         }
 
         bool first = true;
@@ -294,24 +412,24 @@ print_drums(bank_t &bank, const char *dir, bool html)
         {
             unsigned int elem;
 
-            elem = get_elem(dir, it.second.second);
-            if (!html)
+            elem = get_elem(dir, it.second.file);
+            switch(mode)
             {
+            case ASCII:
                 if (first)
                 {
                     printf("%3i  %3i  %3i  %s\n",
                             nl >> 8, it.first, elem,
-                            it.second.first.c_str());
+                            it.second.name.c_str());
                     first = false;
                 }
                 else {
                     printf("%3s  %3i  %3i  %s\n",
                             "", it.first, elem,
-                            it.second.first.c_str());
+                            it.second.name.c_str());
                 }
-            }
-            else
-            {
+                break;
+            case HTML:
                 printf("   <tr>\n");
                 if (first) {
                     printf("    <td class=\"arch\" rowspan=\"%lu\">"
@@ -321,8 +439,11 @@ print_drums(bank_t &bank, const char *dir, bool html)
 
                 printf("    <td class=\"arch\">%u</td>\n", it.first);
                 printf("    <td class=\"arch\">%u</td>\n", elem);
-                printf("    <td class=\"name\">%s</td>\n", it.second.first.c_str());
+                printf("    <td class=\"name\">%s</td>\n", it.second.name.c_str());
                 printf("   </tr>\n");
+                break;
+            default:
+                break;
             }
         }
     }
@@ -331,18 +452,18 @@ print_drums(bank_t &bank, const char *dir, bool html)
 int main(int argc, char **argv)
 {
     const char *filename;
-    bool html = false;
+    enum mode_e mode = ASCII;
+    const char *env;
     bank_t bank;
     void *xid;
 
-    if (argc != 2 && argc != 3) {
-        help(argv[0]);
-    }
+    if (argc < 2) help(argv[0]);
 
-    if (argc == 3)
+    env = getCommandLineOption(argc, argv, "--mode");
+    if (env)
     {
-        const char *s = getCommandLineOption(argc, argv, "--html");
-        if (s) html = true;
+        if (!strcasecmp(env, "HTML")) mode = HTML;
+        else if (!strcasecmp(env, "XML")) mode = XML;
     }
 
     filename = argv[1];
@@ -351,6 +472,7 @@ int main(int argc, char **argv)
     {
         char file[1024];
         char *ptr;
+        int num;
 
         snprintf(file, 255, "%s", filename);
         ptr = strrchr(file, '/');
@@ -361,16 +483,37 @@ int main(int argc, char **argv)
         }
         ptr++;
 
-        int num = fill_bank(bank, xid, "instrument");
-        if (num) print_instruments(bank, filename, html);
-        else
+        switch(mode)
         {
-            num = fill_bank(bank, xid, "drum");
-            if (num) print_drums(bank, filename, html);
-        }
+        case ASCII:
+        case HTML:
+            num = fill_bank(bank, xid, "instrument");
+            if (num) print_instruments(bank, filename, mode);
+            else
+            {
+                num = fill_bank(bank, xid, "drum");
+                if (num) print_drums(bank, filename, mode);
+            }
 
-        if (!bank.size()) {
-            printf("no insruments or drums found in %s\n", filename);
+            if (!bank.size()) {
+                printf("no insruments or drums found in %s\n", filename);
+            }
+            break;
+        case XML:
+            num = fill_bank(bank, xid, "instrument");
+            if (num) print_xml(bank, filename, true);
+            else
+            {
+                num = fill_bank(bank, xid, "drum");
+                if (num) print_xml(bank, filename, false);
+            }
+
+            if (!bank.size()) {
+                printf("no insruments or drums found in %s\n", filename);
+            }
+            break;
+        default:
+            break;
         }
 
         xmlClose(xid);
