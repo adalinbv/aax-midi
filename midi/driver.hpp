@@ -141,7 +141,7 @@ public:
     inline void set_grep(bool g) { grep_mode = g; }
     inline bool get_grep() { return grep_mode; }
 
-    const inst_t get_drum(uint16_t program, uint8_t key, bool all=false);
+    const inst_t get_drum(uint16_t bank, uint16_t program, uint8_t key, bool all=false);
     const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
     std::map<std::string,_patch_map_t>& get_patches() { return patches; }
 

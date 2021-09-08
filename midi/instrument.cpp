@@ -71,7 +71,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         it = name_map.find(key_no);
         if (it == name_map.end())
         {
-            auto inst = midi.get_drum(program_no, key_no, all);
+            auto inst = midi.get_drum(bank_no, program_no, key_no, all);
             std::string name = inst.first;
             if (!name.empty() && name != "")
             {

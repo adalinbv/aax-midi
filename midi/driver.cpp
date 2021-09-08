@@ -613,18 +613,19 @@ MIDIDriver::add_patch(const char *file)
 }
 
 /*
- * For drum mapping the program_no is stored in the bank number of the map
+ * For drum mapping the program_no is stored in the upper 8 bits, and the
+ * bank_no (msb) in the lower eight bits of the bank number of the map
  * and the key_no in the program number of the map.
  */
 const inst_t
-MIDIDriver::get_drum(uint16_t program_no, uint8_t key_no, bool all)
+MIDIDriver::get_drum(uint16_t bank_no, uint16_t program_no, uint8_t key_no, bool all)
 {
     inst_t empty_map;
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;
     do
     {
-        auto itb = drums.find(program_no << 7);
+        auto itb = drums.find(program_no << 7 | bank_no);
         bool bank_found = (itb != drums.end());
         if (bank_found)
         {
