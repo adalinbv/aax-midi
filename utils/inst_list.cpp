@@ -24,10 +24,11 @@ void help(const char *path)
     if (!pname) pname = path;
     else pname++;
 
-    printf("Usage: %s <file>\n", pname);
+    printf("Usage: -i %s <file>\n", pname);
     printf("\nWhere <file> is either the gmmidi.xml or gmdrums.xml file.\n");
 
     printf("\nOptions:\n");
+    printf("  --combine=<file2>\t\t\tUse file names from this file.\n");
     printf("  --mode=<ascii|html|xml>\tSet the output mode.\n");
 
     printf("\n");
@@ -181,7 +182,7 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
 }
 
 void
-print_xml(bank_t &bank, const char *dir, bool it)
+print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 {
     const char *inst = it ? "instrument" : "drum";
     printf("<?xml version=\"1.0\"?>\n");
@@ -198,7 +199,7 @@ print_xml(bank_t &bank, const char *dir, bool it)
         int msb = nl >> 8;
         int lsb = nl & 0xff;
         int i = 0;
-
+//
         if (msb == 0x79) type = "GM2";
         else if (msb == 127 && !lsb) type = "MT32";
         else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
@@ -220,12 +221,35 @@ print_xml(bank_t &bank, const char *dir, bool it)
                 found = true;
             }
 
+            std::string& filename = it.second.file;
             float spread = it.second.spread;
             int wide = it.second.wide;
 
+            bool found2 = false;
+            for (auto &b2 : bank2)
+            {
+                entry_t &e2 = b2.second.second;
+                unsigned int nl2 = b2.first;
+                if (nl2 == nl)
+                {
+                   for (auto it2 : e2)
+                   {
+                      if (it2.first == it.first)
+                      {
+                          filename = it2.second.file;
+                          spread = it2.second.spread;
+                          wide = it2.second.wide;
+                          found2 = true;
+                          break;
+                      }
+                   }
+                }
+                if (found2) break;
+            }
+
             std::string name = canonical_name(it.second.name);
-            printf("   <%s n=\"%i\" name=\"%s\" file=\"%s\"", inst, i++,
-                        name.c_str(), it.second.file.c_str());
+            printf("   <%s n=\"%i\" name=\"%s\" file=\"%s\"", inst, it.first,
+                        name.c_str(), filename.c_str());
             if (wide) {
                if (wide == -1) printf(" wide=\"true\"");
                else printf(" wide=\"%i\"", wide);
@@ -242,7 +266,7 @@ print_xml(bank_t &bank, const char *dir, bool it)
 }
 
 void
-print_instruments(bank_t &bank, const char *dir, enum mode_e mode)
+print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
 {
     bool found = false;
 
@@ -372,7 +396,7 @@ print_instruments(bank_t &bank, const char *dir, enum mode_e mode)
 }
 
 void
-print_drums(bank_t &bank, const char *dir, enum mode_e mode)
+print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
 {
     bool found = false;
 
@@ -465,7 +489,8 @@ int main(int argc, char **argv)
     const char *filename;
     enum mode_e mode = ASCII;
     const char *env;
-    bank_t bank;
+    bank_t bank, bank2;
+    void *xid2;
     void *xid;
 
     if (argc < 2) help(argv[0]);
@@ -477,7 +502,11 @@ int main(int argc, char **argv)
         else if (!strcasecmp(env, "XML")) mode = XML;
     }
 
-    filename = argv[1];
+    env = getCommandLineOption(argc, argv, "--combine");
+    if (env) xid2 = xmlOpen(env);
+    else xid2 = nullptr;
+
+    filename = getInputFile(argc, argv, NULL);
     xid = xmlOpen(filename);
     if (xid)
     {
@@ -499,11 +528,15 @@ int main(int argc, char **argv)
         case ASCII:
         case HTML:
             num = fill_bank(bank, xid, "instrument");
-            if (num) print_instruments(bank, filename, mode);
+            if (num) {
+                print_instruments(bank, bank2, filename, mode);
+            }
             else
             {
                 num = fill_bank(bank, xid, "drum");
-                if (num) print_drums(bank, filename, mode);
+                if (num) {
+                    print_drums(bank, bank2, filename, mode);
+                }
             }
 
             if (!bank.size()) {
@@ -512,11 +545,19 @@ int main(int argc, char **argv)
             break;
         case XML:
             num = fill_bank(bank, xid, "instrument");
-            if (num) print_xml(bank, filename, true);
+            if (num)
+            {
+               if (xid2) num = fill_bank(bank2, xid2, "instrument");
+               print_xml(bank, bank2, filename, true);
+            }
             else
             {
                 num = fill_bank(bank, xid, "drum");
-                if (num) print_xml(bank, filename, false);
+                if (num)
+                {
+                    if (xid2) num = fill_bank(bank2, xid2, "drum");
+                    print_xml(bank, bank2, filename, false);
+                }
             }
 
             if (!bank.size()) {
@@ -528,6 +569,7 @@ int main(int argc, char **argv)
         }
 
         xmlClose(xid);
+        if (xid2) xmlClose(xid2);
     }
     else {
         printf("Wanring: could not open %s\n", filename);
