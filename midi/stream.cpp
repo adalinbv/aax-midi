@@ -496,7 +496,8 @@ bool MIDIStream::process_control(uint8_t track_no)
         bank_no = (uint16_t)value << 7;
         break;
     case MIDI_BANK_SELECT|MIDI_FINE:
-        bank_no += value;
+        // In GS-mode, ignore bank select lsb
+        if (midi.get_mode() != MIDI_GENERAL_STANDARD) bank_no += value;
         break;
     case MIDI_FOOT_CONTROLLER:
     case MIDI_BREATH_CONTROLLER:
