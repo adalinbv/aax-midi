@@ -18,6 +18,28 @@ tokenize_words(std::string& str)
     if (!str.empty()) str.resize(str.length() - 1);
 }
 
+std::size_t
+find_word(std::string& name, std::string& section)
+{
+    bool found = false;
+    std::size_t pos = name.find(section);
+    if (pos != std::string::npos)
+    {
+        switch(name[pos])
+        {
+        case ' ':
+        case ')':
+        case ',':
+            break;
+        default:
+            pos =  std::string::npos;
+            break;
+        }
+    }
+    return pos;
+}
+
+
 void
 str_prepend(std::string& name, std::string section, const char *replacement = nullptr)
 {
@@ -25,7 +47,7 @@ str_prepend(std::string& name, std::string section, const char *replacement = nu
 
     tokenize_words(section);
 
-    pos = name.find(section);
+    pos = find_word(name, section);
     if (pos != std::string::npos && !isalpha(name[pos+section.size()]))
     {
         name.replace(pos, section.size(), "");
@@ -42,11 +64,12 @@ str_prepend(std::string& name, std::string section, const char *replacement = nu
 void
 str_append(std::string& name, std::string& suffix, std::string section, const char *replacement = nullptr)
 {
+    bool found = false;
     std::size_t pos;
 
     tokenize_words(section);
 
-    pos = name.find(section);
+    pos = find_word(name, section);
     if (pos != std::string::npos)
     {
         if (!suffix.empty()) suffix.append(", ");
@@ -163,7 +186,7 @@ canonical_name(std::string name)
     str_prepend(name, "nylon");
 
     str_append(name, suffix, "dark");
-    str_append(name, suffix, "bright", "bright");
+    str_append(name, suffix, "bright");
     str_append(name, suffix, "mellow");
     str_append(name, suffix, "warm");
     str_append(name, suffix, "slow");
