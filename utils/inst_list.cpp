@@ -24,11 +24,11 @@ void help(const char *path)
     if (!pname) pname = path;
     else pname++;
 
-    printf("Usage: -i %s <file>\n", pname);
+    printf("Usage: %s -i <file>\n", pname);
     printf("\nWhere <file> is either the gmmidi.xml or gmdrums.xml file.\n");
 
     printf("\nOptions:\n");
-    printf("  --combine=<file2>\t\t\tUse file names from this file.\n");
+    printf("  --combine=<file2>\t\tUse file names from this file.\n");
     printf("  --mode=<ascii|html|xml>\tSet the output mode.\n");
 
     printf("\n");
@@ -221,6 +221,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                 found = true;
             }
 
+            std::string name = canonical_name(it.second.name);
             std::string& filename = it.second.file;
             float spread = it.second.spread;
             int wide = it.second.wide;
@@ -247,8 +248,8 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                 if (found2) break;
             }
 
-            std::string name = canonical_name(it.second.name);
-            printf("   <%s n=\"%i\" name=\"%s\" file=\"%s\"", inst, it.first,
+            printf("   <%s%s n=\"%i\" name=\"%s\" file=\"%s\"",
+                        found2 ? "" : "unsupported-", inst, it.first,
                         name.c_str(), filename.c_str());
             if (wide) {
                if (wide == -1) printf(" wide=\"true\"");
