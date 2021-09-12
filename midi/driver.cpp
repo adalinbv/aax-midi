@@ -393,6 +393,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         {
             void *xaid = xmlNodeGet(xid, "aeonwave");
             void *xmid = nullptr;
+            char name[64] = "";
             char file[64] = "";
 
             if (xaid)
@@ -491,13 +492,17 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                    spread = xmlAttributeGetDouble(xiid, "spread");
                                 }
 
+                                // instrument name
+                                xmlAttributeCopyString(xiid, "name",
+                                                              name, 64);
+
                                 // instrument file-name
                                 slen = xmlAttributeCopyString(xiid, "file",
                                                               file, 64);
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{file,{wide,spread,stereo}}});
+                                    bank.insert({n,{{file,name},{wide,spread,stereo}}});
 
                                     _patch_map_t p;
                                     p.insert({0,{i,file}});
@@ -512,7 +517,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-                                        bank.insert({n,{file,{wide,spread,stereo}}});
+                                        bank.insert({n,{{file,name},{wide,spread,stereo}}});
 
                                         add_patch(file);
                                     }
@@ -633,14 +638,14 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t program_no, uint8_t key_no, bool
             auto iti = bank.find(key_no);
             if (iti != bank.end())
             {
-                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first) != selection.end())
+                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first.file) != selection.end())
                 {
                     if (req_program_no != program_no)
                     {
                         auto itrb = drums.find(req_program_no << 7);
                         if (itrb != drums.end()) {
                             auto& bank = itrb->second;
-                            bank.insert({key_no,{"",{}}});
+                            bank.insert({key_no,{{"",""},{}}});
                         }
                     }
                     return iti->second;
@@ -709,7 +714,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
             auto iti = bank.find(program_no);
             if (iti != bank.end())
             {
-                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first) != selection.end()) {
+                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first.file) != selection.end()) {
                     return iti->second;
                 } else {
                     return empty_map;

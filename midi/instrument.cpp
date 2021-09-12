@@ -72,15 +72,18 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         if (it == name_map.end())
         {
             auto inst = midi.get_drum(bank_no, program_no, key_no, all);
-            std::string name = inst.first;
-            if (!name.empty() && name != "")
+            std::string filename = inst.first.file;
+            if (!filename.empty() && filename != "")
             {
-                if (!midi.buffer_avail(name))
+                if (!midi.buffer_avail(filename))
                 {
+                    std::string &display = (midi.get_verbose() >= 99) ? 
+                                           inst.first.file : inst.first.name;
+                    
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: %s\n",
                              key_no, bank_no >> 7, bank_no & 0x7F,
-                             program_no, name.c_str());
-                    midi.load(name);
+                             program_no, display.c_str());
+                    midi.load(filename);
                 }
 
                 if (midi.get_grep())
@@ -90,14 +93,14 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 }
                 else
                 {
-                    Buffer& buffer = midi.buffer(name);
+                    Buffer& buffer = midi.buffer(filename);
                     if (buffer)
                     {
                         auto ret = name_map.insert({key_no,buffer});
                         it = ret.first;
                     }
                     else {
-                        throw(std::invalid_argument("Instrument file "+name+" could not load"));
+                        throw(std::invalid_argument("Instrument file "+filename+" could not load"));
                     }
                 }
             }
@@ -110,7 +113,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         if (it == name_map.end())
         {
             auto inst = midi.get_instrument(bank_no, program_no, all);
-            auto patch = get_patch(inst.first, key);
+            auto patch = get_patch(inst.first.file, key);
             std::string patch_name = patch.second;
             uint8_t level = patch.first;
             if (!patch_name.empty())
@@ -118,9 +121,12 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 if (!midi.buffer_avail(patch_name) &&
                     !midi.is_loaded(patch_name))
                 {
+                    std::string &display = (midi.get_verbose() >= 99) ?
+                                           inst.first.file : inst.first.name;
+
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                              bank_no >> 7, bank_no & 0x7F, program_no,
-                             inst.first.c_str());
+                             display.c_str());
                     midi.load(patch_name);
                 }
 

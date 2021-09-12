@@ -51,7 +51,13 @@ struct wide_t
     bool stereo = false;
 };
 
-using inst_t = std::pair<std::string,struct wide_t>;
+struct patch_t
+{
+   std::string file;
+   std::string name;
+};
+
+using inst_t = std::pair<struct patch_t, struct wide_t>;
 
 class MIDIInstrument;
 
