@@ -799,7 +799,7 @@ _inst_GS_t inst_table_GS[] = {
  {  85,  18, "Rock Lead", 2, NULL, 0 },
  {  85,  19, "5th Deca Sync", 2, NULL, 0 },
  {  85,  20, "Dirty Sync", 1, NULL, 0 },
- {  85,  24, "JUNO Sub Osc88ilator", 1, NULL, 0 },
+ {  85,  24, "JUNO Sub Oscilator", 1, NULL, 0 },
  {  86,   0, "Solo Vox", 2, "Solo Vox", 2, "Solo Vox", 2 },
  {  86,   8, "Vox Lead", 2, NULL, 0 },
  {  86,   9, "LFO Vox", 2, NULL, 0 },
@@ -1874,6 +1874,7 @@ print_GS()
       if (f) printf("  </bank>\n\n");
    }
 
+#if 0
    // SC-55
    printf("  <!-- SC-55 -->\n");
    for (int b=0; b<49; ++b)
@@ -1935,6 +1936,7 @@ print_GS()
       } while (inst_table_GS[++i].pc);
       if (f) printf("  </bank>\n\n");
    }
+#endif
 
 #if 0
    // SC-88-Pro
@@ -2040,12 +2042,34 @@ print_MT32()
    }
 }
 
+void help(const char *path)
+{
+    const char *pname = strrchr(path, '/');
+    if (!pname) pname = path;
+    else pname++;
+
+    printf("Usage: %s <options>\n", pname);
+    printf("\nWhere <file> is either the gmmidi.xml or gmdrums.xml file.\n");
+
+    printf("\nOptions:\n");
+    printf("  --mt32\t\t\tPrint the MT-32 instrument conficturation.\n");
+    printf("  --gm2\t\t\t\tPrint the GM2 instrument conficturation.\n");
+    printf("  --gs\t\t\t\tPrint the GS instrument conficturation.\n");
+    printf("  --xg\t\t\t\tPrint the XG instrument conficturation.\n");
+    printf("  --all\t\t\t\tPrint all of the above.\n");
+
+    printf("\n");
+    exit(-1);
+}
+
 int main(int argc, char **argv)
 {
    const char *pname = strrchr(argv[0], '/');
    const char *env;
    int mode = GM;
    int b;
+
+   if (argc < 2) help(argv[0]);
 
    env = getCommandLineOption(argc, argv, "--all");
    if (env) mode |= GM2|GS|XG|MT32;
