@@ -2133,6 +2133,8 @@ print_XG()
    {
       for (int b=0; b<128; ++b)
       {
+         if (!m && !b) continue;
+
          bool f = false;
          int i = 0;
          do
