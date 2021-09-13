@@ -493,10 +493,27 @@ bool MIDIStream::process_control(uint8_t track_no)
         } else if (value == MIDI_BANK_MELODY) {
             channel.set_drums(false);
         }
-        bank_no = (uint16_t)value << 7;
+        switch(midi.get_mode())
+        {
+        case MIDI_MODE0:
+        case MIDI_GENERAL_MIDI2:
+        case MIDI_GENERAL_STANDARD:
+        case MIDI_EXTENDED_GENERAL_MIDI:
+            bank_no = (uint16_t)value << 7;
+        default:
+            break;
+        }
         break;
     case MIDI_BANK_SELECT|MIDI_FINE:
-        bank_no += value;
+        switch(midi.get_mode())
+        {
+        case MIDI_GENERAL_MIDI2:
+        case MIDI_EXTENDED_GENERAL_MIDI:
+            bank_no += value;
+            break;
+        default:
+            break;
+        }
         break;
     case MIDI_FOOT_CONTROLLER:
     case MIDI_BREATH_CONTROLLER:

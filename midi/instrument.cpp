@@ -80,7 +80,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     std::string &display = (midi.get_verbose() >= 99) ? 
                                            inst.first.file : inst.first.name;
                     
-                    DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: %s\n",
+                    DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              key_no, bank_no >> 7, bank_no & 0x7F,
                              program_no, display.c_str());
                     midi.load(filename);
