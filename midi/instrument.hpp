@@ -78,7 +78,7 @@ public:
 
     inline void set_track_name(std::string& tname) { track_name = tname; }
 
-    inline void set_stereo(bool s) { stereo = s; }
+    void set_stereo(bool s);
     inline bool get_stereo() { return stereo; }
 
     inline Buffer& get_buffer(uint8_t key) {

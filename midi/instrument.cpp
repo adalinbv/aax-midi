@@ -60,6 +60,18 @@ MIDIInstrument::get_patch(std::string& name, uint8_t& key_no)
 }
 
 void
+MIDIInstrument::set_stereo(bool s)
+{
+    stereo = s;
+    if (stereo)
+    {
+        std::string name = "stereo";
+        Buffer &buffer = midi.buffer(name, 0);
+        int res = MIDIInstrument::add(buffer);
+    }
+}
+
+void
 MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 {
     assert (velocity);
