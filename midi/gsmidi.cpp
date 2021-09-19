@@ -197,11 +197,11 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                             midi.set_chorus("chorus/flanger");
                             INFO("Switching to GS flanging");
                             break;
-                        case GSMIDI_DELAY:
+                        case GSMIDI_DELAY1:
                             midi.set_chorus("chorus/delay");
                             INFO("Switching to GS short delay");
                             break;
-                        case GSMIDI_DELAY_FEEDBACK:
+                        case GSMIDI_DELAY1_FEEDBACK:
                             midi.set_chorus("chorus/delay_feedback");
                             INFO("Switching to GS short delay with feedback");
                             break;
@@ -240,6 +240,39 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     }
                     case GSMIDI_CHORUS_SEND_LEVEL_TO_REVERB:
                         midi.send_chorus_to_reverb(value/127.0f);
+                        break;
+                    case GSMIDI_DELAY_MACRO:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Macro\n");
+                        break;
+                    case GSMIDI_DELAY_PRE_LPF:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Pre-LPF\n");
+                        break;
+                    case GSMIDI_DELAY_TIME_RATIO_LEFT:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Time Ratio left\n");
+                        break;
+                    case GSMIDI_DELAY_TIME_CENTER:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Time Center\n");
+                        break;
+                    case GSMIDI_DELAY_TIME_RATIO_RIGHT:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Time Ratio Right\n");
+                        break;
+                    case GSMIDI_DELAY_FEEDBACK:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Feedback\n");
+                        break;
+                    case GSMIDI_DELAY_LEVEL:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Level\n");
+                        break;
+                    case GSMIDI_DELAY_SEND_LEVEL_TO_REVERB:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Send Level To Reverb\n");
+                        break;
+                    case GSMIDI_DELAY_LEVEL_LEFT:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Level Left\n");
+                        break;
+                    case GSMIDI_DELAY_LEVEL_CENTER:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Level Center\n");
+                        break;
+                    case GSMIDI_DELAY_LEVEL_RIGHT:
+                        LOG(99, "LOG: Unsupported GS sysex Delay Level Right\n");
                         break;
                     case GSMIDI_DRUM_PART1:
                     case GSMIDI_DRUM_PART2:
@@ -337,7 +370,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                                LOG(99, "LOG: Unsupported GS sysex Part Switch\n");
                                break;
                             default:
-                                LOG(99, "LOG: Unsupported GS sysex address:"
+                                LOG(99, "LOG: GS Data Set 1: Unsupported address:"
                                         " 0x%02x 0x%02x (%d %d)\n",
                                         addr_mid, addr_low, addr_mid, addr_low);
                                 break;
