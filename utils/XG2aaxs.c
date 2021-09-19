@@ -206,7 +206,7 @@ static XGMIDI_effect_t XGMIDI_amp_simulator_types[1] = {
 #define FLANGING_MIN     10e-3f
 #define FLANGING_MAX     60e-3f
 #define DELAY_MIN        60e-3f
-#define DELAY_MAX       200e-3f
+#define DELAY_MAX       250e-3f
 #define LEVEL_60DB		0.001f
 #define MAX_REVERB_EFFECTS_TIME	0.700f
 
