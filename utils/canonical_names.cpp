@@ -192,7 +192,7 @@ canonical_name(std::string name)
     str_append(name, suffix, "slow");
     str_append(name, suffix, "slow attack", "slow");
     str_append(name, suffix, "fast");
-    str_append(name, suffix, "stereo", "wide");
+    str_append(name, suffix, "stereo");
     str_append(name, suffix, "wide");
     str_append(name, suffix, "octave mix", "octave");
     str_append(name, suffix, "octave mix", "octave");

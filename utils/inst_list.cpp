@@ -38,6 +38,7 @@ void help(const char *path)
 using name_t = struct {
     std::string name;
     std::string file;
+    bool stereo;
     int wide;
     float spread;
 };
@@ -80,8 +81,12 @@ const char *xml_header =
 " *   assignment will be reversed.\n"
 " *\n"
 " * - spread=\"[0.0 .. 1.0]\"\n"
-" *   Limit the stereo spread arounf the center. Setting spread to \"0.5\" will\n"
-" *   limit the stereo spread between -0.5 left and +0.5 right\n"
+" *   Limit the stereo spread around the center. Setting spread to \"0.5\" will\n"
+" *   limit the stereo spread between -0.5 left and +0.5 right.\n"
+" *\n"
+" * - stereo=\"true\"\n"
+" *   Sets wide to true if wide was not already set and add effects to make\n"
+" *   3d sounds sound spatial.\n"
 "-->\n";
 
 
@@ -159,13 +164,17 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                         if (slen)
                         {
                             float spread;
+                            bool stereo;
                             int wide;
 
                             wide = xmlAttributeGetInt(xiid, "wide");
                             if (!wide) wide = xmlAttributeGetBool(xiid, "wide");
 
+                            stereo = xmlAttributeGetBool(xiid, "stereo");
+                            if (stereo && wide == -1) wide = 0;
+
                             spread = xmlAttributeGetDouble(xiid, "spread");
-                            e[pos] = {name,file,wide,spread};
+                            e[pos] = {name,file,stereo,wide,spread};
                             rv++;
                         }
                     }
@@ -223,6 +232,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 
             std::string name = canonical_name(it.second.name);
             std::string& filename = it.second.file;
+            bool stereo = it.second.stereo;
             float spread = it.second.spread;
             int wide = it.second.wide;
 
@@ -238,6 +248,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                       if (it2.first == it.first)
                       {
                           filename = it2.second.file;
+                          stereo = it.second.stereo;
                           spread = it2.second.spread;
                           wide = it2.second.wide;
                           found2 = true;
@@ -251,6 +262,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
             printf("   <%s%s n=\"%i\" name=\"%s\" file=\"%s\"",
                         found2 ? "" : "unsupported-", inst, it.first,
                         name.c_str(), filename.c_str());
+            if (stereo) printf(" stereo=\"true\"");
             if (wide) {
                if (wide == -1) printf(" wide=\"true\"");
                else printf(" wide=\"%i\"", wide);

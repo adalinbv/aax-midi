@@ -1985,7 +1985,11 @@ print_GM2()
 
             printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
-            if (strstr(inst_table_GM2[i].name, "(wide)")) {
+            if (strstr(inst_table_GM2[i].name, "Stereo")) {
+               printf(" stereo=\"true\"");
+            }
+
+            if (strstr(inst_table_GM2[i].name, "Wide")) {
                printf(" wide=\"true\"");
             }
             printf("/>\n");
@@ -2019,7 +2023,11 @@ print_GS()
 
             printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
-            if (strstr(inst_table_GS[i].sc88pro, "(wide)")) {
+            if (strstr(inst_table_GS[i].sc88pro, "Stereo")) {
+               printf(" stereo=\"true\"");
+            }
+
+            if (strstr(inst_table_GS[i].sc88pro, "Wide")) {
                printf(" wide=\"true\"");
             }
             printf("/>\n");
@@ -2153,7 +2161,11 @@ print_XG()
 
                printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
-               if (strstr(inst_table_XG[i].name, "(wide)")) {
+               if (strstr(inst_table_XG[i].name, "Stereo")) {
+                  printf(" stereo=\"true\"");
+               }
+
+               if (strstr(inst_table_XG[i].name, "Wide")) {
                   printf(" wide=\"true\"");
                }
 
@@ -2190,7 +2202,11 @@ print_MT32()
 
             printf(" file=\"instruments/%s\"", to_filename(name).c_str());
 
-            if (strstr(inst_table_MT32[i].name, "(wide)")) {
+            if (strstr(inst_table_MT32[i].name, "Stereo")) {
+               printf(" stereo=\"true\"");
+            }
+
+            if (strstr(inst_table_MT32[i].name, "Wide")) {
                printf(" wide=\"true\"");
             }
             printf("/>\n");
@@ -2245,6 +2261,7 @@ int main(int argc, char **argv)
       env = getCommandLineOption(argc, argv, "--mt32");
       if (env) mode |= MT32;
    }
+printf("mode: %x\n", mode);
 
    if (pname) pname++;
    printf("<?xml version=\"1.0\"?>\n\n");
