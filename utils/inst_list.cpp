@@ -41,6 +41,7 @@ using name_t = struct {
     bool stereo;
     int wide;
     float spread;
+    bool patch;
 };
 //using name_t = std::pair<std::string,std::string>;
 using entry_t = std::map<unsigned,name_t>;
@@ -155,11 +156,17 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                 entry_t e;
                 for (i=0; i<inum; ++i)
                 {
+                    bool patch = false;
                     if (xmlNodeGetPos(xbid, xiid, tag, i) != 0)
                     {
                         unsigned int pos = xmlAttributeGetInt(xiid, "n");
 
-                        xmlAttributeCopyString(xiid, "file", file, 64);
+                        if (!xmlAttributeCopyString(xiid, "file", file, 64))
+                        {
+                            xmlAttributeCopyString(xiid, "patch", file, 64);
+                            patch = true;
+                        }
+
                         slen = xmlAttributeCopyString(xiid, "name", name, 64);
                         if (slen)
                         {
@@ -174,7 +181,7 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
                             if (stereo && wide == -1) wide = 0;
 
                             spread = xmlAttributeGetDouble(xiid, "spread");
-                            e[pos] = {name,file,stereo,wide,spread};
+                            e[pos] = {name,file,stereo,wide,spread,patch};
                             rv++;
                         }
                     }
@@ -235,6 +242,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
             bool stereo = it.second.stereo;
             float spread = it.second.spread;
             int wide = it.second.wide;
+            bool patch = it.second.patch;
 
             bool found2 = false;
             for (auto &b2 : bank2)
@@ -251,6 +259,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                           stereo = it.second.stereo;
                           spread = it2.second.spread;
                           wide = it2.second.wide;
+                          patch = it2.second.patch;
                           found2 = true;
                           break;
                       }
@@ -259,9 +268,11 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                 if (found2) break;
             }
 
-            printf("   <%s%s n=\"%i\" name=\"%s\" file=\"%s\"",
+            printf("   <%s%s n=\"%i\" name=\"%s\"",
                         found2 ? "" : "unsupported-", inst, it.first,
-                        name.c_str(), filename.c_str());
+                        name.c_str());
+            if (patch) printf(" patch=\"%s\"", filename.c_str());
+            else printf(" file=\"%s\"", filename.c_str());
             if (stereo) printf(" stereo=\"true\"");
             if (wide) {
                if (wide == -1) printf(" wide=\"true\"");
