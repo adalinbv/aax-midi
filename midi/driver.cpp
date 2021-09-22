@@ -641,7 +641,11 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t program_no, uint8_t key_no, bool
             auto iti = bank.find(key_no);
             if (iti != bank.end())
             {
-                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first.file) != selection.end())
+                if (all || selection.empty() ||
+                    std::find(selection.begin(), selection.end(),
+                              iti->second.first.file) != selection.end() ||
+                    std::find(selection.begin(), selection.end(),
+                              iti->second.first.name) != selection.end())
                 {
                     if (req_program_no != program_no)
                     {
@@ -717,7 +721,12 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
             auto iti = bank.find(program_no);
             if (iti != bank.end())
             {
-                if (all || selection.empty() || std::find(selection.begin(), selection.end(), iti->second.first.file) != selection.end()) {
+                if (all || selection.empty() ||
+                    std::find(selection.begin(), selection.end(),
+                              iti->second.first.file) != selection.end() ||
+                    std::find(selection.begin(), selection.end(),
+                              iti->second.first.name) != selection.end())
+                {
                     return iti->second;
                 } else {
                     return empty_map;
