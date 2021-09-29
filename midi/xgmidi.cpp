@@ -975,6 +975,38 @@ bool MIDIStream::XG_process_sysex(uint64_t size)
             }
             break;
         }
+        case XGMIDI_MODEL_CLAVINOVA:
+        {
+            uint8_t addr_high = pull_byte();
+            uint8_t addr_mid = pull_byte();
+            uint8_t addr_low = pull_byte();
+            uint32_t addr = addr_high << 16 | addr_mid << 8 | addr_low;
+            CSV(", %d, %d, %d", addr_high, addr_mid, addr_low);
+            if (addr == 0x015105) // Style, Genre
+            {
+                addr_high = pull_byte();
+                addr_mid = pull_byte();
+                addr_low = pull_byte();
+                addr = addr_high << 16 | addr_mid << 8 | addr_low;
+                CSV(", %d, %d, %d", addr_high, addr_mid, addr_low);
+                if (addr == 0x000304) // style number
+                {
+                    addr_high = pull_byte();
+                    addr_mid = pull_byte();
+                    addr = addr_high << 8 | addr_mid;
+                    CSV(", %d, %d", addr_high, addr_mid);
+                    if (addr == 0)
+                    {
+                        addr_high = pull_byte();
+                        addr_mid = pull_byte();
+                        addr = addr_high << 8 | addr_mid;
+                        CSV(", %d, %d", addr_high, addr_mid);
+//                      set_style(addr);
+                    }
+                }
+            }
+            break;
+        }
         case XGMIDI_MODEL_MU100_SET:
         case XGMIDI_MODEL_MU100_MODIFY:
             LOG(99, "LOG: Unsupported XG sysex model ID: MU100\n");

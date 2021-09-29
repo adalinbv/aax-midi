@@ -801,6 +801,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
+        midi.set(AAX_TRACK_TITLE_STRING, text.c_str());
         MESSAGE("%-7s %2i: %s\n", type_name[meta].c_str(), track_no, text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
@@ -812,6 +813,15 @@ bool MIDIStream::process_meta()
         break;
     }
     case MIDI_COPYRIGHT:
+        for (int i=0; i<size; ++i) {
+           toUTF8(text, pull_byte());
+        }
+        midi.set(AAX_SONG_COPYRIGHT_STRING, text.c_str());
+        MESSAGE("%-10s: %s\n", type_name[meta].c_str(), text.c_str());
+        CSV("%s, \"", csv_name[meta].c_str());
+        CSV_TEXT("%s", text.c_str());
+        CSV("\"\n");
+        break;
     case MIDI_INSTRUMENT_NAME:
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());

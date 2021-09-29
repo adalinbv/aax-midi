@@ -284,6 +284,7 @@ enum {
 #define XGMIDI_MODEL_MU100_SET					0x49
 #define XGMIDI_MODEL_VL70					0x47
 #define XGMIDI_MODEL_MU100_MODIFY				0x59
+#define XGMIDI_MODEL_CLAVINOVA					0x73
 #define XGMIDI_MODEL_XG						0x4c	// 76
 
 /* parameter effect type */
