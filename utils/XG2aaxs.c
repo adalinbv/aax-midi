@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <math.h>
 
+#include <aax/midi.h>
+
 static float XGMIDI_LFO_frequency_table_Hz[128] = {	// Hz
  0.f, 0.08f, 0.08f, 0.16f, 0.16f, 0.25f, 0.25f, 0.33f, 0.33f, 0.42f, 0.42f,
  0.5f, 0.5f, 0.58f, 0.58f, 0.67f, 0.67f, 0.75f, 0.75f, 0.84, 0.84f, 0.92f,
@@ -58,6 +60,7 @@ static float XGMIDI_EQ_frequency_table_Hz[61] = {	// Hz
  9000.f, 10000.f, 11000.0f, 12000.f, 14000.f, 16000.f, 18000.f, 20000.f
 };
 
+#if 0
 static float XGMIDI_room_size_table_m[45] = {		// m
  0.1f, 0.3f, 0.4f, 0.6f, .7f, 0.9f, 1.f, 1.2f, 1.4f, 1.5f, 1.7f, 1.8f, 2.f,
  2.1f, 2.3f, 2.5f, 2.6f, 2.8f, 2.9f, 3.1f, 4.2f, 3.4f, 3.5f, 3.7f, 3.9f, 4.f,
@@ -78,6 +81,7 @@ static float XGMIDI_compressor_release_time_table_ms[16] = { // ms
 static float XGMIDI_compressor_ratio_table[8] = {
  1.f, 1.5f, 2.f, 3.f, 5.f, 7.f, 10.f, 20.0f
 };
+#endif
 
 static float XGMIDI_reverb_time_sec[70] = {		// s
  0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f,
@@ -100,6 +104,7 @@ static float XGMIDI_reverb_dimensions_m[105] = {		// m
  29.2f, 29.5f, 29.9f, 30.2f
 };
 
+#if 0
 static float XGMIDI_delay_time_400ms[128] = {		// ms
  0.1f, 3.2f, 6.4f, 9.5f, 12.7f, 15.8f, 19.f, 22.1f, 25.3f, 28.4f, 31.6f, 34.7f,
  37.9f, 41.f, 442.f, 47.3f, 50.5f, 53.6f, 56.8f, 59.9f, 63.1f, 66.2f, 69.4f,
@@ -114,6 +119,144 @@ static float XGMIDI_delay_time_400ms[128] = {		// ms
  327.6f, 330.7f, 333.9f, 337.f, 340.2f, 343.3f, 346.5f, 349.6f, 352.8f, 355.9f,
  359.1f, 362.2f, 365.4f, 368.5f, 371.7f, 374.8f, 378.f, 381.1f, 384.3f, 387.4f,
  390.6f, 393.7f, 396.9f, 400.f
+};
+#endif
+
+static struct {
+   int num;
+   const char *file;
+   const char *display;
+   const char *name;
+} XGMIDI_style_list[129] = {
+ {   1, "rock", "Rock Mixture", "Hardcore Mixture" },
+ {   2, "synthpop", "80sMixt", "80's Mixture Rock" },
+ {   3, "rock", "HardCore", "Hard Core Punk" },
+ {   4, "rock", "MeloCore", "Melodious Core" },
+ {   5, "rock", "SkaCore", "Ska Core" },
+ {   6, "rock", "RkBoogie", "Rock Boogie" },
+ {   7, "metal", "GrungeRk", "Grunge Rock" },
+ {   8, "rock", "MondoRk", "Mondo Rock" },
+ {   9, "synthpop", "IrishRk", "80's Irish Rock" },
+ {  10, "synthpop", "BritRock", "British Rock" },
+ {  11, "rock", "RckShufl", "80's Rock Shuffle" },
+ {  12, "pop", "CollgeRk", "College Rock" },
+ {  13, "rock", "GlamRock", "Glam Rock" },
+ {  14, "classic-rock", "70sRock", "70's Rock" },
+ {  15, "classic-rock", "FolkRock", "70's 8-beat Folk Rock" },
+ {  16, "classic-rock", "ArtRock", "70's Art Rock" },
+ {  17, "pop", "PunkRock", "70's Punk Rock" },
+ {  18, "rock", "PubRock", "Pub Rock" },
+ {  19, "classic-rock", "FunkRock", "Funk Rock" },
+ {  20, "rock", "LatinRk", "Latin Rock" },
+ {  21, "hardrock", "60sHard", "60's Hard Rock" },
+ {  22, "hardrock", "70sHard1", "70's Hard Rock1" },
+ {  23, "hardrock", "70sHard2", "70's Hard Rock2" },
+ {  24, "hardrock", "70sHR&R", "70's Hard Rock 'n Roll" },
+ {  25, "hardrock", "16btHard", "16-beat Hard Rock" },
+ {  26, "hardrock", "AmercHR1", "American Hard Rock1" },
+ {  27, "hardrock", "AmercHR2", "American Hard Rock2" },
+ {  28, "hardrock", "ProgHard", "90's Progressive Hard" },
+ {  29, "metal", "SpeedMtl", "Speed Metal" },
+ {  30, "metal", "PowerMtl", "Power Metal" },
+ {  31, "metal", "Thrash", "Thrash Metal" },
+ {  32, "metal", "DoomMtl", "Doom Metal" },
+ {  33, "metal", "MtlBoogy", "Metal Boogie" },
+ {  34, "rnb", "Hip Hop1", "Hip Hop1" },
+ {  35, "rnb", "Hip Hop2", "Hip Hop2" },
+ {  36, "rnb", "Pop Hip", "Pop Hip Hop" },
+ {  37, "rnb", "Gangsta", "Gangsta" },
+ {  38, "rnb", "Rap", "Rap" },
+ {  39, "rnb", "Jazz Hip", "Jazz Hip Hop" },
+ {  40, "dance", "DanceSwg", "Dance Swing" },
+ {  41, "house", "House", "House" },
+ {  42, "house", "GrgHouse", "Garage House" },
+ {  43, "dance", "R&BSwing", "90's RnB Swing" },
+ {  44, "dance", "Slow Jam", "90's RnB Slow Jam" },
+ {  45, "rnb", "Pop RnB", "90's Pop RnB" },
+ {  46, "dance", "Smooth" "90's RnB Smooth" },
+ {  47, "house", "PopTekno", "Pop Techno" },
+ {  48, "house", "EuroTek", "Euro Techno" },
+ {  49, "dance", "Eurobeat", "Eurobeat" },
+ {  50, "sytnhpop", "ElectrRk", "Electro Rock" },
+ {  51, "dance", "Bigbeat", "Bigbeat" },
+ {  52, "dance", "DigiRk1", "Digital Rock1" },
+ {  53, "dance", "DigiRk2", "Digital Rock2" },
+ {  54, "dance", "IndustRk", "Industrial Rock" },
+ {  55, "funk", "PsychRk", "Psychedelic Rock" },
+ {  56, "pop", "Lite Pop", "Light Pop" },
+ {  57, "pop", "AOR Pop", "A.O.R. Pop" },
+ {  58, "pop", "LatinPop", "Latin Pop" },
+ {  59, "synthpop", "BritPop", "80's British Pop" },
+ {  60, "pop", "16bt Pop", "16-beat Pop" },
+ {  61, "pop", "24bt Pop", "24-beat Pop" },
+ {  62, "pop", "TechFusn", "80's Technical Fusion" },
+ {  63, "pop", "DetroPop", "Detroit Pop Shuffle" },
+ {  64, "pop", "Mid8btRk", "Med-tempo 8-beat Rock Pop" },
+ {  65, "pop", "Acoustic", "Acoustic Pop" },
+ {  66, "rnb", "RnB", "RnB" },
+ {  67, "rnb", "6/8 RnB", "6/8 RnB" },
+ {  68, "soul", "SoulShf", "Soul Shuffle" },
+ {  69, "rnb", "Motown", "Motown" },
+ {  70, "blues", "SlwBlues", "Slow Blues" },
+ {  71, "rnb", "RnB Wlz", "RnB Waltz" },
+ {  72, "rnb", "Rock RnB", "Rock RnB" },
+ {  73, "rock-n-roll", "RocknRol", "Rock'n' Roll" },
+ {  74, "rock-n-roll", "TrainTm", "Train Time" },
+ {  75, "rockabilly", "Rockably", "Rockabilly" },
+ {  76, "rock-n-roll", "Oldies", "Oldies" },
+ {  77, "rock-n-roll", "Liverpol", "Liverpool Pop" },
+ {  78, "surf", "SurfRock", "Surf Rock" },
+ {  79, "funk", "DscFunk", "Disco Funk" },
+ {  80, "disco", "70sDisco", "70's Disco" },
+ {  81, "funk", "FP Funk", "FP Funk" },
+ {  82, "funk", "JB Funk", "JB Funk" },
+ {  83, "funk", "JazzFunk", "Jazz Funk" },
+ {  84, "jazz-combo", "ComboJz", "Combo Jazz" },
+ {  85, "bigban", "Big Band", "Big Band Jazz" },
+ {  86, "ballad", "JazBalld", "Jazz Ballad" },
+ {  87, "jazz", "JazWaltz", "Jazz Waltz" },
+ {  88, "jazz", "Bebop Fast", "Bebop" },
+ {  89, "jazz", "CoolJazz", "Cool Jazz" },
+ {  90, "jazz", "AfroJazz", "Afro Jazz" },
+ {  91, "ballad", "OrgBalld", "Organ Ballad" },
+ {  92, "ballad", "PnoBalld", "Piano Ballad" },
+ {  93, "ballad", "ArpBalld", "Arpeggio Ballad" },
+ {  94, "ballad", "LatinBld", "Latin Ballad" },
+ {  95, "ballad", "6/8Balld", "6/8 Modern Ballad" },
+ {  96, "ballad", "HR Balld", "Hard Rock Ballad" },
+ {  97, "ballad", "6/8HRBld", "6/8 Hard Rock Ballad" },
+ {  98, "country", "CW Rock", "Country Rock" },
+ {  99, "country", "CW Pop", "Country Pop" },
+ { 100, "country", "16Contry", "16-beat Country Rock" },
+ { 101, "country", "CW Balld", "Country Ballad" },
+ { 102, "country", "CW Waltz", "Country Waltz" },
+ { 103, "country", "Bluegras", "Bluegrass" },
+ { 104, "latin", "Samba", "Samba" },
+ { 105, "latin", "Mambo", "Mambo" },
+ { 106, "latin", "Rhumba", "Rhumba" },
+ { 107, "latin", "Merengue", "Merengue" },
+ { 108, "latin", "Cha Cha", "Cha Cha" },
+ { 109, "latin", "Salsa", "Salsa" },
+ { 110, "latin", "Bossa", "Bossa Nova" },
+ { 111, "latin", "Beguin", "Beguin" },
+ { 112, "latin", "Tango", "Tango" },
+ { 113, "reggae", "reggae", "reggae" },
+ { 114, "reggae", "SwReggae", "Swing Reggae" },
+ { 115, "reggae", "DHReggae", "Dance Hall Reggae" },
+ { 116, "reggae", "LoversRk", "Lovers Rock" },
+ { 117, "reggae", "Ska", "Ska" },
+ { 118, "world", "Hawaiian", "Hawaiian" },
+ { 119, "world", "Soca", "Soca" },
+ { 120, "world", "Klezmer", "Klezmer" },
+ { 121, "world", "Enka", "Enka" },
+ { 122, "world", "Polka", "Polka" },
+ { 123, "jazz-combo", "Dixie", "Dixieland" },
+ { 124, "world", "Foxtrot", "Foxtrot" },
+ { 125, "world", "VienaWlz", "Vienna Waltz" },
+ { 126, "world", "SlowWalz", "Slow Waltz" },
+ { 127, "world", "March", "March" },
+ { 128, "world", "6/8March", "6/8 March" },
+ { 0, NULL, NULL, NULL }
 };
 
 typedef struct {
@@ -423,6 +566,7 @@ int write_chorus()
          }
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -539,6 +683,7 @@ int write_phasing()
          }
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -595,6 +740,7 @@ int write_distortion()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -677,6 +823,7 @@ int write_equalizer()
          fprintf(stream, "  </filter>\n");
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -697,14 +844,14 @@ int write_amp_simulator()
    if (stream)
    {
       int dr = type->param[0];		// Drive 0 ~ 127 (0-127)
-      int tp = type->param[1];		// Off,Stack,Combo,Tube (0-3)
+//    int tp = type->param[1];		// Off,Stack,Combo,Tube (0-3)
       int fc = type->param[2];		// LPF Cutoff 1.0k ~ Thru (34-60)
       int ol = type->param[3];		// Output Level 0 ~ 127 (0-127)
       int dw = type->param[9];		// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
       int cc = type->param[10];		// Edge(Clip Curve) 0 ~ 127 (0-127)
 
       float distortion_fact = 2.0f*dr/127.0f;
-      float clipping_fact = cc/127.0f; 
+      float clipping_fact = cc/127.0f;
       float mix_fact = 0.5f*dw/127.0f;
       float asymmetry = 1.0f - clipping_fact;
 
@@ -756,6 +903,7 @@ int write_amp_simulator()
       fprintf(stream, "  </effect>\n");
       fprintf(stream, " </mixer>\n\n");
       fprintf(stream, "</aeonwave>\n");
+      fclose(stream);
    }
    else printf(" Failed to open for writing: %s\n", strerror(errno));
 
@@ -777,6 +925,7 @@ int write_unsupported()
       if (stream)
       {
 // TODO
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -784,6 +933,40 @@ int write_unsupported()
    return 0;
 }
 
+int write_style_list()
+{
+   char fname[256] = "styles.xml";
+   FILE *stream;
+
+   printf("Generating: %s\n", fname);
+
+   stream = fopen(fname, "w+");
+   if (stream)
+   {
+      int i = 0;
+
+      fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+      fprintf(stream, "<aeonwave>\n\n");
+      fprintf(stream, " <midi id=\"%i\" name=\"XG-MIDI\">\n",
+                         MIDI_SYSTEM_EXCLUSIVE_YAMAHA);
+
+      do
+      {
+         fprintf(stream, "  <style n=\"%i\" file=\"%s\" name=\"%s\"/>\n",
+                             XGMIDI_style_list[i].num,
+                             XGMIDI_style_list[i].file,
+                             XGMIDI_style_list[i].name);
+      }
+      while (XGMIDI_style_list[++i].num);
+
+
+      fprintf(stream, " </midi>\n");
+      fprintf(stream, "</aeonwave>\n");
+      fclose(stream);
+   }
+
+   return 0;
+}
 
 int main()
 {
@@ -793,6 +976,7 @@ int main()
    write_distortion();
    write_equalizer();
    write_amp_simulator();
+   write_style_list();
 
    return 0;
 }
