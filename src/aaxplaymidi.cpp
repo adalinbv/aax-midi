@@ -270,6 +270,9 @@ int main(int argc, char **argv)
     bool fm = false;
     char *arg;
 
+    arg = getenv("AAX_BATCHED_MODE");
+    if (arg) batched = atoi(arg);
+
     try
     {
         float time_offs = getTime(argc, argv);
