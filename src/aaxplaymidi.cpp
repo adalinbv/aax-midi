@@ -163,18 +163,16 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
                 if (batched)
                 {
                     if (!midi.process(time_parts, wait_parts)) break;
+                    time_parts += wait_parts;
 
                     double wait_us = wait_parts*midi.get_uspp();
-                    do
+                    int num = rintf(wait_us/refrate);
+                    for (int i=0; i<num; ++i)
                     {
                        midi.wait(0.0f);
                        aax::Buffer buf = midi.get_buffer();
                        midi.set(AAX_UPDATE);
-                       dt += refrate;
                     }
-                    while (dt < wait_us);
-                    dt -= wait_us;
-                    time_parts += wait_parts;
                 }
                 else
                 {
