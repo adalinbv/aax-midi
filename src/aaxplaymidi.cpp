@@ -143,7 +143,8 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
         midi.initialize(grep);
         if (!grep)
         {
-            double refrate =  1e6f/midi.get(AAX_REFRESHRATE);
+//          double refrate =  1e6f/midi.get(AAX_REFRESHRATE);
+            double refrate = 0.5f*midi.get(AAX_LATENCY);
             midi.start();
 
             if (batched)
@@ -166,13 +167,14 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
                     time_parts += wait_parts;
 
                     double wait_us = wait_parts*midi.get_uspp();
-                    int num = rintf(wait_us/refrate);
+                    int num = rintf((wait_us+dt)/refrate);
                     for (int i=0; i<num; ++i)
                     {
                        midi.wait(0.0f);
                        aax::Buffer buf = midi.get_buffer();
                        midi.set(AAX_UPDATE);
                     }
+                    dt += wait_us - num*refrate;
                 }
                 else
                 {
