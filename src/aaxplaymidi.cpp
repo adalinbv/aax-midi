@@ -143,8 +143,6 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
         midi.initialize(grep);
         if (!grep)
         {
-//          double refrate =  1e6f/midi.get(AAX_REFRESHRATE);
-            double refrate = 0.5f*midi.get(AAX_LATENCY);
             midi.start();
 
             if (batched)
@@ -153,10 +151,13 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
                 midi.set(AAX_UPDATE);
             }
 
+
             wait_parts = 1000;
             set_mode(1);
 
             double dt = 0;
+            double refrate = midi.get(AAX_FRAME_TIMING);
+
             int key, paused = AAX_FALSE;
             auto now = std::chrono::high_resolution_clock::now();
             do
