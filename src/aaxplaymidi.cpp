@@ -168,6 +168,8 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
                     time_parts += wait_parts;
 
                     double wait_us = wait_parts*midi.get_uspp();
+                    if (wait_us > 15e6) break;
+
                     int num = rintf((wait_us+dt)/refrate);
                     for (int i=0; i<num; ++i)
                     {
