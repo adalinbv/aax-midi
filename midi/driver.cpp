@@ -322,6 +322,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                 AeonWave::remove(*it->second);
                 reverb.add(*it->second);
                 reverb_channels[it->first] = it->second;
+                DISPLAY(3, "Set part %i to %.0f%% reverb\n", part_no, val*100);
             }
         }
     }
@@ -332,6 +333,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
         {
             reverb.remove(*it->second);
             AeonWave::add(*it->second);
+            DISPLAY(3, "Remove part %i from reverb\n", part_no);
         }
     }
 }
