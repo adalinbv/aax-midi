@@ -218,15 +218,15 @@ MIDIFile::initialize(const char *grep)
         if (midi.get_verbose())
         {
 
-            MESSAGE("Frequency : %i Hz\n", midi.get(AAX_FREQUENCY));
-            MESSAGE("Upd. rate : %i Hz\n", midi.get(AAX_REFRESH_RATE));
-            MESSAGE("Init time : %.1f ms\n", eps*1000.0f);
+            MESSAGE(1, "Frequency : %i Hz\n", midi.get(AAX_FREQUENCY));
+            MESSAGE(1, "Upd. rate : %i Hz\n", midi.get(AAX_REFRESH_RATE));
+            MESSAGE(1, "Init time : %.1f ms\n", eps*1000.0f);
 
             unsigned int polyphony = midi.get(AAX_MONO_EMITTERS);
             if (polyphony == UINT_MAX) {
-                MESSAGE("Polyphony : unlimited\n");
+                MESSAGE(1, "Polyphony : unlimited\n");
             } else {
-                MESSAGE("Polyphony : %u\n", midi.get(AAX_MONO_EMITTERS));
+                MESSAGE(1, "Polyphony : %u\n", midi.get(AAX_MONO_EMITTERS));
             }
 
             enum aaxRenderMode render_mode = aaxRenderMode(midi.render_mode());
@@ -241,19 +241,19 @@ MIDIFile::initialize(const char *grep)
                 r += ", ";
                 r += to_string(aaxCapabilities(midi_mode));
             }
-            MESSAGE("Rendering : %s\n", r.c_str());
-            MESSAGE("Patch set : %s", midi.get_patch_set().c_str());
-            MESSAGE(" instrument set version %s\n", midi.get_patch_version().c_str());
-            MESSAGE("Directory : %s\n", midi.info(AAX_SHARED_DATA_DIR));
+            MESSAGE(1, "Rendering : %s\n", r.c_str());
+            MESSAGE(1, "Patch set : %s", midi.get_patch_set().c_str());
+            MESSAGE(1, " instrument set version %s\n", midi.get_patch_version().c_str());
+            MESSAGE(1, "Directory : %s\n", midi.info(AAX_SHARED_DATA_DIR));
 
             int hour, minutes, seconds;
             unsigned int format = midi.get_format();
             if (format >= MIDI_FILE_FORMAT_MAX) format = MIDI_FILE_FORMAT_MAX;
-            MESSAGE("Format    : %s\n", format_name[format].c_str());
+            MESSAGE(1, "Format    : %s\n", format_name[format].c_str());
 
             unsigned int mode = midi.get_mode();
             assert(mode < MIDI_MODE_MAX);
-            MESSAGE("MIDI Mode : %s\n", mode_name[mode].c_str());
+            MESSAGE(1, "MIDI Mode : %s\n", mode_name[mode].c_str());
 
             seconds = duration_sec;
             hour = seconds/(60*60);
@@ -261,9 +261,9 @@ MIDIFile::initialize(const char *grep)
             minutes = seconds/60;
             seconds -= minutes*60;
             if (hour) {
-                MESSAGE("Duration  : %02i:%02i:%02i hours\n", hour, minutes, seconds);
+                MESSAGE(1, "Duration  : %02i:%02i:%02i hours\n", hour, minutes, seconds);
             } else {
-                MESSAGE("Duration  : %02i:%02i minutes\n", minutes, seconds);
+                MESSAGE(1, "Duration  : %02i:%02i minutes\n", minutes, seconds);
             }
         }
     }
@@ -336,11 +336,11 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
         minutes = seconds/60;
         seconds -= minutes*60;
         if (hour) {
-            MESSAGE("pos: %02i:%02i:%02i hours\r", hour, minutes, seconds);
+            MESSAGE(1, "pos: %02i:%02i:%02i hours\r", hour, minutes, seconds);
         } else {
-            MESSAGE("pos: %02i:%02i minutes\r", minutes, seconds);
+            MESSAGE(1, "pos: %02i:%02i minutes\r", minutes, seconds);
         }
-        if (!rv) MESSAGE("\n\n");
+        if (!rv) MESSAGE(1, "\n\n");
         fflush(stdout);
     }
 

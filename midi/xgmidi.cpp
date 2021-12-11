@@ -158,16 +158,16 @@ MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
         {
             std::string line1 = text.substr(0, 16);
             std::string line2 = text.substr(16);
-            MESSAGE("Display: %-16s - %-16s\r",
+            MESSAGE(1, "Display: %-16s - %-16s\r",
                      line1.c_str(), line2.c_str());
         } else {
-            MESSAGE("Display: %-16s%-19s\r", text.c_str(), "");
+            MESSAGE(1, "Display: %-16s%-19s\r", text.c_str(), "");
         }
         FLUSH();
     }
     else
     {
-         MESSAGE("Display: %-16s   %-16s\r", "", "");
+         MESSAGE(1, "Display: %-16s   %-16s\r", "", "");
         midi.set_lyrics(false);
     }
 }

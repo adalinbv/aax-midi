@@ -388,7 +388,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     for (int i=offset()-offs; i<size; ++i) {
                         toUTF8(text, pull_byte());
                     }
-                    MESSAGE("Display: %s\n", text.c_str());
+                    MESSAGE(1, "Display: %s\n", text.c_str());
                     break;
                 }
                 case GSMIDI_SYSTEM_PARAMETER_CHANGE:

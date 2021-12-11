@@ -802,7 +802,7 @@ bool MIDIStream::process_meta()
            toUTF8(text, pull_byte());
         }
         midi.set(AAX_TRACK_TITLE_STRING, text.c_str());
-        MESSAGE("%-7s %2i: %s\n", type_name[meta].c_str(), track_no, text.c_str());
+        MESSAGE(1, "%-7s %2i: %s\n", type_name[meta].c_str(), track_no, text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -817,7 +817,7 @@ bool MIDIStream::process_meta()
            toUTF8(text, pull_byte());
         }
         midi.set(AAX_SONG_COPYRIGHT_STRING, text.c_str());
-        MESSAGE("%-10s: %s\n", type_name[meta].c_str(), text.c_str());
+        MESSAGE(1, "%-10s: %s\n", type_name[meta].c_str(), text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -826,7 +826,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
-        MESSAGE("%-10s: %s\n", type_name[meta].c_str(), text.c_str());
+        MESSAGE(1, "%-10s: %s\n", type_name[meta].c_str(), text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -844,16 +844,16 @@ bool MIDIStream::process_meta()
             DISPLAY(3, "%s\n", text.c_str());
         } else {
             if (text.front() == '\\') {
-                MESSAGE("\n\n");
+                MESSAGE(1, "\n\n");
                 midi.set_lyrics(true);
                 text.front() = ' ';
              }
             else if (text.front() == '/') {
-            MESSAGE("\n");
+            MESSAGE(1, "\n");
                 text.front() = ' ';
             }
-            MESSAGE("%s", text.c_str()); FLUSH();
-            if (size > 64) MESSAGE("\n");
+            MESSAGE(1, "%s", text.c_str()); FLUSH();
+            if (size > 64) MESSAGE(1, "\n");
         }
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
@@ -864,7 +864,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
-        MESSAGE("%s", text.c_str()); FLUSH();
+        MESSAGE(1, "%s", text.c_str()); FLUSH();
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -873,7 +873,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
-        MESSAGE("%s: %s\n", type_name[meta].c_str(), text.c_str());
+        MESSAGE(1, "%s: %s\n", type_name[meta].c_str(), text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -882,7 +882,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
-        MESSAGE("%s: %s", type_name[meta].c_str(), text.c_str());
+        MESSAGE(1, "%s: %s", type_name[meta].c_str(), text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
@@ -891,7 +891,7 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
-        MESSAGE("%s", text.c_str());
+        MESSAGE(1, "%s", text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
         CSV("\"\n");
