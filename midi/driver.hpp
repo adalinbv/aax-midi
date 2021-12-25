@@ -323,6 +323,9 @@ private:
     Param reverb_cutoff_frequency = 790.0f;
     Status reverb_state = AAX_FALSE;
     aax::Mixer reverb = aax::Mixer(*this);
+
+    const std::string get_channel_name(uint16_t);
+    static const std::vector<std::string> midi_channel_convention;
 };
 
 } // namespace aax

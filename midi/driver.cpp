@@ -230,6 +230,8 @@ MIDIDriver::send_chorus_to_reverb(float val)
 void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
+    MESSAGE(3, "Set part %i to %.0f%% chorus: %s\n", part_no, val*100.0f,
+                get_channel_name(part_no).c_str());
     auto it = std::find(chorus_channels.begin(),chorus_channels.end(), part_no);
     if (val && it == chorus_channels.end()) {
         chorus_channels.push_back(part_no);
@@ -237,12 +239,12 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
         chorus_channels.erase(it);
     }
     midi.channel(part_no).set_chorus_level(val);
-    MESSAGE(3, "Set part %i to %.0f%% chorus\n", part_no, val*100);
 }
 
 void
 MIDIDriver::set_chorus_depth(float ms) {
     chorus_depth = ms*1e-3f;
+    MESSAGE(4, "Set chorus depth to %.0f%%\n", chorus_depth*100.0f);
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_depth(chorus_depth);
     }
@@ -250,6 +252,7 @@ MIDIDriver::set_chorus_depth(float ms) {
 
 void
 MIDIDriver::set_chorus_rate(float rate) {
+    MESSAGE(4, "Set chorus rate to %.2fHz\n", rate);
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_rate(rate);
     }
@@ -257,6 +260,7 @@ MIDIDriver::set_chorus_rate(float rate) {
 
 void
 MIDIDriver::set_chorus_feedback(float feedback) {
+    MESSAGE(4, "Set chorus feedback to %.0f%%\n", feedback);
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_feedback(feedback);
     }
@@ -324,7 +328,8 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                 AeonWave::remove(*it->second);
                 reverb.add(*it->second);
                 reverb_channels[it->first] = it->second;
-                MESSAGE(3, "Set part %i to %.0f%% reverb\n", part_no, val*100);
+                MESSAGE(3, "Set part %i to %.0f%% reverb: %s\n",
+                         part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
     }
@@ -942,3 +947,31 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velo
     return true;
 }
 
+const std::string
+MIDIDriver::get_channel_name(uint16_t part_no)
+{
+    uint16_t bank_no = channel(part_no).get_bank_no();
+    uint8_t program_no = channel(part_no).get_program_no();
+    auto inst = midi.get_instrument(bank_no, program_no);
+    return inst.first.name;
+}
+
+const std::vector<std::string>
+MIDIDriver::midi_channel_convention = {
+    "Piano Solo (Left & Right Hand)",
+    "Bass Instrument",
+    "Primary Accompaniment",
+    "Primary Melodic Instrument with Lyrics",
+    "Secondary Accompaniment",
+    "Secondary Melodic Instrument",
+    "Alternative 1",
+    "Alternative 2",
+    "Alternative 3",
+    "Drums & Percussion",
+    "--Reserved--",
+    "--Reserved--",
+    "--Reserved--",
+    "--Reserved--",
+    "--Reserved--",
+    "--Reserved--"
+};
