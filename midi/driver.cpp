@@ -224,14 +224,18 @@ MIDIDriver::set_chorus(const char *t)
 void
 MIDIDriver::send_chorus_to_reverb(float val)
 {
-   MESSAGE(3, "Send %.0f%% chorus to reverb\n", val*100);
+    if (val > 0.0f) {
+        MESSAGE(3, "Send %.0f%% chorus to reverb\n", val*100);
+    }
 }
 
 void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
-    MESSAGE(3, "Set part %i to %.0f%% chorus: %s\n", part_no, val*100.0f,
-                get_channel_name(part_no).c_str());
+    if (val > 0.0f) {
+        MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n", part_no, val*100.0f,
+                    get_channel_name(part_no).c_str());
+    }
     auto it = std::find(chorus_channels.begin(),chorus_channels.end(), part_no);
     if (val && it == chorus_channels.end()) {
         chorus_channels.push_back(part_no);
@@ -244,7 +248,9 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 void
 MIDIDriver::set_chorus_depth(float ms) {
     chorus_depth = ms*1e-3f;
-    MESSAGE(4, "Set chorus depth to %.0f%%\n", chorus_depth*100.0f);
+    if (ms > 0.0f) {
+        MESSAGE(4, "Set chorus depth to %.0f%%\n", chorus_depth*100.0f);
+    }
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_depth(chorus_depth);
     }
@@ -252,7 +258,9 @@ MIDIDriver::set_chorus_depth(float ms) {
 
 void
 MIDIDriver::set_chorus_rate(float rate) {
-    MESSAGE(4, "Set chorus rate to %.2fHz\n", rate);
+    if (rate > 0.0f) {
+        MESSAGE(4, "Set chorus rate to %.2fHz\n", rate);
+    }
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_rate(rate);
     }
@@ -260,7 +268,9 @@ MIDIDriver::set_chorus_rate(float rate) {
 
 void
 MIDIDriver::set_chorus_feedback(float feedback) {
-    MESSAGE(4, "Set chorus feedback to %.0f%%\n", feedback);
+    if (feedback > 0.0f) {
+        MESSAGE(4, "Set chorus feedback to %.0f%%\n", feedback);
+    }
     for(int i=0; i<chorus_channels.size(); ++i) {
         midi.channel(i).set_chorus_feedback(feedback);
     }
@@ -316,7 +326,7 @@ MIDIDriver::set_reverb_type(uint8_t type)
 void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
-    if (val)
+    if (val > 0.0f)
     {
         midi.channel(part_no).set_reverb_level(val);
         auto it = reverb_channels.find(part_no);
@@ -328,8 +338,8 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                 AeonWave::remove(*it->second);
                 reverb.add(*it->second);
                 reverb_channels[it->first] = it->second;
-                MESSAGE(3, "Set part %i to %.0f%% reverb: %s\n",
-                         part_no, val*100, get_channel_name(part_no).c_str());
+                MESSAGE(3, "Set part %i reverb to %.0f%%: %s\n",
+                        part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
     }

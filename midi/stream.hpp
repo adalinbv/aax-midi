@@ -52,12 +52,7 @@ class MIDIStream : public byte_stream
 public:
     MIDIStream() = default;
 
-    MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16_t track)
-        : byte_stream(stream, len), midi(ptr), track_no(track)
-    {
-        timestamp_parts = pull_message()*24/600000;
-    }
-
+    MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16_t track);
     MIDIStream(const MIDIStream&) = default;
 
     virtual ~MIDIStream() = default;
@@ -67,6 +62,7 @@ public:
 
     inline uint8_t get_track_no() { return track_no; }
     inline uint16_t get_channel_no() { return channel_no; }
+    inline const std::string& get_channel_name() { return name; }
 
     MIDIDriver& midi;
 private:
@@ -96,6 +92,8 @@ private:
     uint32_t pull_message();
     bool registered_param(uint8_t, uint8_t, uint8_t);
     bool registered_param_3d(uint8_t, uint8_t, uint8_t);
+
+    std::string name;
 
     uint8_t mode = 0;
     uint8_t track_no = 0;

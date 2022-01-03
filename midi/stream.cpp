@@ -30,6 +30,12 @@
 
 using namespace aax;
 
+MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16_t track)
+    : byte_stream(stream, len), midi(ptr), track_no(track)
+{
+    timestamp_parts = pull_message()*24/600000;
+}
+
 float
 MIDIStream::key2pitch(MIDIInstrument& channel, uint16_t key)
 {
@@ -246,6 +252,7 @@ MIDIStream::rewind()
     timestamp_parts = pull_message()*24/600000;
     wait_parts = 1;
 
+    name = "";
     program_no = 0;
     bank_no = 0;
     previous = 0;
@@ -379,6 +386,9 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 CSV("Program_c, %d, %d\n", channel_no, program_no);
                 try {
                     midi.new_channel(channel_no, bank_no, program_no);
+
+                    auto inst = midi.get_instrument(bank_no, program_no);
+                    name = inst.first.name;
                 } catch(const std::invalid_argument& e) {
                     ERROR("Error: " << e.what());
                 }
@@ -562,6 +572,10 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     }
     case MIDI_CHANNEL_VOLUME:
+        if (value) {
+            MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
+                        (float)value*100.0f/127.0f, name.c_str());
+        }
         channel.set_gain((float)value/127.0f);
         break;
     case MIDI_ALL_NOTES_OFF:
