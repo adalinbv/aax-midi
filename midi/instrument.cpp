@@ -35,6 +35,7 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer, uint8_t channel,
      channel_no(channel), bank_no(bank), program_no(program),
      drum_channel(channel == MIDI_DRUMS_CHANNEL ? true : is_drums)
 {
+    set_gain(100.0f/127.0f);
     if (drum_channel && buffer) {
        Mixer::add(buffer);
     }
