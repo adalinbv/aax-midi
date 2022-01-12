@@ -386,9 +386,19 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 CSV("Program_c, %d, %d\n", channel_no, program_no);
                 try {
                     midi.new_channel(channel_no, bank_no, program_no);
-
-                    auto inst = midi.get_instrument(bank_no, program_no);
-                    name = inst.first.name;
+                    if (midi.is_drums(channel_no))
+                    {
+                        auto frames = midi.get_frames();
+                        auto it = frames.find(program_no);
+                        if (it != frames.end()) {
+                            name = it->second.name;
+                        }
+                    }
+                    else
+                    {
+                        auto inst = midi.get_instrument(bank_no, program_no);
+                        name = inst.first.name;
+                    }
                 } catch(const std::invalid_argument& e) {
                     ERROR("Error: " << e.what());
                 }

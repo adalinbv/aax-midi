@@ -481,12 +481,15 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         bank_no = xmlAttributeGetInt(xbid, "n") << 7;
                         bank_no += xmlAttributeGetInt(xbid, "l");
 
+                        // bank name
+                        xmlAttributeCopyString(xiid, "name", name, 64);
+
                         // bank audio-frame filter and effects file
                         slen = xmlAttributeCopyString(xbid, "file", file, 64);
                         if (slen)
                         {
                             file[slen] = 0;
-                            frames.insert({bank_no,std::string(file)});
+                            frames.insert({bank_no,{file,name}});
                         }
 
                         auto bank = imap[bank_no];
@@ -850,17 +853,17 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
     }
 
     int level = 0;
-    std::string name = "";
+    std::string file = "";
     if (drums && !frames.empty())
     {
         auto it = frames.find(program_no);
         if (it != frames.end()) {
             level = it->first;
-            name = it->second;
+            file = it->second.file;
         }
     }
 
-    Buffer& buffer = midi.buffer(name, level);
+    Buffer& buffer = midi.buffer(file, level);
     if (buffer) {
         buffer.set(AAX_CAPABILITIES, int(instrument_mode));
     }

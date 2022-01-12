@@ -149,6 +149,7 @@ public:
 
     const inst_t get_drum(uint16_t bank, uint16_t program, uint8_t key, bool all=false);
     const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
+    std::map<uint16_t,patch_t>& get_frames() { return frames; }
     std::map<std::string,_patch_map_t>& get_patches() { return patches; }
 
     inline void set_initialize(bool i) { initialize = i; };
@@ -262,7 +263,9 @@ private:
     _channel_map_t channels;
     std::vector<int> chorus_channels;
     _channel_map_t reverb_channels;
-    std::map<uint16_t,std::string> frames;
+
+    // banks name and audio-frame filter and effects file
+    std::map<uint16_t,patch_t> frames;
 
     std::map<uint16_t,std::map<uint16_t,inst_t>> drums;
     std::map<uint16_t,std::map<uint16_t,inst_t>> instruments;
