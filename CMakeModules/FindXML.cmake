@@ -49,7 +49,7 @@ IF(RMALLOC)
 
 ELSE(RMALLOC)
   FIND_LIBRARY(XML_LIBRARY 
-    NAMES XML zeroxml ZeroXML libZeroXML
+    NAMES XML ZeroXML libZeroXML zeroxml
     HINTS
     $ENV{XMLDIR}
     $ENV{ProgramFiles}/ZeroXML
@@ -66,6 +66,8 @@ ENDIF(RMALLOC)
 
 SET(XML_FOUND "NO")
 IF(XML_LIBRARY AND XML_INCLUDE_DIR)
+  message("Found ZeroXML: ${XML_LIBRARY}")
+  message("ZeroXML include dir: ${XML_INCLUDE_DIR}")
   include_directories(${XML_INCLUDE_DIR})
   SET(XML_FOUND "YES")
 ENDIF(XML_LIBRARY AND XML_INCLUDE_DIR)

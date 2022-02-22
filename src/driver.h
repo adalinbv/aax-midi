@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2008-2018 by Erik Hofman.
- * Copyright (C) 2009-2018 by Adalin B.V.
+ * Copyright (C) 2008-2022 by Erik Hofman.
+ * Copyright (C) 2009-2022 by Adalin B.V.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,6 +49,11 @@ extern "C" {
 #define TRY(a) do { \
     if (!(a)) printf("Error at line %i: %s\n", __LINE__, aax.strerror()); \
 } while(0)
+
+#ifdef WIN32
+# define WIN32_LEAN_AND_MEAN
+# include <windows.h>
+#endif
 
 struct mmap_t {
     int fd;
