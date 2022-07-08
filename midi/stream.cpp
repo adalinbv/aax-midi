@@ -901,6 +901,9 @@ bool MIDIStream::process_meta()
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
+        if (!track_no) {
+            midi.set(AAX_TRACK_TITLE_UPDATE, text.c_str());
+        }
         MESSAGE(1, "%s: %s\n", type_name[meta].c_str(), text.c_str());
         CSV("%s, \"", csv_name[meta].c_str());
         CSV_TEXT("%s", text.c_str());
