@@ -1,7 +1,15 @@
-* Wed Aug 4 2012 - <tech@adalin.org>
+* Tue Jul 12 2022 - <tech@adalin.org>
+- AeonWave-MIDI (0.2.0) stable; urgency=low
+
+  * Treat bank select course 0x7f and fine 0x00 as drum set for GS and XG.
+
+ -- Erik Hofman <info@adalin.org>  Tue, 12 Jul 2022 22:44:33 +0200
+
+
+* Wed Aug 4 2021 - <tech@adalin.org>
 - AeonWave-MIDI (0.1.0) stable; urgency=low
 
   * Initial version
 
- -- Erik Hofman <info@adalin.org>  Wed, 4 Aug 2021 09:53:00 +0100
+ -- Erik Hofman <info@adalin.org>  Wed, 4 Aug 2021 09:53:00 +0200
 
