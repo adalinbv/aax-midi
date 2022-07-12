@@ -530,6 +530,11 @@ bool MIDIStream::process_control(uint8_t track_no)
         case MIDI_GENERAL_MIDI2:
         case MIDI_EXTENDED_GENERAL_MIDI:
             bank_no += value;
+            if (bank_no == 0x3f80) { // MT-32 mode
+               channel.set_drums(true);
+            } else {
+               channel.set_drums(false);
+            }
             break;
         default:
             break;
