@@ -39,7 +39,7 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
 {
     struct stat info;
     if (stat(filename, &info) != 0 || (info.st_mode & S_IFDIR)) {
-        ERROR("Error opening: " << filename);
+        throw(std::invalid_argument("File not found: "+std::string(filename)));
         return;
     }
 
@@ -132,20 +132,19 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
                         PRINT_CSV("%d, 0, Start_track\n", track_no+1);
                     }
                 } catch (const std::overflow_error& e) {
-                    ERROR("Error while processing the MIDI file: "
-                              << e.what());
+                    throw(std::invalid_argument("Error while processing the MIDI file: "+std::string(e.what())));
                 }
             }
             else {
-                ERROR("Error: Unable to open: " << filename);
+                throw(std::invalid_argument("Error: Unable to open: "+std::string(filename)));
             }
         }
         else if (!midi_data.size()) {
-            ERROR("Error: Out of memory.");
+            throw(std::invalid_argument("Error: Out of memory."));
         }
     }
     else {
-        ERROR("Error: Unable to open: " << filename);
+        throw(std::invalid_argument("Error: Unable to open: "+std::string(filename)));
     }
 }
 
