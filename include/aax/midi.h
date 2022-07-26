@@ -289,7 +289,7 @@ private:
         return (v & 0x7f) | ((v & 0x7f00) >> 1);
     }
     inline int16_t cvt2x7to14bit_signed(int32_t v) {
-        return (v & 0x7f) | ((v & 0x7f00) >> 1) - 8192;
+        return (v & 0x7f) | (((v & 0x7f00) >> 1) - 8192);
     }
 
 protected:
