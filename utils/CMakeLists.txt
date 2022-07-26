@@ -6,8 +6,6 @@ set( NAMES_OBJS
      canonical_names.cpp
    )
 
-set(LIBTYPE STATIC)
-
 set(LIBNAMES names)
 ADD_LIBRARY(${LIBNAMES} ${LIBTYPE} ${NAMES_OBJS})
 

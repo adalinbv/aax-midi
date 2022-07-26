@@ -1,26 +1,30 @@
 cmake_minimum_required(VERSION 2.8.8)
 set(cmake_verbose_makefile TRUE)
 
-IF(COMMAND CMAKE_POLICY)
+if(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW)
-ENDIF(COMMAND CMAKE_POLICY)
+endif(COMMAND CMAKE_POLICY)
 
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include (CheckIncludeFiles)
 
-PROJECT(aax-midi C CXX)
+project(aax-midi C CXX)
 set(PACKAGE_NAME "AeonWave-MIDI")
 set(PACKAGE "aaxmidi")
 
 option(WERROR "Treat compile warnings as errors"   OFF)
 option(RMALLOC "Enable memory debugging functions" OFF)
 
-IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+if(NOT LIBTYPE)
+  set(LIBTYPE SHARED)
+endif(NOT LIBTYPE)
+
+if(CMAKE_SIZEOF_VOID_P EQUAL 8)
   set(SIZEOF_SIZE_T 8)
-ELSE ()
+else()
   set(SIZEOF_SIZE_T 4)
-ENDIF ()
+endif()
 
 # read 'version' file into a variable (stripping any newlines or spaces)
 FILE(READ version versionFile)
@@ -28,7 +32,7 @@ STRING(STRIP ${versionFile} AAXMIDI_VERSION)
 set(VERSION AAXMIDI_VERSION)
 
 # split version string into components, note CMAKE_MATCH_0 is the entire regexp match
-STRING(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" CPACK_PACKAGE_VERSION ${AAXMIDI_VERSION})
+string(REGEX MATCH "([0-9]+)\\.([0-9]+)\\.([0-9]+)" CPACK_PACKAGE_VERSION ${AAXMIDI_VERSION})
 
 set(AAX_MIDI_MAJOR_VERSION ${CMAKE_MATCH_1})
 set(AAX_MIDI_MINOR_VERSION ${CMAKE_MATCH_2})
@@ -46,11 +50,13 @@ set(CMAKE_MODULE_PATH "${aax-midi_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}"
 
 include(CPack_Modules)
 include(CPack_Defaults)
+include(GNUInstallDirs)
+include(package)
 
-IF(WIN32)
+if(WIN32)
 
-ELSE(WIN32)
-  ADD_DEFINITIONS(-D_REENTRANT -D_XOPEN_SOURCE=600 -D_POSIX_C_SOURCE=199309L)
+else(WIN32)
+  add_definitions(-D_REENTRANT -D_XOPEN_SOURCE=600 -D_POSIX_C_SOURCE=199309L)
 
   # DEBIAN
   set(CPACK_DEBIAN_PACKAGE_SECTION "utils")
@@ -60,45 +66,49 @@ ELSE(WIN32)
   set(CPACK_RPM_PACKAGE_LICENSE "BSD")
   set(CPACK_RPM_PACKAGE_GROUP "System/System/GUI/KDE")
   set(CPACK_RPM_PACKAGE_REQUIRES "libaax3-bin >= 3.0.0, libaax3-data >= 3.4.0")
-ENDIF(WIN32)
+endif(WIN32)
 
 # ZIP
 set(CPACK_SOURCE_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}-${AAXMIDI_VERSION}" CACHE INTERNAL "tarball basename")
 
 # Add definitions, compiler switches, etc.
-ADD_DEFINITIONS(-DHAVE_CONFIG_H=1)
-IF(WERROR)
-  ADD_DEFINITIONS(-Werror)
-ENDIF()
+add_definitions(-DHAVE_CONFIG_H=1)
+if(WERROR)
+  add_definitions(-Werror)
+endif()
 
-IF(MSVC)
+if(MSVC)
     set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -D_DEBUG /LD")
     set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -DNDEBUG /LD")
     set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG /LD")
     set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG /LD")
-    ADD_DEFINITIONS(-D_CRT_SECURE_NO_WARNINGS)
-    ADD_DEFINITIONS(-D_CRT_NONSTDC_NO_DEPRECATE)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 
-    OPTION(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" ON)
-    IF(FORCE_STATIC_VCRT)
-        FOREACH(flag_var
+    option(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" ON)
+    if(FORCE_STATIC_VCRT)
+        foreach(flag_var
                 CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
                 CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
-            IF(${flag_var} MATCHES "/MD")
+            if(${flag_var} MATCHES "/MD")
                 STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-            ENDIF()
-        ENDFOREACH(flag_var)
-    ENDIF()
-ELSE(MSVC)
-    IF(MINGW)
-       ADD_DEFINITIONS(-U__STRICT_ANSI__)
+            endif()
+        endforeach(flag_var)
+    endif()
+else(MSVC)
+    if(NOT MINGW)
+      if (GCC OR CLANG)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wl,--hash-style=both -Wpointer-arith -Wparentheses")
+      endif(GCC OR CLANG)
+    else()
+       add_definitions(-U__STRICT_ANSI__)
        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libstdc++" CACHE STRING
           "Flags used by MingW."
           FORCE)
        set(CMAKE_C_FLAGS "${C_FLAGS} -static -static-libgcc" CACHE STRING
           "Flags used by MingW."
           FORCE)
-    ENDIF(MINGW)
+    endif()
  
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11" CACHE STRING
           "Flags used by al build types."
@@ -118,7 +128,7 @@ ELSE(MSVC)
     set(CMAKE_C_FLAGS_DEBUG "${C_FLAGS} -g3 -D_DEBUG" CACHE STRING
         "Flags used by the compiler during debug builds."
         FORCE)
-ENDIF(MSVC)
+endif(MSVC)
 
 # Required libraries
 find_package(AAX COMPONENTS aax REQUIRED)
@@ -146,29 +156,37 @@ CHECK_include_FILE(unistd.h HAVE_UNISTD_H)
 CHECK_include_FILE(sys/time.h HAVE_SYS_TIME_H)
 CHECK_include_FILE(time.h HAVE_TIME_H)
 
-CONFIGURE_FILE(
+configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/include/cmake_config.h.in"
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h")
 
+install(FILES
+        include/aax/midi.h
+        include/aax/buffer_map.hpp
+        include/aax/byte_stream.hpp
+        DESTINATION "include/${AEONWAVE_DIR}"
+        COMPONENT Headers
+)
+
 # Man pages
-IF (UNIX AND NOT WIN32)
-  CONFIGURE_FILE(
+if(UNIX AND NOT WIN32)
+  configure_file(
       "${CMAKE_CURRENT_SOURCE_DIR}/admin/aaxplaymidi.1.in"
       "${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1")
 
-  INSTALL(FILES ${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1
+  install(FILES ${CMAKE_CURRENT_BINARY_DIR}/aaxplaymidi.1
           DESTINATION "${CMAKE_INSTALL_PREFIX}/man/man1"
           COMPONENT Applications)
-ENDIF()
+endif()
 
-IF(WIN32)
+if(WIN32)
   set(KERNEL_LIBRARY Kernel32)
   set(EXTRA_LIBS "-lwinmm")
-ELSE(WIN32)
+else(WIN32)
   set(EXTRA_LIBS "-lm")
-ENDIF(WIN32)
+endif(WIN32)
 
-include_DIRECTORIES(
+include_directories(
   ${PROJECT_SOURCE_DIR}/src
 )
 link_directories(
@@ -176,18 +194,56 @@ link_directories(
   ${PROJECT_BINARY_DIR}/midi
 )
 
-add_subdirectory(src)
-add_subdirectory(midi)
-add_subdirectory(utils)
+set(LIBMIDI aaxmidi)
 
-IF(NOT SINGLE_PACKAGE)
+midi_subdirectory(src)
+midi_subdirectory(midi)
+midi_subdirectory(utils)
+
+if(NOT SINGLE_PACKAGE)
   include (CPack)
-ENDIF(NOT SINGLE_PACKAGE)
+endif(NOT SINGLE_PACKAGE)
 
 message("Build type: ${CMAKE_BUILD_TYPE}")
 message("C flags: ${CMAKE_C_FLAGS}")
 message("C++ flags: ${CMAKE_CXX_FLAGS}")
 message("Linker flags: ${CMAKE_SHARED_LINKER_FLAGS}")
+
+# Build a static library
+add_library(MIDIOBJ_LIB OBJECT ${SOURCES})
+add_library(${LIBMIDI}-static STATIC $<TARGET_OBJECTS:MIDIOBJ_LIB>)
+
+# Build a shared library
+set(LIB_VERSION "${CPACK_PACKAGE_VERSION_MAJOR}.${CPACK_PACKAGE_VERSION_MINOR}.${CPACK_PACKAGE_VERSION_PATCH}")
+add_library(${LIBMIDI} SHARED $<TARGET_OBJECTS:MIDIOBJ_LIB>)
+set_target_properties(${LIBMIDI}
+  PROPERTIES DEFINE_SYMBOL MIDI_BUILD_LIBRARY
+  VERSION ${LIB_VERSION}
+  SOVERSION ${CPACK_PACKAGE_VERSION_MAJOR}
+)
+if(WIN32 AND NOT LIBTYPE STREQUAL "STATIC")
+  set_target_properties(${LIBMIDI} PROPERTIES PREFIX "")
+else()
+  set_target_properties(${LIBMIDI} PROPERTIES COMPILE_FLAGS "-shared")
+endif()
+
+target_link_libraries(${LIBMIDI}
+  ${EXTRA_LIBS}
+  ${XML_LIBRARY}
+)
+
+# Add an install target here
+# Note Windows DLL are specified by RUNTIME
+install(TARGETS ${LIBMIDI}
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Libraries
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Headers
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" NAMELINK_SKIP COMPONENT Libraries
+)
+install(TARGETS ${LIBMIDI}-static
+        RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT Libraries
+        ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Headers
+        LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}" NAMELINK_SKIP COMPONENT Libraries
+)
 
 #-----------------------------------------------------------------------------
 ### uninstall target

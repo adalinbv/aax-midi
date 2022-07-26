@@ -29,11 +29,8 @@
 #define AAX_MIDI_H 1
 
 #if defined(__cplusplus)
-
 extern "C" {
 #endif
-
-#include <aax/aax.h>
 
 /* system exclusive */
 #define MIDI_SYSTEM_EXCLUSIVE					0xf0	// 240
@@ -258,7 +255,11 @@ extern "C" {
 #if defined(__cplusplus)
 }	/* extern "C" */
 
+#include <memory>
 #include <functional>
+
+#include <aax/aeonwave.hpp>
+#include <aax/instrument.hpp>
 
 #ifndef NDEBUG
 # define THROW(...)	std::throw(std::domain_error(...)
@@ -268,6 +269,48 @@ extern "C" {
 
 namespace aax
 {
+
+class MIDIFile;
+class MIDI
+{
+public:
+    MIDI(const char *devname, const char *filename, const char *track=nullptr, enum aaxRenderMode mode=AAX_MODE_WRITE_STEREO, const char *config=nullptr);
+
+    explicit MIDI(std::string& devname, std::string& filename)
+       :  MIDI(devname.c_str(), filename.c_str()) {}
+
+    virtual ~MIDI();
+
+    void start();
+    void stop();
+    void rewind();
+
+    void initialize(const char *grep);
+    bool process(uint64_t time_parts, uint32_t& next);
+    bool wait(float t);
+    
+    bool set(enum aaxSetupType t, const char* s);
+    bool set(enum aaxSetupType t, unsigned int s);
+    bool set(enum aaxState s);
+
+    unsigned int get(enum aaxSetupType t);
+
+    float get_pos_sec();
+    int32_t get_uspp();
+
+    bool add(Sensor& s);
+    bool sensor(enum aaxState s);
+
+    Buffer get_buffer();
+
+    void set_mono(bool m);
+
+    void set_verbose(char v);
+    void set_csv(char v);
+
+private:
+    std::unique_ptr<MIDIFile> midi;
+};
 
 namespace midi
 {

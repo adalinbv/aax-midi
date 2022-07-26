@@ -23,7 +23,6 @@
 #ifndef __AAX_MIDISHARED
 #define __AAX_MIDISHARED
 
-#include <aax/aeonwave.hpp>
 #include <aax/midi.h>
 
 # define CSV_TEXT(...) if(midi.get_csv()) { \

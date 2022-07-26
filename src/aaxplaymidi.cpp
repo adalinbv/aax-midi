@@ -42,8 +42,7 @@
 #include <aax/aeonwave.hpp>
 #include <aax/instrument.hpp>
 
-#include <midi/driver.hpp>
-#include <midi/file.hpp>
+#include <aax/midi.h>
 
 #include "driver.h"
 
@@ -115,7 +114,7 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
     }
 
     try {
-        aax::MIDIFile midi(devname, infile, track, mode, config);
+        aax::MIDI midi(devname, infile, track, mode, config);
         aax::Sensor file;
         uint64_t time_parts = 0;
         uint32_t wait_parts;

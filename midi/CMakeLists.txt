@@ -1,5 +1,6 @@
 
-set( MIDI_OBJS
+set( MIDI_SOURCES
+     midi.cpp
      driver.cpp
      file.cpp
      instrument.cpp
@@ -9,7 +10,7 @@ set( MIDI_OBJS
      xgmidi.cpp
    )
 
-set(LIBTYPE STATIC)
-
-set(LIBMIDI midi)
-ADD_LIBRARY(${LIBMIDI} ${LIBTYPE} ${MIDI_OBJS})
+set(SOURCES "")
+foreach(src ${MIDI_SOURCES})
+  set(SOURCES "${CMAKE_CURRENT_SOURCE_DIR}/${src};${SOURCES}")
+endforeach()
