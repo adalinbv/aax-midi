@@ -16,6 +16,13 @@ set(PACKAGE "aaxmidi")
 option(WERROR "Treat compile warnings as errors"   OFF)
 option(RMALLOC "Enable memory debugging functions" OFF)
 
+if(WIN32)
+  set(AEONWAVE_DIR aax)
+else(WIN32)
+  set(AEONWAVE_DIR aax)
+endif(WIN32)
+
+
 if(NOT LIBTYPE)
   set(LIBTYPE SHARED)
 endif(NOT LIBTYPE)
