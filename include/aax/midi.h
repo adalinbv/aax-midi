@@ -32,6 +32,11 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+#include <stddef.h>
+
+#include <aax/aax.h>
+
 /* system exclusive */
 #define MIDI_SYSTEM_EXCLUSIVE					0xf0	// 240
 #define MIDI_SYSTEM_EXCLUSIVE_END				0xf7	// 247
@@ -251,6 +256,40 @@ extern "C" {
 #define MIDI2_SYSTEM_EXCLUSIVE_MESSAGE				0x3
 #define MIDI2_VOICE_MESSAGE					0x4
 #define MIDI2_DATA_MESSAGE					0x5
+
+struct aaxMIDI;
+typedef struct aaxMIDI aaxMIDI;
+
+aaxMIDI* aaxMIDICreate(const char *devname, const char *filename, const char *track, enum aaxRenderMode mode, const char *config);
+void aaxMIDIDesrtroy(aaxMIDI*);
+
+void aaxMIDIStart(aaxMIDI*);
+void aaxMIDIStop(aaxMIDI*);
+void aaxMIDIRewind(aaxMIDI*);
+
+void aaxMIDIInitialize(aaxMIDI*, const char *grep);
+int aaxMIDIProcess(aaxMIDI*, uint64_t time_parts, uint32_t* next);
+int aaxMIDIWait(aaxMIDI*, float t);
+
+int aaxMIDISetSetupString(aaxMIDI*, enum aaxSetupType t, const char* s);
+int aaxMIDISetSetup(aaxMIDI*, enum aaxSetupType t, unsigned int s);
+int aaxMIDISetState(aaxMIDI*, enum aaxState s);
+
+unsigned int aaxMIDIGetSetup(aaxMIDI*, enum aaxSetupType t);
+
+float aaxMIDIGetPosSec(aaxMIDI*);
+int32_t get_uspp(aaxMIDI*);
+
+int aaxMIDIAdd(aaxMIDI*, aaxConfig s);
+int aaxMIDISensor(aaxMIDI*, enum aaxState s);
+
+aaxBuffer aaxMIDIrGetBuffer(aaxMIDI*);
+
+void aaxMIDISetMono(aaxMIDI*, int m);
+
+void aaxMIDISetVerbose(aaxMIDI*, char v);
+void aaxMIDISetCSV(aaxMIDI*, char v);
+
 
 #if defined(__cplusplus)
 }	/* extern "C" */
