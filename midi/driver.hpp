@@ -20,8 +20,8 @@
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
 
-#ifndef __AAX_MIDIDriverDRIVER
-#define __AAX_MIDIDriverDRIVER
+#ifndef __AAX_MIDI_DRIVER
+#define __AAX_MIDI_DRIVER
 
 #include <sys/stat.h>
 #include <climits>
