@@ -302,7 +302,7 @@ private:
     unsigned int refresh_rate = 0;
     unsigned int polyphony = UINT_MAX;
 
-    int16_t drum_bank_no = -1;
+    int16_t drum_set_no = -1;
     uint16_t PPQN = 24;
     uint32_t tempo = 500000;
     uint32_t uSPP = tempo/PPQN;
@@ -336,6 +336,7 @@ private:
 
     const std::string get_channel_name(uint16_t);
     static const std::vector<std::string> midi_channel_convention;
+    static const std::map<uint16_t,std::string> drum_set_map;
 };
 
 } // namespace aax

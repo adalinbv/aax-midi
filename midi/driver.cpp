@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2021 by Erik Hofman.
- * Copyright (C) 2018-2021 by Adalin B.V.
+ * Copyright (C) 2018-2022 by Erik Hofman.
+ * Copyright (C) 2018-2022 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -483,11 +483,17 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
                         if (bank_no == 0 && xmlAttributeExists(xbid, "default-drums"))
                         {
-                            drum_bank_no = xmlAttributeGetInt(xbid, "default-drums");
+                            drum_set_no = xmlAttributeGetInt(xbid, "default-drums");
 
                             std::ostringstream s;
-                            s << "Switching to drum program number: ";
-                            s << drum_bank_no;
+                            s << "Switching to drum set: ";
+
+                            auto it = drum_set_map.find(drum_set_no+1);
+                            if (it != drum_set_map.end()) {
+                                s << it->second;
+                            } else {
+                                s << drum_set_no+1;
+                            }
                             INFO(s.str().c_str());
                         }
 
@@ -662,8 +668,8 @@ MIDIDriver::add_patch(const char *file)
 const inst_t
 MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, bool all)
 {
-    if (program_no == 0 && drum_bank_no != -1) {
-        program_no = drum_bank_no;
+    if (program_no == 0 && drum_set_no != -1) {
+        program_no = drum_set_no;
     }
 
     inst_t empty_map;
@@ -1020,4 +1026,41 @@ MIDIDriver::midi_channel_convention = {
     "--Reserved--",
     "--Reserved--",
     "--Reserved--"
+};
+
+const std::map<uint16_t,std::string>
+MIDIDriver::drum_set_map = {
+ {  0, "Standard" },
+ {  1, "Standard 1" },
+ {  9, "Room" },
+ { 17, "Power" },
+ { 25, "Electronic" },
+ { 26, "TR-808" },
+ { 33, "Jazz" },
+ { 41, "Brush" },
+ { 49, "Orchestra" },
+ { 57, "SFX" },
+
+ {  2, "Standard 2" },
+ {  3, "Standard 3 [random]" },
+ { 10, "Hip Hop" },
+ { 11, "Jungle" },
+ { 12, "Techno" },
+ { 27, "Dance" },
+ { 28, "CR-78" },
+ { 29, "TR-606" },
+ { 30, "TR-707" },
+ { 31, "TR-909" },
+ { 50, "Ethnic" },
+ { 51, "Kick & Snare" },
+ { 53, "Asia" },
+ { 54, "Cymbal & Claps" },
+ { 58, "Rhythm FX" },
+ { 59, "Rhythm FX 2" },
+
+ { 126<<7 |  1, "SFX 1"},
+ { 126<<7 |  2, "SFX 2"},
+ { 127<<7 |  2, "Standard 2"},
+ { 127<<7 | 28, "Dance"},
+
 };
