@@ -57,8 +57,8 @@ public:
     inline uint16_t get_channel_no() { return channel_no; }
     inline void set_channel_no(uint16_t channel) { channel_no = channel; }
 
-    inline uint8_t get_program_no() { return program_no; }
-    inline void set_program_no(uint8_t program) { program_no = program; }
+    inline uint16_t get_program_no() { return program_no; }
+    inline void set_program_no(uint16_t program) { program_no = program; }
 
     inline uint16_t get_bank_no() { return bank_no; }
     inline void set_bank_no(uint16_t bank) { bank_no = bank; }
@@ -88,8 +88,6 @@ public:
     }
 
 private:
-    std::pair<uint8_t,std::string> get_patch(std::string& name, uint8_t& key);
-
     std::map<uint8_t,Buffer&> name_map;
     std::string track_name;
 
@@ -104,7 +102,7 @@ private:
 
     uint16_t bank_no = 0;
     uint16_t channel_no = 0;
-    uint8_t program_no = 0;
+    uint16_t program_no = 0;
 
     bool stereo = false;
     bool drum_channel = false;

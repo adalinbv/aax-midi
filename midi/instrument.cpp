@@ -43,23 +43,6 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer, uint8_t channel,
 }
 
 
-std::pair<uint8_t,std::string>
-MIDIInstrument::get_patch(std::string& name, uint8_t& key_no)
-{
-    auto patches = midi.get_patches();
-    auto it = patches.find(name);
-    if (it != patches.end())
-    {
-        auto patch = it->second.upper_bound(key_no);
-        if (patch != it->second.end()) {
-            return patch->second;
-        }
-    }
-
-    key_no = 255;
-    return {0,name};
-}
-
 void
 MIDIInstrument::set_stereo(bool s)
 {
@@ -126,7 +109,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         if (it == name_map.end())
         {
             auto inst = midi.get_instrument(bank_no, program_no, all);
-            auto patch = get_patch(inst.first.file, key);
+            auto patch = midi.get_patch(inst.first.file, key);
             std::string patch_name = patch.second;
             uint8_t level = patch.first;
             if (!patch_name.empty())

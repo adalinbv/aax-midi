@@ -481,6 +481,16 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         bank_no = xmlAttributeGetInt(xbid, "n") << 7;
                         bank_no += xmlAttributeGetInt(xbid, "l");
 
+                        if (bank_no == 0 && xmlAttributeExists(xbid, "default-drums"))
+                        {
+                            drum_bank_no = xmlAttributeGetInt(xbid, "default-drums");
+
+                            std::ostringstream s;
+                            s << "Switching to drum program number: ";
+                            s << drum_bank_no;
+                            INFO(s.str().c_str());
+                        }
+
                         // bank name
                         xmlAttributeCopyString(xiid, "name", name, 64);
 
@@ -597,6 +607,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     }
 }
 
+// patches are xml configuration files which define two or more
+// instrument definitions spread across midi note ranges.
 void
 MIDIDriver::add_patch(const char *file)
 {
@@ -648,8 +660,12 @@ MIDIDriver::add_patch(const char *file)
  * and the key_no in the program number of the map.
  */
 const inst_t
-MIDIDriver::get_drum(uint16_t bank_no, uint16_t program_no, uint8_t key_no, bool all)
+MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, bool all)
 {
+    if (program_no == 0 && drum_bank_no != -1) {
+        program_no = drum_bank_no;
+    }
+
     inst_t empty_map;
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;
@@ -812,6 +828,23 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
     auto& bank = itb->second;
     auto iti = bank.insert({program_no, std::move(empty_map)});
     return iti.first->second;
+}
+
+std::pair<uint8_t,std::string>
+MIDIDriver::get_patch(std::string& name, uint8_t& key)
+{
+    auto patches = get_patches();
+    auto it = patches.find(name);
+    if (it != patches.end())
+    {
+        auto patch = it->second.upper_bound(key);
+        if (patch != it->second.end()) {
+            return patch->second;
+        }
+    }
+
+    key = 255;
+    return {0,name};
 }
 
 void

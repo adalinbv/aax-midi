@@ -147,10 +147,16 @@ public:
     inline void set_grep(bool g) { grep_mode = g; }
     inline bool get_grep() { return grep_mode; }
 
-    const inst_t get_drum(uint16_t bank, uint16_t program, uint8_t key, bool all=false);
+    const inst_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
     std::map<uint16_t,patch_t>& get_frames() { return frames; }
     std::map<std::string,_patch_map_t>& get_patches() { return patches; }
+
+    std::pair<uint8_t,std::string> get_patch(std::string& name, uint8_t& key);
+    std::pair<uint8_t,std::string> get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
+        auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
+        return get_patch(inst.first.file, key);
+    }
 
     inline void set_initialize(bool i) { initialize = i; };
     inline bool get_initialize() { return initialize; }
@@ -296,6 +302,7 @@ private:
     unsigned int refresh_rate = 0;
     unsigned int polyphony = UINT_MAX;
 
+    int16_t drum_bank_no = -1;
     uint16_t PPQN = 24;
     uint32_t tempo = 500000;
     uint32_t uSPP = tempo/PPQN;
