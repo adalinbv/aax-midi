@@ -336,7 +336,6 @@ private:
 
     const std::string get_channel_name(uint16_t);
     static const std::vector<std::string> midi_channel_convention;
-    static const std::map<uint16_t,std::string> drum_set_map;
 };
 
 } // namespace aax

@@ -484,17 +484,6 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         if (bank_no == 0 && xmlAttributeExists(xbid, "default-drums"))
                         {
                             drum_set_no = xmlAttributeGetInt(xbid, "default-drums");
-
-                            std::ostringstream s;
-                            s << "Switching to drum set: ";
-
-                            auto it = drum_set_map.find(drum_set_no+1);
-                            if (it != drum_set_map.end()) {
-                                s << it->second;
-                            } else {
-                                s << drum_set_no+1;
-                            }
-                            INFO(s.str().c_str());
                         }
 
                         // bank name
@@ -610,6 +599,19 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         else {
             drums = std::move(imap);
         }
+    }
+
+    if (drum_set_no != -1)
+    {
+        std::ostringstream s;
+
+        auto it = frames.find(drum_set_no<<7);
+        if (it != frames.end()) {
+            s << "Switching to drum " << it->second.name;
+        } else {
+            s << "Switching to drum set number:  " << drum_set_no+1;
+        }
+        INFO(s.str().c_str());
     }
 }
 
@@ -1026,41 +1028,4 @@ MIDIDriver::midi_channel_convention = {
     "--Reserved--",
     "--Reserved--",
     "--Reserved--"
-};
-
-const std::map<uint16_t,std::string>
-MIDIDriver::drum_set_map = {
- {  0, "Standard" },
- {  1, "Standard 1" },
- {  9, "Room" },
- { 17, "Power" },
- { 25, "Electronic" },
- { 26, "TR-808" },
- { 33, "Jazz" },
- { 41, "Brush" },
- { 49, "Orchestra" },
- { 57, "SFX" },
-
- {  2, "Standard 2" },
- {  3, "Standard 3 [random]" },
- { 10, "Hip Hop" },
- { 11, "Jungle" },
- { 12, "Techno" },
- { 27, "Dance" },
- { 28, "CR-78" },
- { 29, "TR-606" },
- { 30, "TR-707" },
- { 31, "TR-909" },
- { 50, "Ethnic" },
- { 51, "Kick & Snare" },
- { 53, "Asia" },
- { 54, "Cymbal & Claps" },
- { 58, "Rhythm FX" },
- { 59, "Rhythm FX 2" },
-
- { 126<<7 |  1, "SFX 1"},
- { 126<<7 |  2, "SFX 2"},
- { 127<<7 |  2, "Standard 2"},
- { 127<<7 | 28, "Dance"},
-
 };
