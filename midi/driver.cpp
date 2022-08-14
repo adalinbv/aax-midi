@@ -601,7 +601,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         }
     }
 
-    if (drum_set_no != -1)
+    if (!midi.get_initialize() && drum_set_no != -1)
     {
         std::ostringstream s;
 

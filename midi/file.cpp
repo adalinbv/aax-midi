@@ -164,13 +164,16 @@ MIDIFile::initialize(const char *grep)
         }
     }
 
+    // Read the overlay instruments
     if (!gmmidi.empty() || gmdrums.empty()) {
        midi.read_instruments(gmmidi, gmdrums);
     }
+
+    // Read the default instruments
+    midi.set_initialize(true);
     midi.read_instruments();
 
     midi.set_grep(grep);
-    midi.set_initialize(true);
     duration_sec = 0.0f;
 
     uint64_t time_parts = 0;
