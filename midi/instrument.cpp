@@ -29,10 +29,11 @@
 
 using namespace aax;
 
-MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer, uint8_t channel,
-            uint16_t bank, uint8_t program, bool is_drums)
+MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
+                 uint8_t channel, uint16_t bank, uint8_t program, bool is_drums)
    : Instrument(ptr, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
-     channel_no(channel), bank_no(bank), program_no(program),
+     channel_no(channel), bank_no(bank),
+     program_no(program),
      drum_channel(channel == MIDI_DRUMS_CHANNEL ? true : is_drums)
 {
     set_gain(100.0f/127.0f);
@@ -42,6 +43,10 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer, uint8_t channel,
     Mixer::set(AAX_PLAYING);
 }
 
+MIDIInstrument::~MIDIInstrument()
+{
+    if (key_off_buffer) Mixer::remove(key_off);
+}
 
 void
 MIDIInstrument::set_stereo(bool s)
@@ -302,3 +307,35 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
     }
 }
 
+void
+MIDIInstrument::stop(uint32_t key_no, float velocity)
+{
+    Instrument::stop(key_no, velocity);
+
+    bool all = midi.no_active_tracks() > 0;
+    auto inst = midi.get_instrument(bank_no, program_no, all);
+    std::string patch_name = inst.first.key_off;
+    if (!patch_name.empty())
+    {
+        if (!key_off_buffer)
+        {
+            bool wide = inst.second.wide;
+
+            std::string name = inst.first.name;
+            DISPLAY(2, "Loading %s file: %s\n",
+                    name.c_str(),  patch_name.c_str());
+
+            key_off_buffer = aaxBuffer(midi.buffer(patch_name));
+            if (!key_off_buffer) {
+                throw(std::invalid_argument("Key-off file "+patch_name+" could not load"));
+            }
+            
+            key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
+            key_off.add(key_off_buffer);
+            Mixer::add(key_off);
+        }
+
+        key_off.set(AAX_INITIALIZED);
+        key_off.set(AAX_PLAYING);
+    }
+}

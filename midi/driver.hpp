@@ -53,8 +53,9 @@ struct wide_t
 
 struct patch_t
 {
-   std::string file;
    std::string name;
+   std::string file;
+   std::string key_off;
 };
 
 using inst_t = std::pair<struct patch_t, struct wide_t>;

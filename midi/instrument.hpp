@@ -40,16 +40,18 @@ private:
     MIDIInstrument& operator=(const MIDIInstrument&) = delete;
 
 public:
-    MIDIInstrument(MIDIDriver& ptr, Buffer &buffer, uint8_t channel,
-                uint16_t bank, uint8_t program, bool is_drums);
+    MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
+                   uint8_t channel, uint16_t bank, uint8_t program,
+                   bool is_drums);
 
     MIDIInstrument(MIDIInstrument&&) = default;
 
-    virtual ~MIDIInstrument() = default;
+    virtual ~MIDIInstrument();
 
     MIDIInstrument& operator=(MIDIInstrument&&) = default;
 
     void play(uint8_t key_no, uint8_t velocity, float pitch);
+    void stop(uint32_t key_no, float velocity = 0);
 
     inline void set_drums(bool d = true) { drum_channel = d; }
     inline bool is_drums() { return drum_channel; }
@@ -94,6 +96,9 @@ private:
     MIDIDriver &midi;
 
     Buffer nullBuffer;
+
+    Buffer key_off_buffer = nullptr;
+    Emitter key_off;
 
     float tuning = 1.0f;
     float modulation_range = 2.0f;

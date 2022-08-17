@@ -412,6 +412,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         {
             void *xaid = xmlNodeGet(xid, "aeonwave");
             void *xmid = nullptr;
+            char key_off[64] = "";
             char name[64] = "";
             char file[64] = "";
 
@@ -494,7 +495,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         if (slen)
                         {
                             file[slen] = 0;
-                            frames.insert({bank_no,{file,name}});
+                            frames.insert({bank_no,{name,file,""}});
                         }
 
                         auto bank = imap[bank_no];
@@ -526,13 +527,18 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 xmlAttributeCopyString(xiid, "name",
                                                               name, 64);
 
+                                // key-off file-name
+                                key_off[0] = '\0';
+                                xmlAttributeCopyString(xiid, "key-off",
+                                                              key_off, 64);
+
                                 // instrument file-name
                                 slen = xmlAttributeCopyString(xiid, "file",
                                                               file, 64);
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{{file,name},{wide,spread,stereo}}});
+                                    bank.insert({n,{{name,file,key_off},{wide,spread,stereo}}});
 
                                     _patch_map_t p;
                                     p.insert({0,{i,file}});
@@ -547,7 +553,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-                                        bank.insert({n,{{file,name},{wide,spread,stereo}}});
+                                        bank.insert({n,{{name,file,""},{wide,spread,stereo}}});
 
                                         add_patch(file);
                                     }
@@ -915,8 +921,8 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
         try {
             auto ret = channels.insert(
                 { track_no, std::shared_ptr<MIDIInstrument>(
-                                    new MIDIInstrument(*this, buffer, track_no,
-                                              bank_no, program_no, drums))
+                                    new MIDIInstrument(*this, buffer,
+                                          track_no, bank_no, program_no, drums))
                 } );
             it = ret.first;
             AeonWave::add(*it->second);
