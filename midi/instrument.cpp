@@ -22,6 +22,8 @@
 
 #include <cassert>
 
+#include <thread>
+
 #include <midi/shared.hpp>
 #include <midi/file.hpp>
 #include <midi/driver.hpp>
@@ -311,6 +313,7 @@ void
 MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
     Instrument::stop(key_no, velocity);
+    if (midi.get_initialize()) return;
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -319,8 +322,6 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
     {
         if (!key_off_buffer)
         {
-            bool wide = inst.second.wide;
-
             std::string name = inst.first.name;
             DISPLAY(2, "Loading %s file: %s\n",
                     name.c_str(),  patch_name.c_str());
@@ -329,12 +330,18 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             if (!key_off_buffer) {
                 throw(std::invalid_argument("Key-off file "+patch_name+" could not load"));
             }
-            
+	}
+
+        if (!key_off)
+        {
+            bool wide = inst.second.wide;
+
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
             key_off.add(key_off_buffer);
             Mixer::add(key_off);
         }
 
+        key_off.set(AAX_PROCESSED);
         key_off.set(AAX_INITIALIZED);
         key_off.set(AAX_PLAYING);
     }
