@@ -90,15 +90,24 @@ public:
     }
 
 private:
+    inline float note2freq(uint32_t d) {
+        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
+    }
+
     std::map<uint8_t,Buffer&> name_map;
     std::string track_name;
 
     MIDIDriver &midi;
 
+
     Buffer nullBuffer;
 
-    Buffer key_off_buffer = nullptr;
     Emitter key_off;
+    Param key_off_pitch_param = 1.0f;
+
+    Buffer key_off_buffer = nullptr;
+    float buffer_frequency = 22050.f;
+    float buffer_fraction = 1.0f;
 
     float tuning = 1.0f;
     float modulation_range = 2.0f;

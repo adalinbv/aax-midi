@@ -80,9 +80,9 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             {
                 if (!midi.buffer_avail(filename))
                 {
-                    std::string &display = (midi.get_verbose() >= 99) ? 
+                    std::string &display = (midi.get_verbose() >= 99) ?
                                            inst.first.file : inst.first.name;
-                    
+
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              key_no, bank_no >> 7, bank_no & 0x7F,
                              program_no, display.c_str());
@@ -338,8 +338,18 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
             key_off.add(key_off_buffer);
+
+            buffer_frequency = key_off_buffer.get(AAX_UPDATE_RATE);
+            buffer_fraction = 1e-6f*key_off_buffer.get(AAX_REFRESH_RATE);
+            key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
+
             Mixer::add(key_off);
         }
+
+        // note2pitch
+        float f = note2freq(key_no);
+        f = (f - buffer_frequency)*buffer_fraction + buffer_frequency;
+        key_off_pitch_param = f/buffer_frequency;
 
         key_off.set(AAX_PROCESSED);
         key_off.set(AAX_INITIALIZED);
