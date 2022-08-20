@@ -332,10 +332,9 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             }
 	}
 
+        bool wide = inst.second.wide;
         if (!key_off)
         {
-            bool wide = inst.second.wide;
-
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
             key_off.add(key_off_buffer);
 
@@ -343,13 +342,34 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             buffer_fraction = 1e-6f*key_off_buffer.get(AAX_REFRESH_RATE);
             key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
+            pan.wide = inst.second.wide;
+
             Mixer::add(key_off);
         }
 
         // note2pitch
-        float f = note2freq(key_no);
-        f = (f - buffer_frequency)*buffer_fraction + buffer_frequency;
-        key_off_pitch_param = f/buffer_frequency;
+        float key_frequency = note2freq(key_no);
+        float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
+        key_freq += buffer_frequency;
+
+        float pitch = key_freq/buffer_frequency;
+        key_off_pitch_param = pitch;
+
+        // panning
+        if (wide)
+        {
+            key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
+            key_freq += buffer_frequency;
+
+            float p = (lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+            p = floorf(-2.0f*(p-0.5f)*PAN_LEVELS)/PAN_LEVELS;
+            if (p != pan_prev)
+            {
+                pan.set(p, true);
+                key_off.matrix(pan.mtx);
+                pan_prev = p;
+            }
+        }
 
         key_off.set(AAX_PROCESSED);
         key_off.set(AAX_INITIALIZED);
