@@ -45,11 +45,6 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
     Mixer::set(AAX_PLAYING);
 }
 
-MIDIInstrument::~MIDIInstrument()
-{
-    if (key_off_buffer) Mixer::remove(key_off);
-}
-
 void
 MIDIInstrument::set_stereo(bool s)
 {

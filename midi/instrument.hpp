@@ -46,7 +46,7 @@ public:
 
     MIDIInstrument(MIDIInstrument&&) = default;
 
-    virtual ~MIDIInstrument();
+    virtual ~MIDIInstrument() = default;
 
     MIDIInstrument& operator=(MIDIInstrument&&) = default;
 
