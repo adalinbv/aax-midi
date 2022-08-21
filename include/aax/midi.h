@@ -295,15 +295,16 @@ void aaxMIDISetCSV(aaxMIDI*, char v);
 }	/* extern "C" */
 
 #include <memory>
+#include <sstream>
 #include <functional>
 
 #include <aax/aeonwave.hpp>
 #include <aax/instrument.hpp>
 
 #ifndef NDEBUG
-# define THROW(...)	std::throw(std::domain_error(...)
+# define THROW(x)	throw(std::domain_error(x))
 #else
-# define THROW(...)
+# define THROW(x)
 #endif
 
 namespace aax
@@ -408,20 +409,25 @@ public:
         set_message(m >> 32);
     }
     inline void set_data(uint8_t i, uint32_t d) {
+        std::ostringstream s;
         switch(message_type)
         {
         case MIDI2_UTILITY_MESSAGE:
         case MIDI2_SYSTEM_REAL_TIME_MESSAGE:
         case MIDI1_VOICE_MESSAGE:
-            THROW("set_data index no. " + i + "unsupported for "
-                 "message type" + message_type);
+            s << "set_data index no. " << i
+              << "unsupported for message type" << message_type;
+            THROW(s.str());
             break;
         case MIDI2_SYSTEM_EXCLUSIVE_MESSAGE:
         case MIDI2_VOICE_MESSAGE:
         case MIDI2_DATA_MESSAGE:
             if (i == 1) data[i] = d;
-            else THROW("set_data index no. " + i + "unsupported for"
-                 "message type " + message_type);
+            else {
+                s << "set_data index no. " << i
+                  << "unsupported for message type " << message_type;
+                THROW(s.str());
+            }
             break;
         default:
             THROW("set_data is not supported for message type " +
