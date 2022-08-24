@@ -47,6 +47,8 @@
 # include <sys/time.h>
 #endif
 
+#include <base/memory.h>
+
 #include "driver.h"
 
 
@@ -62,7 +64,7 @@ getDeviceName(int argc, char **argv)
     if (!s) s = getCommandLineOption(argc, argv, "--device");
     if (s)
     {
-        strncpy((char *)&devname, s, len);
+        strlcpy((char *)&devname, s, len);
         len -= strlen(s);
 
         /* -r for a separate renderer */
@@ -93,7 +95,7 @@ getCaptureName(int argc, char **argv)
     if (!s) s = getCommandLineOption(argc, argv, "--capture");
     if (s)
     {
-        strncpy((char *)&devname, s, len);
+        strlcpy((char *)&devname, s, len);
         len -= strlen(s);
     }
 
@@ -512,7 +514,7 @@ setFiltersEffects(int argc, char **argv, aaxConfig c, aaxConfig m, aaxFrame f, a
     if (!s) s = getCommandLineOption(argc, argv, "--aaxs");
     if (s)
     {
-        strncpy((char *)&fname, s, len);
+        strlcpy((char *)&fname, s, len);
         len -= strlen(s);
 
         buffer = aaxBufferReadFromStream(c, fname);

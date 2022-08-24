@@ -5,6 +5,7 @@ if(COMMAND CMAKE_POLICY)
   CMAKE_POLICY(SET CMP0003 NEW)
 endif(COMMAND CMAKE_POLICY)
 
+include(CheckFunctionExists)
 include(CheckLibraryExists)
 include(CheckIncludeFile)
 include (CheckIncludeFiles)
@@ -157,11 +158,12 @@ include_directories("${aax-midi_SOURCE_DIR}"
     "${aax-midi_BINARY_DIR}/include"
 )
 
-CHECK_include_FILE(strings.h HAVE_STRINGS_H)
-CHECK_include_FILE(limits.h HAVE_LIMITS_H)
-CHECK_include_FILE(unistd.h HAVE_UNISTD_H)
-CHECK_include_FILE(sys/time.h HAVE_SYS_TIME_H)
-CHECK_include_FILE(time.h HAVE_TIME_H)
+check_function_exists(strlcpy HAVE_STRLCPY)
+check_include_FILE(strings.h HAVE_STRINGS_H)
+check_include_FILE(limits.h HAVE_LIMITS_H)
+check_include_FILE(unistd.h HAVE_UNISTD_H)
+check_include_FILE(sys/time.h HAVE_SYS_TIME_H)
+check_include_FILE(time.h HAVE_TIME_H)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/include/cmake_config.h.in"
@@ -203,6 +205,7 @@ link_directories(
 
 set(LIBMIDI aaxmidi)
 
+add_subdirectory(base)
 midi_subdirectory(src)
 midi_subdirectory(midi)
 midi_subdirectory(utils)

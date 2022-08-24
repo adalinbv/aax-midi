@@ -1,13 +1,13 @@
 
 set(BASE_HEADERS
-  types.h
+  memory.h
 )
 
 set(BASE_OBJS
-  types.c
+  memory.c
 )
 
 set(LIBTYPE STATIC)
 
 set(LIBBASE base)
-ADD_LIBRARY(${LIBBASE} ${LIBTYPE} ${BASE_OBJS})
+add_library(${LIBBASE} ${LIBTYPE} ${BASE_OBJS})
