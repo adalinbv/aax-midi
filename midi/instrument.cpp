@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2021 by Erik Hofman.
- * Copyright (C) 2018-2021 by Adalin B.V.
+ * Copyright (C) 2018-2022 by Erik Hofman.
+ * Copyright (C) 2018-2022 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -70,12 +70,12 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         if (it == name_map.end())
         {
             auto inst = midi.get_drum(bank_no, program_no, key_no, all);
-            std::string filename = inst.first.file;
+            std::string& filename = inst.first.file;
             if (!filename.empty() && filename != "")
             {
                 if (!midi.buffer_avail(filename))
                 {
-                    std::string &display = (midi.get_verbose() >= 99) ?
+                    std::string& display = (midi.get_verbose() >= 99) ?
                                            inst.first.file : inst.first.name;
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
@@ -112,14 +112,14 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             auto inst = midi.get_instrument(bank_no, program_no, all);
             auto patch = midi.get_patch(inst.first.file, key);
-            std::string patch_name = patch.second;
+            std::string& patch_name = patch.second;
             uint8_t level = patch.first;
             if (!patch_name.empty())
             {
                 if (!midi.buffer_avail(patch_name) &&
                     !midi.is_loaded(patch_name))
                 {
-                    std::string &display = (midi.get_verbose() >= 99) ?
+                    std::string& display = (midi.get_verbose() >= 99) ?
                                            inst.first.file : inst.first.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
@@ -312,29 +312,21 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
-    std::string patch_name = inst.first.key_off;
+    std::string& patch_name = inst.first.key_off;
     if (!patch_name.empty())
     {
-        if (!key_off_buffer)
-        {
-            std::string name = inst.first.name;
-            DISPLAY(2, "Loading %s file: %s\n",
-                    name.c_str(),  patch_name.c_str());
-
-            key_off_buffer = aaxBuffer(midi.buffer(patch_name));
-            if (!key_off_buffer) {
-                throw(std::invalid_argument("Key-off file "+patch_name+" could not load"));
-            }
-	}
-
         bool wide = inst.second.wide;
         if (!key_off)
         {
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
-            key_off.add(key_off_buffer);
 
-            buffer_frequency = key_off_buffer.get(AAX_UPDATE_RATE);
-            buffer_fraction = 1e-6f*key_off_buffer.get(AAX_REFRESH_RATE);
+            std::string name = inst.first.name;
+            DISPLAY(2, "Loading %s file: %s\n",
+                    name.c_str(),  patch_name.c_str());
+            key_off.add( midi.buffer(patch_name) );
+
+            buffer_frequency = midi.buffer(patch_name).get(AAX_UPDATE_RATE);
+            buffer_fraction = 1e-6f*midi.buffer(patch_name).get(AAX_REFRESH_RATE);
             key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
             pan.wide = inst.second.wide;

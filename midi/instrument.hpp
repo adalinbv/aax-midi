@@ -108,7 +108,6 @@ private:
     Panning pan;
     float pan_prev = -1000.0f;
 
-    Buffer key_off_buffer = nullptr;
     float buffer_frequency = 22050.f;
     float buffer_fraction = 1.0f;
 
