@@ -53,6 +53,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
     devno = type & 0xF;
     switch (type & 0xF0)
     {
+    case 0x70:
     case GSMIDI_SYSTEM:
     {
         byte = pull_byte();
@@ -280,6 +281,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     case GSMIDI_DELAY_LEVEL_RIGHT:
                         LOG(99, "LOG: Unsupported GS sysex Delay Level Right\n");
                         break;
+                    case GSMIDI_DRUM_PART0:
                     case GSMIDI_DRUM_PART1:
                     case GSMIDI_DRUM_PART2:
                     case GSMIDI_DRUM_PART3:
@@ -297,14 +299,15 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     case GSMIDI_DRUM_PART16:
                     {
                         uint8_t part_no = addr_mid & 0xf;
-                        if (value == 0x02)
+                        if (1) // value == 0x02)
                         {
                             byte = pull_byte();
                             CSV(",%d", byte);
                             if (GS_checksum(sum) == byte)
                             {
-                                midi.channel(part_no).set_drums(true);
-                                MESSAGE(2, "Changing part: %i to drums\n", part_no);
+                                bool drums = value ? true : false;
+                                midi.channel(part_no).set_drums(drums);
+                                MESSAGE(2, "Changing part: %i to %s\n", part_no, drums ? "drums" : "instrument");
                                 rv = true;
                             }
                         }
