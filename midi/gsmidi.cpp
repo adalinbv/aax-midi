@@ -295,8 +295,9 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                         {
                             byte = pull_byte();
                             CSV(",%d", byte);
-                            if (byte == 0x10) {
+                            if (1) { // byte == 0x10) { // disregard the checksum
                                 midi.channel(part_no).set_drums(true);
+                                MESSAGE(2, "Changing part: %i to drums\n", part_no);
                                 rv = true;
                             }
                         }
