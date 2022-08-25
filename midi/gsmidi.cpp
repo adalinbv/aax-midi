@@ -28,7 +28,7 @@
 using namespace aax;
 
 
-uint8_t MIDIStream::GS_checkcum(uint64_t sum)
+uint8_t MIDIStream::GS_checksum(uint64_t sum)
 {
     return 128 - (sum % 128);
 }
@@ -86,7 +86,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                         byte = pull_byte();
                         CSV(", %d", byte);
                         
-                        if (GS_checkcum(sum) == byte) // checksum
+                        if (GS_checksum(sum) == byte)
                         {
                             midi.set_mode(MIDI_GENERAL_STANDARD);
                             rv = true;
@@ -301,7 +301,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                         {
                             byte = pull_byte();
                             CSV(",%d", byte);
-                            if (GS_checkcum(sum) == byte) // checksum
+                            if (GS_checksum(sum) == byte)
                             {
                                 midi.channel(part_no).set_drums(true);
                                 MESSAGE(2, "Changing part: %i to drums\n", part_no);
