@@ -239,6 +239,8 @@ public:
         return (stat(path.c_str(), &buffer) == 0);
     }
 
+    std::string get_channel_name(uint16_t);
+
     MIDIDriver &midi = *this;
     int capabilities = midi.get(AAX_CAPABILITIES);
     int cores = (capabilities & AAX_CPU_CORES)+1;
@@ -335,7 +337,6 @@ private:
     Status reverb_state = AAX_FALSE;
     aax::Mixer reverb = aax::Mixer(*this);
 
-    const std::string get_channel_name(uint16_t);
     static const std::vector<std::string> midi_channel_convention;
 };
 

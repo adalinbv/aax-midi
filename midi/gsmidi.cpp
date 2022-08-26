@@ -299,17 +299,16 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     case GSMIDI_DRUM_PART16:
                     {
                         uint8_t part_no = addr_mid & 0xf;
-                        if (1) // value == 0x02)
+                        byte = pull_byte();
+                        CSV(",%d", byte);
+                        if (GS_checksum(sum) == byte)
                         {
-                            byte = pull_byte();
-                            CSV(",%d", byte);
-                            if (GS_checksum(sum) == byte)
-                            {
-                                bool drums = value ? true : false;
-                                midi.channel(part_no).set_drums(drums);
-                                MESSAGE(2, "Changing part: %i to %s\n", part_no, drums ? "drums" : "instrument");
-                                rv = true;
-                            }
+                            bool drums = value ? true : false;
+                            midi.channel(part_no).set_drums(drums);
+
+                            std::string name = midi.get_channel_name(part_no);
+                            MESSAGE(3, "Set part %i to %s\n", part_no, name.c_str());
+                            rv = true;
                         }
                         break;
                     }

@@ -800,7 +800,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
                 bank_no = 0;
             }
         case MIDI_GENERAL_STANDARD:
-        {   
+        {
             bool sc88pro = ((bank_no & 0x7) == 3);
             if (bank_no & 0x7F) {          // Remove Model-ID
                  bank_no &= ~0x7F;
@@ -1007,13 +1007,29 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velo
     return true;
 }
 
-const std::string
+std::string
 MIDIDriver::get_channel_name(uint16_t part_no)
 {
-    uint16_t bank_no = channel(part_no).get_bank_no();
-    uint8_t program_no = channel(part_no).get_program_no();
-    auto inst = midi.get_instrument(bank_no, program_no);
-    return inst.first.name;
+    std::string rv;
+    if (is_drums(part_no))
+    {
+        rv = "Drums";
+        uint16_t bank_no = channel(part_no).get_bank_no();
+        auto itb = frames.find(bank_no);
+        if (itb != frames.end())
+        {
+           auto bank = itb->second;
+           rv += ": " + bank.name;
+        }
+    }
+    else
+    {
+        uint16_t bank_no = channel(part_no).get_bank_no();
+        uint8_t program_no = channel(part_no).get_program_no();
+        auto inst = midi.get_instrument(bank_no, program_no);
+        rv = inst.first.name;
+    }
+    return rv;
 }
 
 const std::vector<std::string>
