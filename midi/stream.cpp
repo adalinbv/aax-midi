@@ -508,10 +508,14 @@ bool MIDIStream::process_control(uint8_t track_no)
         omni = true;
         break;
     case MIDI_BANK_SELECT:
-        if (value == MIDI_BANK_RYTHM) {
-            channel.set_drums(true);
-        } else if (value == MIDI_BANK_MELODY) {
-            channel.set_drums(false);
+    {
+        bool prev = channel.is_drums();
+        bool drums = (value == MIDI_BANK_RYTHM) ? true : false;
+        if (prev != drums)
+        {
+            channel.set_drums(drums);
+            std::string name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
         }
         switch(midi.get_mode())
         {
@@ -524,6 +528,7 @@ bool MIDIStream::process_control(uint8_t track_no)
             break;
         }
         break;
+     }
     case MIDI_BANK_SELECT|MIDI_FINE:
         switch(midi.get_mode())
         {

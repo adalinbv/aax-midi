@@ -306,7 +306,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                             bool drums = value ? true : false;
                             midi.channel(part_no).set_drums(drums);
 
-                            std::string name = midi.get_channel_name(part_no);
+                            std::string name = midi.get_channel_type(part_no);
                             MESSAGE(3, "Set part %i to %s\n", part_no, name.c_str());
                             rv = true;
                         }

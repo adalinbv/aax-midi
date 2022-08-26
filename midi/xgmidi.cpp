@@ -786,10 +786,13 @@ bool MIDIStream::XG_process_sysex(uint64_t size)
                     LOG(99, "LOG: Unsupported XG sysex Same Note Number Key On Assign\n");
                     break;
                 case XGMIDI_PART_MODE: // 0: normal, 1: drum, 2-5: drums1-4
-                    // http://www.studio4all.de/htmle/main93.html
-                    if (value) channel.set_drums(true);
-                    else channel.set_drums(false);
+                {
+                    bool drums = value ? true : false;
+                    channel.set_drums(drums);
+                    std::string name = midi.get_channel_type(part_no);
+                    MESSAGE(3, "Set part %i to %s\n", part_no, name.c_str());
                     break;
+                }
                 case XGMIDI_NOTE_SHIFT: // -24 - +24 semitones
                     LOG(99, "LOG: Unsupported XG sysex Note Shift\n");
                     break;

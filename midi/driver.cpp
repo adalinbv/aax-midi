@@ -1008,6 +1008,13 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velo
 }
 
 std::string
+MIDIDriver::get_channel_type(uint16_t part_no)
+{
+    if (is_drums(part_no))  return "Drums";
+    return "Instrument";
+}
+
+std::string
 MIDIDriver::get_channel_name(uint16_t part_no)
 {
     std::string rv;
@@ -1019,7 +1026,7 @@ MIDIDriver::get_channel_name(uint16_t part_no)
         if (itb != frames.end())
         {
            auto bank = itb->second;
-           rv += ": " + bank.name;
+           rv = bank.name;
         }
     }
     else

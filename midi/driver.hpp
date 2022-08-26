@@ -239,6 +239,7 @@ public:
         return (stat(path.c_str(), &buffer) == 0);
     }
 
+    std::string get_channel_type(uint16_t);
     std::string get_channel_name(uint16_t);
 
     MIDIDriver &midi = *this;
