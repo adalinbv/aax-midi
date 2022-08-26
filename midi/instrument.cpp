@@ -308,7 +308,7 @@ void
 MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
     Instrument::stop(key_no, velocity);
-    if (midi.get_initialize()) return;
+//  if (midi.get_initialize()) return;
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -321,7 +321,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
             std::string name = inst.first.name;
-            DISPLAY(2, "Loading %s file: %s\n",
+            MESSAGE(3, "Loading %s key-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
             key_off.add( midi.buffer(patch_name) );
 
