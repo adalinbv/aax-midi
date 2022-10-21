@@ -179,13 +179,15 @@ MIDIFile::initialize(const char *grep)
     uint64_t time_parts = 0;
     uint32_t wait_parts = 1000000;
     t = clock();
-    try {
+    try
+    {
         while (process(time_parts, wait_parts))
         {
             time_parts += wait_parts;
             duration_sec += wait_parts*midi.get_uspp()*1e-6f;
         }
-    } catch (const std::runtime_error &e) {
+    }
+    catch (const std::runtime_error &e) {
        throw(e);
     }
     eps = (double)(clock() - t)/ CLOCKS_PER_SEC;

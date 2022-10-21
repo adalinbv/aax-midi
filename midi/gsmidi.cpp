@@ -575,6 +575,9 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
             mode = MIDI_POLYPHONIC;
         }
         break;
+    case GSMIDI_PART_CHANNEL_SWITCH:
+        LOG(99, "LOG: Unsupported GS sysex part channel switch\n");
+        break;
     case GSMIDI_PART_NRPN_SWITCH:
     default:
         LOG(99, "LOG: Unsupported GS sysex part set: 0x%02x (%d)\n", addr, addr);
