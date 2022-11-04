@@ -22,6 +22,7 @@
 
 #include <regex>
 #include <iostream>
+#include <cstring>
 
 #include <aax/strings.hpp>
 #include <xml.h>
