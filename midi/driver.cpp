@@ -478,7 +478,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                     {
                         unsigned int slen, inum = xmlNodeGetNum(xbid, type);
                         void *xiid = xmlMarkId(xbid);
-                        unsigned int bank_no;
+                        uint16_t bank_no;
 
                         bank_no = xmlAttributeGetInt(xbid, "n") << 7;
                         bank_no += xmlAttributeGetInt(xbid, "l");
@@ -504,7 +504,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
-                                long int n = xmlAttributeGetInt(xiid, "n");
+                                uint16_t n = xmlAttributeGetInt(xiid, "n");
                                 float spread = 1.0f;
                                 bool stereo = false;
                                 int wide = 0;
