@@ -510,7 +510,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_BANK_SELECT:
     {
         bool prev = channel.is_drums();
-        bool drums = (value == MIDI_BANK_RYTHM) ? true : false;
+        bool drums = (track_no == MIDI_DRUMS_CHANNEL || value == MIDI_BANK_RYTHM) ? true : false;
         if (prev != drums)
         {
             channel.set_drums(drums);
@@ -534,14 +534,20 @@ bool MIDIStream::process_control(uint8_t track_no)
         {
         case MIDI_GENERAL_MIDI2:
         case MIDI_EXTENDED_GENERAL_MIDI:
+        {
+            bool prev = channel.is_drums();
+            bool drums = (bank_no == MIDI_DRUMS_CHANNEL_MT32 ||
+                          bank_no == MIDI_DRUMS_CHANNEL_XG) ? true : false;
             bank_no += value;
-            if (bank_no == 0x3f80 || // MT-32/XG mode
-                bank_no == 0x3f00) { // XG Mode, SFX
-               channel.set_drums(true);
-            } else {
-               channel.set_drums(false);
+
+            if (prev != drums)
+            {
+                channel.set_drums(drums);
+                std::string name = midi.get_channel_type(track_no);
+                MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
             }
             break;
+        }
         default:
             break;
         }

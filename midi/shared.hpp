@@ -56,6 +56,9 @@
 namespace aax
 {
 #define MIDI_DRUMS_CHANNEL              0x9
+#define MIDI_DRUMS_CHANNEL_MT32		0x3f80
+#define MIDI_DRUMS_CHANNEL_XG		0x3f00
+
 #define MIDI_FILE_FORMAT_MAX            0x3
 
 #ifndef LEVEL_60DB
