@@ -535,17 +535,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         case MIDI_GENERAL_MIDI2:
         case MIDI_EXTENDED_GENERAL_MIDI:
         {
-            bool prev = channel.is_drums();
-            bool drums = (bank_no == MIDI_DRUMS_CHANNEL_MT32 ||
-                          bank_no == MIDI_DRUMS_CHANNEL_XG) ? true : false;
             bank_no += value;
-
-            if (prev != drums)
-            {
-                channel.set_drums(drums);
-                std::string name = midi.get_channel_type(track_no);
-                MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
-            }
             break;
         }
         default:
