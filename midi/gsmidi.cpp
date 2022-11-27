@@ -371,13 +371,11 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                             switch (addr_mid & 0xF0)
                             {
                             case GSMIDI_PART_SET:
+                            case GSMIDI_PART_SWITCH:
                                 GS_sysex_part(part_no, addr_low, value);
                                 break;
                             case GSMIDI_MODULATION_SET:
                                 GS_sysex_modulation(part_no, addr_low, value);
-                               break;
-                            case GSMIDI_PART_SWITCH:
-                               LOG(99, "LOG: Unsupported GS sysex Part Switch\n");
                                break;
                             default:
                                 LOG(99, "LOG: GS Data Set 1: Unsupported address:"
