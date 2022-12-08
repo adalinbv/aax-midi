@@ -96,7 +96,7 @@ get_elem(const char *dir, std::string &file)
 {
     unsigned int rv = 0;
     size_t fpos;
-    void *xid;
+    xmlId *xid;
 
     std::string path(dir);
     fpos = path.find_last_of("/\\");
@@ -109,7 +109,7 @@ get_elem(const char *dir, std::string &file)
     xid = xmlOpen(path.c_str());
     if (xid)
     {
-        void *xsid = xmlNodeGet(xid, "/aeonwave/sound");
+        xmlId *xsid = xmlNodeGet(xid, "/aeonwave/sound");
         if (xsid)
         {
             rv = xmlNodeGetNum(xsid, "layer");
@@ -123,18 +123,18 @@ get_elem(const char *dir, std::string &file)
 }
 
 int
-fill_bank(bank_t& bank, void *xid, const char *tag)
+fill_bank(bank_t& bank, xmlId *xid, const char *tag)
 {
     int rv = 0;
 
     bank.clear();
 
-    void *xmid;
+    xmlId *xmid;
     xmid = xmlNodeGet(xid, "/aeonwave/midi");
     if (xmid)
     {
         unsigned int bnum = xmlNodeGetNum(xmid, "bank");
-        void *xbid = xmlMarkId(xmid);
+        xmlId *xbid = xmlMarkId(xmid);
         unsigned int b, i, nl;
         char file[1024];
         char name[1024];
@@ -144,7 +144,7 @@ fill_bank(bank_t& bank, void *xid, const char *tag)
             if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
             {
                 unsigned int slen, inum = xmlNodeGetNum(xbid, tag);
-                void *xiid = xmlMarkId(xbid);
+                xmlId *xiid = xmlMarkId(xbid);
 
                 std::string bank_name;
                 slen = xmlAttributeCopyString(xiid, "name", name, 64);
@@ -514,8 +514,8 @@ int main(int argc, char **argv)
     enum mode_e mode = ASCII;
     const char *env;
     bank_t bank, bank2;
-    void *xid2;
-    void *xid;
+    xmlId *xid2;
+    xmlId *xid;
 
     if (argc < 2) help(argv[0]);
 
