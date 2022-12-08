@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018-2022 by Erik Hofman.
+xmlIdd * Copyright (C) 2018-2022 by Erik Hofman.
  * Copyright (C) 2018-2022 by Adalin B.V.
  * All rights reserved.
  *
@@ -299,6 +299,60 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         }
 
         Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+
+        bool all = midi.no_active_tracks() > 0;
+        auto inst = midi.get_instrument(bank_no, program_no, all);
+        std::string& patch_name = inst.first.key_on;
+        if (!patch_name.empty())
+        {
+            bool wide = inst.second.wide;
+            if (!key_on)
+            {
+                key_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
+
+                std::string name = inst.first.name;
+                MESSAGE(3, "Loading %s key-off file: %s\n",
+                        name.c_str(),  patch_name.c_str());
+                key_on.add( midi.buffer(patch_name) );
+
+                buffer_frequency = midi.buffer(patch_name).get(AAX_UPDATE_RATE);
+                buffer_fraction = 1e-6f*midi.buffer(patch_name).get(AAX_REFRESH_RATE);
+                key_on.tie(key_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
+
+                pan.wide = inst.second.wide;
+
+                Mixer::add(key_on);
+            }
+
+            // note2pitch
+            float key_frequency = note2freq(key_no);
+            float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
+            key_freq += buffer_frequency;
+
+            float pitch = key_freq/buffer_frequency;
+            key_on_pitch_param = pitch;
+
+            // panning
+            if (wide)
+            {
+                key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
+                key_freq += buffer_frequency;
+
+                float p = (lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+                p = floorf(-2.0f*(p-0.5f)*PAN_LEVELS)/PAN_LEVELS;
+                if (p != pan_prev)
+                {
+                    pan.set(p, true);
+                    key_on.matrix(pan.mtx);
+                    pan_prev = p;
+                }
+            }
+
+            key_on.set(AAX_PROCESSED);
+            key_on.set(AAX_INITIALIZED);
+            key_on.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, velocity);
+            key_on.set(AAX_PLAYING);
+        }
     } else {
 //      throw(std::invalid_argument("Instrument file "+name+" not found"));
     }

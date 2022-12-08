@@ -55,6 +55,7 @@ struct patch_t
 {
    std::string name;
    std::string file;
+   std::string key_on;
    std::string key_off;
 };
 

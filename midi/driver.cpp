@@ -410,12 +410,13 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     filename = iname.c_str();
     for(unsigned int id=0; id<2; ++id)
     {
-        void *xid = xmlOpen(filename);
+        xmlId *xid = xmlOpen(filename);
         if (xid)
         {
-            void *xaid = xmlNodeGet(xid, "aeonwave");
-            void *xmid = nullptr;
+            xmlId *xaid = xmlNodeGet(xid, "aeonwave");
+            xmlId *xmid = nullptr;
             char key_off[64] = "";
+            char key_on[64] = "";
             char name[64] = "";
             char file[64] = "";
 
@@ -473,13 +474,13 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 }
 
                 unsigned int bnum = xmlNodeGetNum(xmid, "bank");
-                void *xbid = xmlMarkId(xmid);
+                xmlId *xbid = xmlMarkId(xmid);
                 for (unsigned int b=0; b<bnum; b++)
                 {
                     if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
                     {
                         unsigned int slen, inum = xmlNodeGetNum(xbid, type);
-                        void *xiid = xmlMarkId(xbid);
+                        xmlId *xiid = xmlMarkId(xbid);
                         uint16_t bank_no;
 
                         bank_no = xmlAttributeGetInt(xbid, "n") << 7;
@@ -530,6 +531,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 xmlAttributeCopyString(xiid, "name",
                                                               name, 64);
 
+                                // key-on file-name
+                                key_on[0] = '\0';
+                                xmlAttributeCopyString(xiid, "key-on",
+                                                              key_on, 64);
+
                                 // key-off file-name
                                 key_off[0] = '\0';
                                 xmlAttributeCopyString(xiid, "key-off",
@@ -541,7 +547,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{{name,file,key_off},{wide,spread,stereo}}});
+                                    bank.insert({n,{{name,file,key_on,key_off},{wide,spread,stereo}}});
 
                                     _patch_map_t p;
                                     p.insert({0,{i,file}});
@@ -636,14 +642,14 @@ MIDIDriver::add_patch(const char *file)
     xmlfile.append(file);
     xmlfile.append(".xml");
 
-    void *xid = xmlOpen(xmlfile.c_str());
+    xmlId *xid = xmlOpen(xmlfile.c_str());
     if (xid)
     {
-        void *xlid = xmlNodeGet(xid, "instrument/layer");
+        xmlId *xlid = xmlNodeGet(xid, "instrument/layer");
         if (xlid)
         {
             unsigned int pnum = xmlNodeGetNum(xlid, "patch");
-            void *xpid = xmlMarkId(xlid);
+            xmlId *xpid = xmlMarkId(xlid);
             _patch_map_t p;
             for (unsigned int i=0; i<pnum; i++)
             {

@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2021 by Erik Hofman.
- * Copyright (C) 2018-2021 by Adalin B.V.
+ * Copyright (C) 2018-2022 by Erik Hofman.
+ * Copyright (C) 2018-2022 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -102,7 +102,9 @@ private:
 
     Buffer nullBuffer;
 
+    Emitter key_on;
     Emitter key_off;
+    Param key_on_pitch_param = 1.0f;
     Param key_off_pitch_param = 1.0f;
 
     Panning pan;
