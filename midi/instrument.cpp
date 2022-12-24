@@ -350,7 +350,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 
             key_on.set(AAX_PROCESSED);
             key_on.set(AAX_INITIALIZED);
-            key_on.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, velocity);
+            key_on.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 127.0f*velocity);
             key_on.set(AAX_PLAYING);
         }
     } else {
@@ -414,7 +414,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 
         key_off.set(AAX_PROCESSED);
         key_off.set(AAX_INITIALIZED);
-        key_off.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, velocity);
+        key_off.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 127.0f*velocity);
         key_off.set(AAX_PLAYING);
     }
 }
