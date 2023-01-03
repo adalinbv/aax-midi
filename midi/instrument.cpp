@@ -299,6 +299,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         }
 
         Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+        if (drum_channel) return;
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -363,6 +364,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
     Instrument::stop(key_no, velocity);
 //  if (midi.get_initialize()) return;
+    if (drum_channel) return;
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
