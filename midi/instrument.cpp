@@ -312,7 +312,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 key_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
                 std::string name = inst.first.name;
-                MESSAGE(3, "Loading %s key-on file: %s\n",
+                MESSAGE(3, "Loading %s: key-on file: %s\n",
                         name.c_str(),  patch_name.c_str());
                 key_on.add( midi.buffer(patch_name) );
 
@@ -377,7 +377,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
             std::string name = inst.first.name;
-            MESSAGE(3, "Loading %s key-off file: %s\n",
+            MESSAGE(3, "Loading %s: key-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
             key_off.add( midi.buffer(patch_name) );
 
