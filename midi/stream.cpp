@@ -589,7 +589,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     }
     case MIDI_CHANNEL_VOLUME:
-        if (value) {
+        if (value && channel.get_gain() != (float)value/127.0f) {
             MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
                         (float)value*100.0f/127.0f, name.c_str());
         }

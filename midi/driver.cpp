@@ -235,17 +235,19 @@ MIDIDriver::send_chorus_to_reverb(float val)
 void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
-    if (val > 0.0f) {
-        MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n", part_no, val*100.0f,
-                    get_channel_name(part_no).c_str());
-    }
     auto it = std::find(chorus_channels.begin(),chorus_channels.end(), part_no);
-    if (val && it == chorus_channels.end()) {
+    if (val > 0 && it == chorus_channels.end()) {
         chorus_channels.push_back(part_no);
     } else if (it != chorus_channels.end()) {
         chorus_channels.erase(it);
     }
-    midi.channel(part_no).set_chorus_level(val);
+
+    auto& part = midi.channel(part_no);
+    if (val > 0.0f && part.get_chorus_level() != val) {
+        MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n", part_no, val*100.0f,
+                    get_channel_name(part_no).c_str());
+    }
+    part.set_chorus_level(val);
 }
 
 void
@@ -329,9 +331,9 @@ MIDIDriver::set_reverb_type(uint8_t type)
 void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
-    if (val > 0.0f)
+    auto& part = midi.channel(part_no);
+    if (val > 0.0f && part.get_reverb_level() != val)
     {
-        midi.channel(part_no).set_reverb_level(val);
         auto it = reverb_channels.find(part_no);
         if (it == reverb_channels.end())
         {
@@ -345,6 +347,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                         part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
+        part.set_reverb_level(val);
     }
     else
     {
