@@ -81,6 +81,7 @@ private:
     float cents2pitch(float p, uint8_t channel);
     float cents2modulation(float p, uint8_t channel);
 
+    // https://stackoverflow.com/questions/4059775/convert-iso-8859-1-strings-to-utf-8-in-c-c
     inline void toUTF8(std::string& text, uint8_t c) {
        if (c < 128) {
           if (c == '\r') text += '\n';
