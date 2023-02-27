@@ -81,32 +81,13 @@ private:
     float cents2pitch(float p, uint8_t channel);
     float cents2modulation(float p, uint8_t channel);
 
-    // https://www.partech.nl/en/publications/2020/04/converting-windows-1252-and-iso-8859-1-to-utf-8-in-c-sharp
-    inline char cp1252_utf8(std::string& text, uint8_t c) {
-        static const struct { int idx; const char *str; } tbl[24] = {
-         {130, "‚"}, {131, "ƒ"}, {132, "„"}, {133, "…"}, {134, "†"}, {135, "‡"},
-         {136, "ˆ"}, {137, "‰"}, {138, "Š"}, {139, "‹"}, {140, "Œ"}, {145, "‘"},
-         {146, "’"}, {147, "“"}, {148, "”"}, {149, "•"}, {150, "–"}, {151, "—"},
-         {152, "˜"}, {153, "™"}, {154, "š"}, {155, "›"}, {156, "œ"}, {159, "Ÿ"},
-        };
-        if (c >= 128 && c < 160) {  return 1; // skip for now
-//          for (int i=0; i<24; ++i) {
-//              if (tbl[i].idx == c) {
-//                  text += tbl[i].str;
-//                  return 1;
-//              }
-//          }
-        }
-        return 0;
-    }
-
     // https://stackoverflow.com/questions/4059775/convert-iso-8859-1-strings-to-utf-8-in-c-c
     inline void toUTF8(std::string& text, uint8_t c) {
        if (c < 128) {
           if (c == '\r') text += '\n';
           else text += c;
        }
-       else if (!cp1252_utf8(text, c)) {
+       else if (c >= 160) { // skip control characters
            text += 0xc2+(c > 0xbf); text += (c & 0x3f)+0x80;
         }
     }
