@@ -53,9 +53,6 @@ public:
     void play(uint8_t key_no, uint8_t velocity, float pitch);
     void stop(uint32_t key_no, float velocity = 0);
 
-    inline void set_drums(bool d = true) { drum_channel = d; }
-    inline bool is_drums() { return drum_channel; }
-
     inline uint16_t get_channel_no() { return channel_no; }
     inline void set_channel_no(uint16_t channel) { channel_no = channel; }
 
@@ -123,7 +120,6 @@ private:
     uint16_t program_no = 0;
 
     bool stereo = false;
-    bool drum_channel = false;
     bool pressure_volume_bend = true;
     bool pressure_pitch_bend = false;
 };

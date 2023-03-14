@@ -32,14 +32,14 @@ xmlIdd * Copyright (C) 2018-2022 by Erik Hofman.
 using namespace aax;
 
 MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
-                 uint8_t channel, uint16_t bank, uint8_t program, bool is_drums)
+                 uint8_t channel, uint16_t bank, uint8_t program, bool drums)
    : Instrument(ptr, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
      channel_no(channel), bank_no(bank),
-     program_no(program),
-     drum_channel(channel == MIDI_DRUMS_CHANNEL ? true : is_drums)
+     program_no(program)
 {
     set_gain(100.0f/127.0f);
-    if (drum_channel && buffer) {
+    set_drums(channel == MIDI_DRUMS_CHANNEL ? true : drums);
+    if (is_drums() && buffer) {
        Mixer::add(buffer);
     }
     Mixer::set(AAX_PLAYING);
@@ -299,7 +299,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         }
 
         Instrument::play(key_no, velocity/127.0f, it->second, pitch);
-        if (drum_channel) return;
+        if (is_drums()) return;
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -364,7 +364,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
     Instrument::stop(key_no, velocity);
 //  if (midi.get_initialize()) return;
-    if (drum_channel) return;
+    if (is_drums()) return;
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
