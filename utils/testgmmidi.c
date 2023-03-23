@@ -73,6 +73,18 @@ int main(int argc, char **argv)
                                 if (access(dir, R_OK) == -1 ) {
                                    printf("Warning: %s does not exist\n", file);
                                 }
+                                continue;
+                            }
+
+                            slen = xmlAttributeCopyString(xiid, "patch", file, 64);
+                            if (slen)
+                            {
+                                char *aaxs = file+slen;
+                                snprintf(aaxs, 6, "%s", ".xml");
+
+                                if (access(dir, R_OK) == -1 ) {
+                                   printf("Warning: %s does not exist\n", file);
+                                }
                             }
                         }
                     }
