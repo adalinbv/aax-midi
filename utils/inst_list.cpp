@@ -553,13 +553,11 @@ int main(int argc, char **argv)
         {
         case ASCII:
         case HTML:
-#if 0
             num = fill_bank(bank, xid, "instrument");
             if (num) {
                 print_instruments(bank, bank2, filename, mode, argv[0]);
             }
             else
-#endif
             {
                 num = fill_bank(bank, xid, "drum");
                 if (num) {
