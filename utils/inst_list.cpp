@@ -150,7 +150,7 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag)
                 slen = xmlAttributeCopyString(xiid, "name", name, 64);
                 if (slen) bank_name = name;
 
-                nl = xmlAttributeGetInt(xbid, "n") << 8;
+                nl = xmlAttributeGetInt(xbid, "n") << 16;
                 nl += xmlAttributeGetInt(xbid, "l");
 
                 entry_t e;
@@ -212,8 +212,8 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
         entry_t &e = b.second.second;
         unsigned int nl = b.first;
         const char *type = "GM";
-        int msb = nl >> 8;
-        int lsb = nl & 0xff;
+        int msb = nl >> 16;
+        int lsb = nl & 0xffff;
         int i = 0;
 //
         if (msb == 0x79) type = "GM2";
@@ -290,7 +290,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 }
 
 void
-print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
+print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode, const char *app)
 {
     bool found = false;
 
@@ -309,6 +309,7 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                 if (!found)
                 {
                     printf("<!DOCTYPE html>\n\n");
+                    printf("<!-- created using: %s -->\n", app);
                     printf("<html>\n");
                     printf(" <head>\n");
                     printf("  <link rel=\"stylesheet\" type=\"text/css\" "
@@ -356,8 +357,8 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
             {
                 const char *type = "GM";
                 unsigned int elem;
-                int msb = nl >> 8;
-                int lsb = nl & 0xff;
+                int msb = nl >> 16;
+                int lsb = nl & 0xffff;
 
                 if (msb == 0x79) type = "GM2";
                 else if (msb == 127 && !lsb) type = "MT32";
@@ -426,15 +427,16 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
 
     for (auto &b : bank)
     {
-        unsigned int nl = b.first;
         entry_t &e = b.second.second;
+        int msb = b.first & 0xffff;
+        int lsb = b.first >> 16;
 
         switch(mode)
         {
         case ASCII:
             printf("\n=== %s\n", b.second.first.c_str());
-            printf(" PC  key elem  drum name\n");
-            printf("---  --- ----  ------------------------------\n");
+            printf("BANK   PC  elem  drum name\n");
+            printf("------ --- ----  ------------------------------\n");
             break;
         case HTML:
             if (!found)
@@ -456,8 +458,8 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
             printf("   </tr>\n");
 
             printf("   <tr>\n");
+            printf("    <td class=\"head\">bank</td>\n");
             printf("    <td class=\"head\">PC</td>\n");
-            printf("    <td class=\"head\">key</td>\n");
             printf("    <td class=\"head\">elem</td>\n");
             printf("    <td class=\"head\">drum name</td>\n");
             printf("   </tr>\n");
@@ -477,13 +479,13 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
             case ASCII:
                 if (first)
                 {
-                    printf("%3i  %3i  %3i  %s\n",
-                            nl >> 8, it.first, elem,
+                    printf("%3i %1i  %3i  %3i  %s\n",
+                            msb, lsb, it.first, elem,
                             it.second.name.c_str());
                     first = false;
                 }
                 else {
-                    printf("%3s  %3i  %3i  %s\n",
+                    printf("%5s  %3i  %3i  %s\n",
                             "", it.first, elem,
                             it.second.name.c_str());
                 }
@@ -491,8 +493,8 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
             case HTML:
                 printf("   <tr>\n");
                 if (first) {
-                    printf("    <td class=\"arch\" rowspan=\"%lu\">"
-                                    "%u</td>\n", e.size(), nl >> 8);
+                    printf("    <td class=\"arch\" rowspan=\"%lu\" style=\"vertical-align:top\">"
+                                    "%3i %1i</td>\n", e.size(), msb, lsb);
                     first = false;
                 }
 
@@ -551,11 +553,13 @@ int main(int argc, char **argv)
         {
         case ASCII:
         case HTML:
+#if 0
             num = fill_bank(bank, xid, "instrument");
             if (num) {
-                print_instruments(bank, bank2, filename, mode);
+                print_instruments(bank, bank2, filename, mode, argv[0]);
             }
             else
+#endif
             {
                 num = fill_bank(bank, xid, "drum");
                 if (num) {
@@ -595,7 +599,14 @@ int main(int argc, char **argv)
         xmlClose(xid);
         if (xid2) xmlClose(xid2);
     }
-    else {
+    else
+    {
         printf("Wanring: could not open %s\n", filename);
+        if (xmlErrorGetNo(xid, 0) != XML_NO_ERROR)
+        {
+             printf("%s\n", xmlErrorGetString(xid, 0));
+             printf("  at line: %i, column: %i\n",
+                       xmlErrorGetLineNo(xid, 0), xmlErrorGetColumnNo(xid, 1));
+        }
     }
 }
