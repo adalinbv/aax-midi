@@ -71,7 +71,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: %s does not exist\n", file);
+                                   printf("Warning: instrument file %s does not exist\n", file);
                                 }
                                 continue;
                             }
@@ -83,7 +83,29 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".xml");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: %s does not exist\n", file);
+                                   printf("Warning: patch file %s does not exist\n", file);
+                                }
+                            }
+
+                            slen = xmlAttributeCopyString(xiid, "key-on", file, 64);
+                            if (slen)
+                            {
+                                char *aaxs = file+slen;
+                                snprintf(aaxs, 6, "%s", ".aaxs");
+
+                                if (access(dir, R_OK) == -1 ) {
+                                   printf("Warning: key-on event file %s does not exist\n", file);
+                                }
+                            }
+
+                            slen = xmlAttributeCopyString(xiid, "key-off", file, 64);
+                            if (slen)
+                            {
+                                char *aaxs = file+slen;
+                                snprintf(aaxs, 6, "%s", ".aaxs");
+
+                                if (access(dir, R_OK) == -1 ) {
+                                   printf("Warning: key-off event file %s does not exist\n", file);
                                 }
                             }
                         }
@@ -104,7 +126,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: %s does not exist\n", file);
+                                   printf("Warning: drum file %s does not exist\n", file);
                                 }
                             }
                         }
