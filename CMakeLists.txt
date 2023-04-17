@@ -10,7 +10,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFile)
 include (CheckIncludeFiles)
 
-project(aax-midi C CXX)
+project(AAX_MIDI C CXX)
 set(PACKAGE_NAME "AeonWave-MIDI")
 set(PACKAGE "aaxmidi")
 
@@ -54,7 +54,7 @@ set(CPACK_PACKAGE_VERSION_PATCH ${CMAKE_MATCH_3})
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Utilities to show the capabilities of AeonWave")
 
 # We have some custom .cmake scripts not in the official distribution.
-set(CMAKE_MODULE_PATH "${aax-midi_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
+set(CMAKE_MODULE_PATH "${AAX_MIDI_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
 
 include(CPack_Modules)
 include(CPack_Defaults)
@@ -152,18 +152,18 @@ else((GCC OR CLANG) AND RMALLOC)
 endif((GCC OR CLANG) AND RMALLOC)
 
 # Add definitions, compiler switches, etc.
-include_directories("${aax-midi_SOURCE_DIR}"
+include_directories("${AAX_MIDI_SOURCE_DIR}"
     include
     ${AAX_INCLUDE_DIR}
-    "${aax-midi_BINARY_DIR}/include"
+    "${AAX_MIDI_BINARY_DIR}/include"
 )
 
 check_function_exists(strlcpy HAVE_STRLCPY)
-check_include_FILE(strings.h HAVE_STRINGS_H)
-check_include_FILE(limits.h HAVE_LIMITS_H)
-check_include_FILE(unistd.h HAVE_UNISTD_H)
-check_include_FILE(sys/time.h HAVE_SYS_TIME_H)
-check_include_FILE(time.h HAVE_TIME_H)
+check_include_file(strings.h HAVE_STRINGS_H)
+check_include_file(limits.h HAVE_LIMITS_H)
+check_include_file(unistd.h HAVE_UNISTD_H)
+check_include_file(sys/time.h HAVE_SYS_TIME_H)
+check_include_file(time.h HAVE_TIME_H)
 
 configure_file(
     "${CMAKE_CURRENT_SOURCE_DIR}/include/cmake_config.h.in"
@@ -263,4 +263,4 @@ install(TARGETS ${LIBMIDI}-static
 #  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
 #  IMMEDIATE @ONLY)
 #ADD_CUSTOM_TARGET(uninstall
-#  "${CMAKE_COMMAND}" -P "${aax-midi_BINARY_DIR}/cmake_uninstall.cmake")
+#  "${CMAKE_COMMAND}" -P "${AAX_MIDI_BINARY_DIR}/cmake_uninstall.cmake")
