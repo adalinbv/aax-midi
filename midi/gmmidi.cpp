@@ -44,16 +44,16 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
     // GM1 reset: F0 7E 7F 09 01 F7
     // GM2 reset: F0 7E 7F 09 03 F7
     byte = pull_byte();
-    CSV(", %d", byte);
+    CSV(channel_no, ", %d", byte);
     if (byte == GMMIDI_BROADCAST)
     {
         byte = pull_byte();
-        CSV(", %d", byte);
+        CSV(channel_no, ", %d", byte);
         switch(byte)
         {
         case GENERAL_MIDI_SYSTEM:
             byte = pull_byte();
-            CSV(", %d", byte);
+            CSV(channel_no, ", %d", byte);
             midi.set_mode(byte);
             switch(byte)
             {
@@ -102,29 +102,29 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
 #endif
 
     byte = pull_byte();
-    CSV(", %d", byte);
+    CSV(channel_no, ", %d", byte);
     switch(byte)
     {
     case MIDI_BROADCAST:
     {
         byte = pull_byte();
-        CSV(", %d", byte);
+        CSV(channel_no, ", %d", byte);
         switch(byte)
         {
         case MIDI_DEVICE_CONTROL:
         {
             byte = pull_byte();
-            CSV(", %d", byte);
+            CSV(channel_no, ", %d", byte);
             switch(byte)
             {
             case MIDI_DEVICE_VOLUME:
             {
                 float v;
                 byte = pull_byte();
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
                 v = (float)byte;
                 byte = pull_byte();
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
                 v += (float)((uint16_t)(byte << 7));
                 v /= (127.0f*127.0f);
                 midi.set_gain(v);
@@ -132,7 +132,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
             }
             case MIDI_DEVICE_BALANCE:
                 byte = pull_byte();
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
                 midi.set_balance(((float)byte-64.0f)/64.0f);
                 break;
             case MIDI_DEVICE_FINE_TUNING:
@@ -141,11 +141,11 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                 float pitch;
 
                 byte = pull_byte();
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
                 tuning = byte;
 
                 byte = pull_byte();
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
                 tuning |= byte << 7;
 
                 pitch = (float)tuning-8192.0f;
@@ -159,10 +159,10 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                 float pitch;
 
                 byte = pull_byte();     // lsb, always zero
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
 
                 byte = pull_byte();     // msb
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
 
                 pitch = (float)byte-64.0f;
                 if (pitch < 0) pitch /= 64.0f;
@@ -177,26 +177,26 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                 uint16_t slot_path;
 
                 path_len = pull_byte();
-                CSV(", %d", path_len);
+                CSV(channel_no, ", %d", path_len);
 
                 id_width = pull_byte();
-                CSV(", %d", id_width);
+                CSV(channel_no, ", %d", id_width);
 
                 val_width = pull_byte();
-                CSV(", %d", val_width);
+                CSV(channel_no, ", %d", val_width);
 
                 slot_path = pull_byte();
-                CSV(", %d", slot_path);
+                CSV(channel_no, ", %d", slot_path);
 
                 byte = pull_byte();
                 slot_path |= byte << 7;
-                CSV(", %d", byte);
+                CSV(channel_no, ", %d", byte);
 
                 param =  pull_byte();
-                CSV(", %d", param);
+                CSV(channel_no, ", %d", param);
 
                 value = pull_byte();
-                CSV(", %d", value);
+                CSV(channel_no, ", %d", value);
 
                 switch(slot_path)
                 {
@@ -262,7 +262,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
         default:
             byte <= 8;
             byte += pull_byte();
-            CSV(", %d", byte & 0xff);
+            CSV(channel_no, ", %d", byte & 0xff);
             LOG(99, "LOG: Unsupported realtime sysex sub id: %x %x (%d %d)\n",
                      byte >> 8, byte & 0xf, byte >> 8, byte & 0xf);
             break;

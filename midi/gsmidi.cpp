@@ -49,7 +49,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
 #endif
 
     type = pull_byte();
-    CSV(", %d", type);
+    CSV(channel_no, ", %d", type);
     devno = type & 0xF;
     switch (type & 0xF0)
     {
@@ -57,13 +57,13 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
     case GSMIDI_SYSTEM:
     {
         byte = pull_byte();
-        CSV(", %d", byte);
+        CSV(channel_no, ", %d", byte);
         switch (byte)
         {
         case GSMIDI_MODEL_GS:
         {
             byte = pull_byte();
-            CSV(", %d", byte);
+            CSV(channel_no, ", %d", byte);
             switch (byte)
             {
             case GSMIDI_DATA_SET1:
@@ -74,7 +74,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                 uint16_t addr = addr_mid << 8 | addr_low;
                 uint8_t value = pull_byte();
                 uint64_t sum = addr_high + addr_mid + addr_low + value;
-                CSV(", %d", value);
+                CSV(channel_no, ", %d", value);
                 switch (addr_high)
                 {
                 case GSMIDI_PARAMETER_CHANGE:
@@ -85,7 +85,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                         if (value != 0x00) break;
 
                         byte = pull_byte();
-                        CSV(", %d", byte);
+                        CSV(channel_no, ", %d", byte);
                         
                         if (GS_checksum(sum) == byte)
                         {
@@ -98,7 +98,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                         int8_t tune = (value << 4);
                         float level;
                         byte = pull_byte();
-                        CSV(", %d", byte);
+                        CSV(channel_no, ", %d", byte);
                         tune |= byte & 0xf;
                         level = cents2pitch(0.1f*tune, channel_no);
                         for(auto& it : midi.get_channels()) {
@@ -300,7 +300,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size)
                     {
                         uint8_t part_no = addr_mid & 0xf;
                         byte = pull_byte();
-                        CSV(",%d", byte);
+                        CSV(part_no, ",%d", byte);
                         if (GS_checksum(sum) == byte)
                         {
                             bool drums = value ? true : false;

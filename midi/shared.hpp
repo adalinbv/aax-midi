@@ -33,8 +33,8 @@
     else printf("%c", s[i]); } \
   printf("\"\n"); \
 } while(0);
-# define PRINT_CSV(...) \
-  if(midi.get_csv()) printf(__VA_ARGS__);
+# define PRINT_CSV(t,...) \
+  if(midi.get_csv() && midi.is_track_active(t)) printf(__VA_ARGS__);
 # define CSV(...) \
   if(midi.get_initialize()) PRINT_CSV(__VA_ARGS__)
 
