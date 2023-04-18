@@ -320,7 +320,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 } catch (const std::runtime_error &e) {
                     throw(e);
                 }
-                CSV(channel_no, "Note_on_c, %d, %d, %d\n", channel_no, key, velocity);
+                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_ON\n", channel_no, key, velocity);
                 break;
             }
             case MIDI_NOTE_OFF:
@@ -328,7 +328,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 int16_t key = get_key(channel, pull_byte());
                 uint8_t velocity = pull_byte();
                 midi.process(channel_no, message & 0xf0, key, velocity, omni);
-                CSV(channel_no, "Note_off_c, %d, %d, %d\n", channel_no, key, velocity);
+                CSV(channel_no, "Note_off_c, %d, %d, %d, NOTE_OFF\n", channel_no, key, velocity);
                 break;
             }
             case MIDI_POLYPHONIC_AFTERTOUCH:
@@ -372,7 +372,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 else pitch_bend /= 8191.0f;
                 pitch_bend = cents2pitch(pitch_bend, channel_no);
                 channel.set_pitch(pitch_bend);
-                CSV(channel_no, "Pitch_bend_c, %d, %d\n", channel_no, pitch);
+                CSV(channel_no, "Pitch_bend_c, %d, %d, PITCH_BEND\n", channel_no, pitch);
                 break;
             }
             case MIDI_CONTROL_CHANGE:
@@ -383,7 +383,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_PROGRAM_CHANGE:
             {
                 uint8_t program_no = pull_byte();
-                CSV(channel_no, "Program_c, %d, %d\n", channel_no, program_no);
+                CSV(channel_no, "Program_c, %d, %d, PROGRAM_CHANGE\n", channel_no, program_no);
                 try {
                     midi.new_channel(channel_no, bank_no, program_no);
                     if (midi.is_drums(channel_no))
@@ -466,12 +466,13 @@ bool MIDIStream::process_control(uint8_t track_no)
     bool rv = true;
 
     // http://midi.teragonaudio.com/tech/midispec/ctllist.htm
+    const char *expl = "Unkown";
     uint8_t controller = pull_byte();
     uint8_t value = pull_byte();
-    CSV(channel_no, "Control_c, %d, %d, %d\n", track_no, controller, value);
     switch(controller)
     {
     case MIDI_ALL_CONTROLLERS_OFF:
+        expl = "ALL_CONTROLLERS_OFF";
         channel.set_modulation(0.0f);
         channel.set_expression(1.0f);
         channel.set_hold(false);
@@ -485,6 +486,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         // channel.set_pan(0.0f);
         // intentional falltrough
     case MIDI_MONO_ALL_NOTES_OFF:
+        expl = "MONO_ALL_NOTES_OFF";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);
         if (value == 1) {
             mode = MIDI_MONOPHONIC;
@@ -492,23 +494,28 @@ bool MIDIStream::process_control(uint8_t track_no)
         }
         break;
     case MIDI_POLY_ALL_NOTES_OFF:
+        expl = "POLY_ALL_NOTES_OFF";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);
         channel.set_monophonic(false);
         mode = MIDI_POLYPHONIC;
         break;
     case MIDI_ALL_SOUND_OFF:
+        expl = "ALL_SOUND_OFF";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);
         break;
     case MIDI_OMNI_OFF:
+        expl = "OMNI_OFF";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);
         omni = false;
         break;
     case MIDI_OMNI_ON:
+        expl = "OMNI_ON";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);
         omni = true;
         break;
     case MIDI_BANK_SELECT:
     {
+        expl = "BANK_SELECT MSB";
         bool prev = channel.is_drums();
         bool drums = (track_no == MIDI_DRUMS_CHANNEL || value == MIDI_BANK_RYTHM) ? true : false;
         if (prev != drums)
@@ -530,6 +537,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
      }
     case MIDI_BANK_SELECT|MIDI_FINE:
+        expl = "BANK_SELECT LSB";
         switch(midi.get_mode())
         {
         case MIDI_GENERAL_MIDI2:
@@ -544,6 +552,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_FOOT_CONTROLLER:
     case MIDI_BREATH_CONTROLLER:
+       expl = "FOOT_CONTROLLER/MIDI_BREATH_CONTROLLER MSB";
 #if 0
         if (!channel.is_drums()) {
             channel.set_pressure(1.0f-0.33f*value/127.0f);
@@ -563,11 +572,13 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_BALANCE:
     case MIDI_PAN:
+        expl = "BALANCE/PAN MSB";
         if (!midi.get_mono()) {
             channel.set_pan(((float)value-64.f)/64.f);
         }
         break;
     case MIDI_EXPRESSION:
+        expl = "EXPRESSION MSB";
         // When Expression is at 100% then the volume represents
         // the true setting of Volume Controller. Lower values of
         // Expression begin to subtract from the volume. When
@@ -576,6 +587,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_MODULATION_DEPTH:
     {
+        expl = "MODULATION_DEPTH";
         float depth = (float)(value << 7)/16383.0f;
         depth = cents2modulation(depth, track_no) - 1.0f;
         channel.set_modulation(depth);
@@ -583,12 +595,14 @@ bool MIDIStream::process_control(uint8_t track_no)
     }
     case MIDI_CELESTE_EFFECT_DEPTH:
     {
+        expl = "CELESTE_EFFECT_DEPTH";
         float level = (float)value/127.0f;
         level = cents2pitch(level, track_no);
         channel.set_detune(level);
         break;
     }
     case MIDI_CHANNEL_VOLUME:
+        expl = "CHANNEL_VOLUME";
         if (value && channel.get_gain() != (float)value/127.0f) {
             MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
                         (float)value*100.0f/127.0f, name.c_str());
@@ -596,6 +610,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         channel.set_gain((float)value/127.0f);
         break;
     case MIDI_ALL_NOTES_OFF:
+        expl = "ALL_NOTES_OFF";
         for(auto& it : midi.get_channels())
         {
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
@@ -604,11 +619,13 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_UNREGISTERED_PARAM_COARSE:
     case MIDI_UNREGISTERED_PARAM_FINE:
+        expl = "UNREGISTERED_PARAM";
         registered = false;
         registered_param(track_no, controller, value);
         break;
     case MIDI_REGISTERED_PARAM_COARSE:
     case MIDI_REGISTERED_PARAM_FINE:
+        expl = "REGISTERED_PARAM";
         registered = true;
         registered_param(track_no, controller, value);
         break;
@@ -616,52 +633,65 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_DATA_ENTRY|MIDI_FINE:
     case MIDI_DATA_INCREMENT:
     case MIDI_DATA_DECREMENT:
+        expl = "DATA";
         registered_param(track_no, controller, value);
         break;
     case MIDI_SOFT_PEDAL_SWITCH:
+        expl = "SOFT_PEDAL_SWITCH";
         channel.set_soft((float)value/127.0f);
         break;
     case MIDI_LEGATO_SWITCH:
+        expl = "LEGATO_SWITCH";
 #if (AAX_PATCH_LEVEL > 210516)
         channel.set_legato(value >= 0x40);
 #endif
         break;
     case MIDI_DAMPER_PEDAL_SWITCH:
+        expl = "DAMPER_PEDAL_SWITCH";
         channel.set_hold(value >= 0x40);
         break;
     case MIDI_SOSTENUTO_SWITCH:
+        expl = "SOSTENUTO_SWITCH";
         channel.set_sustain(value >= 0x40);
         break;
     case MIDI_REVERB_SEND_LEVEL:
+        expl = "REVERB_SEND_LEVEL";
         midi.set_reverb_level(track_no, (float)value/127.0f);
         break;
     case MIDI_CHORUS_SEND_LEVEL:
+        expl = "CHORUS_SEND_LEVEL";
         midi.set_chorus_level(track_no, (float)value/127.0f);
         break;
     case MIDI_FILTER_RESONANCE:
     {
+        expl = "FILTER_RESONANCE";
         float val = -1.0f+(float)value/16.0f; // relative: 0.0 - 8.0
         channel.set_filter_resonance(val);
         break;
     }
     case MIDI_CUTOFF:       // Brightness
     {
+        expl = "CUTOFF";
         float val = (float)value/64.0f;
         if (val < 1.0f) val = 0.5f + 0.5f*val;
         channel.set_filter_cutoff(val);
         break;
     }
     case MIDI_VIBRATO_RATE:
+        expl = "VIBRATO_RATE";
         channel.set_vibrato_rate(0.5f + (float)value/64.0f);
         break;
     case MIDI_VIBRATO_DEPTH:
+        expl = "VIBRATO_DEPTH";
         channel.set_vibrato_depth((float)value/64.0f);
         break;
     case MIDI_VIBRATO_DELAY:
+        expl = "VIBRATO_DELAY";
         channel.set_vibrato_delay((float)value/64.0f);
         break;
     case MIDI_PORTAMENTO_CONTROL:
     {
+        expl = "PORTAMENTO_CONTROL";
         int16_t key = get_key(channel, value);
         float pitch = get_pitch(channel)*key2pitch(channel, key);
         channel.set_pitch_start(pitch);
@@ -669,6 +699,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     }
     case MIDI_PORTAMENTO_TIME:
     {
+        expl = "PORTAMENTO_TIME MSB";
         float v = value/127.0f;
         float time = 0.0625f + 15.0f*v*(v*v*v - v*v + v);
 #if AAX_PATCH_LEVEL > 210112
@@ -678,38 +709,48 @@ bool MIDIStream::process_control(uint8_t track_no)
     }
     case MIDI_PORTAMENTO_TIME|MIDI_FINE:
     {
+        expl = "PORTAMENTO_TIME LSB";
         float val = value/127.0f;
         break;
     }
     case MIDI_PORTAMENTO_SWITCH:
+        expl = "PORTAMENTO_SWITCH";
 #if AAX_PATCH_LEVEL > 210112
         channel.set_pitch_slide_state(value >= 0x40);
 #endif
         break;
     case MIDI_RELEASE_TIME:
+        expl = "RELEASE_TIME";
         channel.set_release_time(value);
         break;
     case MIDI_ATTACK_TIME:
+        expl = "ATTACK_TIME";
         channel.set_attack_time(value);
         break;
     case MIDI_DECAY_TIME:
+        expl = "DECAY_TIME";
         channel.set_decay_time(value);
         break;
     case MIDI_TREMOLO_EFFECT_DEPTH:
+        expl = "TREMOLO_EFFECT_DEPTH";
         channel.set_tremolo_depth((float)value/64.0f);
         break;
     case MIDI_PHASER_EFFECT_DEPTH:
+        expl = "PHASER_EFFECT_DEPTH";
         channel.set_phaser_depth((float)value/64.0f);
         break;
 #if AAX_PATCH_LEVEL > 210112
-    case MIDI_MIDI_MODULATION_VELOCITY:
+    case MIDI_MODULATION_VELOCITY:
+        expl = "MODULATION_VELOCITY";
         LOG(99, "LOG: Modulation Velocity control change not supported.\n");
         break;
     case MIDI_SOFT_RELEASE:
+        expl = "SOFT_RELEASE";
         LOG(99, "LOG: Soft Release control change not supported.\n");
         break;
 #endif
     case MIDI_HOLD2:
+        expl = "HOLD2";
         // lengthens the release time of the playing notes
         // Unlike the other Hold Pedal controller, this pedal
         // doesn't permanently sustain the note's sound until
@@ -717,23 +758,29 @@ bool MIDIStream::process_control(uint8_t track_no)
         LOG(99, "LOG: Hold 2 control change not supported.\n");
         break;
     case MIDI_PAN|MIDI_FINE:
+        expl = "PAN LSB";
         LOG(99, "LOG: Pan Fine control change not supported.\n");
         break;
     case MIDI_EXPRESSION|MIDI_FINE:
+        expl = "EXPRESSION LSB";
         LOG(99, "LOG: Expression Fine control change not supported.\n");
         break;
     case MIDI_BREATH_CONTROLLER|MIDI_FINE:
+        expl = "BREATH_CONTROLLER LSB";
         LOG(99, "LOG: Breath Controller Fine control change not supported.\n");
         break;
     case MIDI_BALANCE|MIDI_FINE:
+        expl = "BALANCE LSB";
         LOG(99, "LOG: Balance Fine control change not supported.\n");
         break;
     case MIDI_SOUND_VARIATION:
+        expl = "SOUND_VARIATION";
         // Any parameter associated with the circuitry that produces
         // sound.
         LOG(99, "LOG: Sound Variation control change not supported.\n");
         break;
     case MIDI_HIGHRES_VELOCITY_PREFIX:
+        expl = "HIGHRES_VELOCITY_PREFIX";
         LOG(99, "LOG: Highres Velocity control change not supported.\n");
         break;
     case MIDI_SOUND_CONTROL10:
@@ -745,12 +792,14 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_GENERAL_PURPOSE_CONTROL6:
     case MIDI_GENERAL_PURPOSE_CONTROL7:
     case MIDI_GENERAL_PURPOSE_CONTROL8:
+        expl = "GENERAL_PURPOSE_CONTROL";
         LOG(99, "LOG: Unsupported general purpose control change: 0x%x (%i), ch: %u, value: %u\n", controller, controller, track_no, value);
         break;
     default:
         LOG(99, "LOG: Unsupported unkown control change: 0x%x (%i)\n", controller, controller);
         break;
     }
+    CSV(channel_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl);
 
     return rv;
 }
