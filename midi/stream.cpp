@@ -802,7 +802,7 @@ bool MIDIStream::process_sysex()
     size -= (offset() - offs);
     if (size)
     {
-        if (midi.get_csv())
+        if (midi.get_csv(channel_no))
         {
             while (size--) CSV(channel_no, ", %d", pull_byte());
             CSV(channel_no, "\n");
@@ -836,9 +836,7 @@ bool MIDIStream::process_meta()
             midi.set(AAX_TRACK_TITLE_STRING, text.c_str());
         }
         MESSAGE(1, "%-7s %2i: %s\n", type_name[meta].c_str(), track_no, text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         midi.channel(channel_no).set_track_name(text);
         if (std::find(selections.begin(), selections.end(), text) != selections.end()) {
             midi.set_track_active(track_no);
@@ -853,18 +851,14 @@ bool MIDIStream::process_meta()
             midi.set(AAX_SONG_COPYRIGHT_STRING, text.c_str());
         }
         MESSAGE(1, "%-10s: %s\n", type_name[meta].c_str(), text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_INSTRUMENT_NAME:
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%-10s: %s\n", type_name[meta].c_str(), text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_TEXT:
         for (int i=0; i<size; ++i) {
@@ -890,9 +884,7 @@ bool MIDIStream::process_meta()
             MESSAGE(1, "%s", text.c_str()); FLUSH();
             if (size > 64) MESSAGE(1, "\n");
         }
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_LYRICS:
         midi.set_lyrics(true);
@@ -900,9 +892,7 @@ bool MIDIStream::process_meta()
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s", text.c_str()); FLUSH();
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_MARKER:
         for (int i=0; i<size; ++i) {
@@ -912,27 +902,21 @@ bool MIDIStream::process_meta()
             midi.set(AAX_TRACK_TITLE_UPDATE, text.c_str());
         }
         MESSAGE(1, "%s: %s\n", type_name[meta].c_str(), text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_CUE_POINT:
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s: %s", type_name[meta].c_str(), text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_DEVICE_NAME:
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s", text.c_str());
-        CSV(channel_no, "%s, \"", csv_name[meta].c_str());
-        CSV_TEXT("%s", text.c_str());
-        CSV(channel_no, "\"\n");
+        CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_CHANNEL_PREFIX:
         c = pull_byte();

@@ -1033,7 +1033,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size)
     size -= (offset() - offs);
     if (size)
     {
-        if (midi.get_csv())
+        if (midi.get_csv(part_no))
         {
             while (size--) CSV(part_no, ", %d", pull_byte());
             CSV(part_no, "\n");

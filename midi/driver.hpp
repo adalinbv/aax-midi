@@ -170,7 +170,9 @@ public:
     inline char get_verbose() { return csv ? 0 : verbose; }
 
     inline void set_csv(char v) { csv = v; }
-    inline char get_csv() { return csv; }
+    inline char get_csv(signed char t = -1) {
+        return (t == -1) ? csv : (csv && is_track_active(t));
+    }
 
     inline void set_lyrics(bool v) { lyrics = v; }
     inline bool get_lyrics() { return lyrics; }

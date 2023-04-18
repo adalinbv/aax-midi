@@ -127,10 +127,12 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
                     }
                     no_tracks = track_no;
 
-                    PRINT_CSV(track_no, "0, 0, Header, 0, %d, %d\n", no_tracks, PPQN);
+                    midi.set_initialize(true);
+                    CSV(track_no, "0, 0, Header, 0, %d, %d\n", no_tracks, PPQN);
                     for (track_no=0; track_no<no_tracks; ++track_no) {
-                        PRINT_CSV(track_no, "%d, 0, Start_track\n", track_no+1);
+                        CSV(track_no, "%d, 0, Start_track\n", track_no+1);
                     }
+                    midi.set_initialize(false);
                 } catch (const std::overflow_error& e) {
                     throw(std::invalid_argument("Error while processing the MIDI file: "+std::string(e.what())));
                 }

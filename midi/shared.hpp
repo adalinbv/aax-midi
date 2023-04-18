@@ -25,32 +25,32 @@
 
 #include <aax/midi.h>
 
-# define CSV_TEXT(...) if(midi.get_csv()) { \
-  char s[256]; snprintf(s, 256, __VA_ARGS__); \
-  for (int i=0; i<strlen(s); ++i) { \
-    if (s[i] == '\"') printf("\"\""); \
-    else if ((s[i]<' ') || ((s[i]>'~') && (s[i]<=160))) printf("\\%03o", s[i]); \
-    else printf("%c", s[i]); } \
-  printf("\"\n"); \
-} while(0);
-# define PRINT_CSV(t,...) \
-  if(midi.get_csv() && midi.is_track_active(t)) printf(__VA_ARGS__);
-# define CSV(...) \
-  if(midi.get_initialize()) PRINT_CSV(__VA_ARGS__)
-
 #define DISPLAY(l,...) \
   if(midi.get_initialize() && l <= midi.get_verbose()) printf(__VA_ARGS__)
 #define MESSAGE(l,...) \
   if(!midi.get_initialize() && midi.get_verbose() >= l) printf(__VA_ARGS__)
 #define INFO(s) \
   if(!midi.get_initialize() && midi.get_verbose() >= 1 && !midi.get_lyrics()) \
-      printf("%-79s\n", (s))
+    printf("%-79s\n", (s))
 #define LOG(l,...) \
   if(midi.get_initialize() && l == midi.get_verbose()) printf(__VA_ARGS__)
 #define ERROR(...) \
   if(!midi.get_csv()) { std::cerr << __VA_ARGS__ << std::endl; }
 #define FLUSH() \
   if (!midi.get_initialize() && midi.get_verbose() > 0) fflush(stdout)
+
+# define CSV(t,...) \
+  if(midi.get_initialize() && midi.get_csv(t)) printf(__VA_ARGS__)
+# define CSV_TEXT(t,c,s) \
+  if(midi.get_initialize() && midi.get_csv(t)) do { \
+    printf("%s, \"",c); \
+    for (int i=0; i<strlen(s); ++i) { \
+      if (s[i] == '\"') printf("\"\""); \
+      else if ((s[i]<' ') || ((s[i]>'~') && (s[i]<=160))) \
+        printf("\\%03o", s[i]); \
+      else printf("%c", s[i]); } \
+    printf("\"\n"); \
+  } while(0);
 
 
 namespace aax
