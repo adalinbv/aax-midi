@@ -806,6 +806,7 @@ bool MIDIStream::process_control(uint8_t track_no)
 
 bool MIDIStream::process_sysex()
 {
+    std::string expl = "Unkown";
     bool rv = true;
     uint64_t size = pull_message();
     uint64_t offs = offset();
@@ -823,24 +824,31 @@ bool MIDIStream::process_sysex()
     switch(byte)
     {
     case MIDI_SYSTEM_EXCLUSIVE_ROLAND:
-        GS_process_sysex(size-2);
+        expl = "GS";
+        GS_process_sysex(size-2, expl);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_YAMAHA:
-        XG_process_sysex(size-2);
+        XG_process_sysex(size-2, expl);
+        expl = "XG "+expl;
         break;
     case MIDI_SYSTEM_EXCLUSIVE_NON_REALTIME:
-        GM_process_sysex_non_realtime(size-2);
+        expl = "SYSEX NR";
+        GM_process_sysex_non_realtime(size-2, expl);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_REALTIME:
-        GM_process_sysex_realtime(size-2);
+        expl = "SYSEX";
+        GM_process_sysex_realtime(size-2, expl);
         break;
     case MIDI_SYSTEM_EXCLUSIVE_E_MU:
+        expl = "EMU";
         LOG(99, "Unsupported sysex vendor: E-Mu\n");
         break;
     case MIDI_SYSTEM_EXCLUSIVE_KORG:
+        expl = "KORG";
         LOG(99, "Unsupported sysex vendor: Korg\n");
         break;
     case MIDI_SYSTEM_EXCLUSIVE_CASIO:
+        expl = "CASIO";
         LOG(99, "Unsupported sysex vendor: Casio\n");
         break;
     default:
@@ -854,7 +862,11 @@ bool MIDIStream::process_sysex()
         if (midi.get_csv(channel_no))
         {
             while (size--) CSV(channel_no, ", %d", pull_byte());
-            CSV(channel_no, "\n");
+//          if (midi.get_verbose()) {
+                CSV(channel_no, ", %s\n", expl.c_str());
+//          } else {
+//              CSV(channel_no, "\n");
+//          }
         }
         else forward(size);
     }

@@ -26,7 +26,7 @@
 
 using namespace aax;
 
-bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
+bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
 {
     bool rv = true;
     uint64_t offs = offset();
@@ -58,6 +58,7 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
             switch(byte)
             {
             case GMMIDI_GM_RESET:
+                expl = "GM RESET";
                 midi.process(channel_no, MIDI_NOTE_OFF, 0, 0, true);
                 midi.set_mode(MIDI_GENERAL_MIDI1);
                 break;
@@ -65,10 +66,12 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
                 // midi.set_mode(MIDI_MODE0);
                 break;
             case GMMIDI_GM2_RESET:
+                expl = "GM2 RESET";
                 midi.process(channel_no, MIDI_NOTE_OFF, 0, 0, true);
                 midi.set_mode(MIDI_GENERAL_MIDI2);
                 break;
             default:
+                expl = "Unkown SYSTEM";
                 break;
             }
             break;
@@ -79,14 +82,16 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size)
         case MIDI_ACK:
             break;
         default:
+            expl = "Unkown BROADCAST";
             break;
         }
     }
+    else expl = "Unkown SYSEX NR";
 
     return rv;
 }
 
-bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
+bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
 {
     bool rv = true;
     uint64_t offs = offset();
@@ -119,6 +124,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
             {
             case MIDI_DEVICE_VOLUME:
             {
+                expl = "DEVICE_VOLUME";
                 float v;
                 byte = pull_byte();
                 CSV(channel_no, ", %d", byte);
@@ -131,12 +137,14 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                 break;
             }
             case MIDI_DEVICE_BALANCE:
+                expl = "BALANCE";
                 byte = pull_byte();
                 CSV(channel_no, ", %d", byte);
                 midi.set_balance(((float)byte-64.0f)/64.0f);
                 break;
             case MIDI_DEVICE_FINE_TUNING:
             {
+                expl = "FINE_TUNING";
                 uint16_t tuning;
                 float pitch;
 
@@ -156,6 +164,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
             }
             case MIDI_DEVICE_COARSE_TUNING:
             {
+                expl = "COARSE_TUNING";
                 float pitch;
 
                 byte = pull_byte();     // lsb, always zero
@@ -204,25 +213,31 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                     switch(param)
                     {
                     case 0:     // CHORUS_TYPE
+                        expl = "CHORUS_TYPE";
                         midi.set_chorus_type(value);
                         break;
                     case 1:     // CHORUS_MOD_RATE
+                        expl = "CHORUS_MOD_RATE";
                         // the modulation frequency in Hz
                         midi.set_chorus_rate(0.122f*value);
                         break;
                     case 2:     // CHORUS_MOD_DEPTH
+                        expl = "CHORUS_MOD_DEPTH";
                         // the peak-to-peak swing of the modulation in ms
                         midi.set_chorus_depth(((value+1.0f)/3.2f)*1e-3f);
                         break;
                     case 3:     // CHORUS_FEEDBACK
+                        expl = "CHORUS_FEEDBACK";
                         // the amount of feedback from Chorus output in %
                         midi.set_chorus_feedback(0.763f*value*1e-2f);
                         break;
                     case 4:     // CHORUS_SEND_TO_REVERB
+                        expl = "CHORUS_SEND_TO_REVERB";
                         // the send level from Chorus to Reverb in %
                         midi.send_chorus_to_reverb(0.787f*value*1e-2f);
                         break;
                     default:
+                        expl = "Unkown CHORUS_PARAMETER";
                         LOG(99, "LOG: Unsupported realtime sysex chorus parameter: %x\n",
                                  param);
                         break;
@@ -232,9 +247,11 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                     switch(param)
                     {
                     case 0:     // Reverb Type
+                        expl = "REVERB_TYPE";
                         midi.set_reverb_type(value);
                         break;
                     case 1:     //Reverb Time
+                        expl = "REVERB_TIME";
                         midi.set_reverb_time_rt60(expf((value-40)*0.025f));
                         break;
                     default:
@@ -244,22 +261,26 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
                     }
                     break;
                 default:
+                    expl = "Unkown GLOBAL_PARAMETER";
                     break;
                 }
                 break;
             }
             default:
+               expl = "Unkown DEVICE_CONTROL";
                 LOG(99, "LOG: Unsupported realtime sysex parameter: %x\n", byte);
                 break;
             }
             break;
         } // MIDI_DEVICE_CONTROL
         case MIDI_SCALE_ADJUST:
+            expl = "SCALE_ADJUST";
             LOG(99, "LOG: Unsupported realtime sysex scale adjust\n");
             break;
         case MIDI_CONTROLLER_DESTINATION:
         case MIDI_KEY_BASED_INSTRUMENT:
         default:
+            expl = "Unkown BROADCAST";
             byte <= 8;
             byte += pull_byte();
             CSV(channel_no, ", %d", byte & 0xff);
@@ -270,6 +291,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size)
         break;
     } // MIDI_BROADCAST
     default:
+        expl = "Unkown SYSEX";
         LOG(99, "LOG: Unknown realtime sysex device id: %x\n", byte);
         break;
     }

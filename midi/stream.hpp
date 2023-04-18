@@ -135,18 +135,18 @@ private:
     bool process_meta();
     bool process_sysex();
 
-    bool GM_process_sysex_realtime(uint64_t);
-    bool GM_process_sysex_non_realtime(uint64_t);
+    bool GM_process_sysex_realtime(uint64_t, std::string&);
+    bool GM_process_sysex_non_realtime(uint64_t, std::string&);
 
     uint8_t GS_mode = 0;
     uint8_t GS_checksum(uint64_t);
-    bool GS_process_sysex(uint64_t);
+    bool GS_process_sysex(uint64_t, std::string&);
     bool GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value);
     bool GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value);
     bool GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value);
     bool GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value);
 
-    bool XG_process_sysex(uint64_t);
+    bool XG_process_sysex(uint64_t, std::string&);
     void XG_display_data(uint32_t, uint8_t, std::string&);
     uint8_t XG_part_no[32] = {
         0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
