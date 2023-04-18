@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2021 by Erik Hofman.
- * Copyright (C) 2018-2021 by Adalin B.V.
+ * Copyright (C) 2018-2023 by Erik Hofman.
+ * Copyright (C) 2018-2023 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -93,7 +93,7 @@ private:
     }
 
     uint32_t pull_message();
-    bool registered_param(uint8_t, uint8_t, uint8_t);
+    bool registered_param(uint8_t, uint8_t, uint8_t, std::string&);
     bool registered_param_3d(uint8_t, uint8_t, uint8_t);
 
     std::string name;

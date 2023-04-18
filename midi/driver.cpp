@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2022 by Erik Hofman.
- * Copyright (C) 2018-2022 by Adalin B.V.
+ * Copyright (C) 2018-2023 by Erik Hofman.
+ * Copyright (C) 2018-2023 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI

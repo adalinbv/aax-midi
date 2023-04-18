@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2021 by Erik Hofman.
- * Copyright (C) 2018-2021 by Adalin B.V.
+ * Copyright (C) 2018-2023 by Erik Hofman.
+ * Copyright (C) 2018-2023 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -104,7 +104,7 @@ MIDIStream::pull_message()
 
 // https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
 bool
-MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
+MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value, std::string& expl)
 {
     uint16_t type = value;
     bool data = false;
@@ -129,12 +129,15 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
     switch(controller)
     {
     case MIDI_REGISTERED_PARAM_COARSE:
+        expl = "REGISTERED_PARAM_COARSE";
         msb_type = type;
         break;
     case MIDI_REGISTERED_PARAM_FINE:
+        expl = "REGISTERED_PARAM_FINE";
         lsb_type = type;
         break;
     case MIDI_DATA_ENTRY:
+        expl = "DATA_ENTRY COARSE";
         if (rpn_enabled && registered)
         {
             param[msb_type].coarse = value;
@@ -142,6 +145,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
         }
         break;
     case MIDI_DATA_ENTRY|MIDI_FINE:
+        expl = "DATA_ENTRY FINE";
         if (rpn_enabled && registered)
         {
             param[lsb_type].fine = value;
@@ -149,6 +153,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
         }
         break;
     case MIDI_DATA_INCREMENT:
+        expl = "DATA_INCREMENT";
         if (rpn_enabled)
         {
             type = msb_type << 8 | lsb_type;
@@ -159,6 +164,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
         }
         break;
     case MIDI_DATA_DECREMENT:
+        expl = "DATA_DECREMENT";
         if (rpn_enabled)
         {
             type = msb_type << 8 | lsb_type;
@@ -170,10 +176,14 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
             }
         }
         break;
-    case MIDI_UNREGISTERED_PARAM_FINE:
     case MIDI_UNREGISTERED_PARAM_COARSE:
+        expl = "UNREGISTERED_PARAM COARSE";
+        break;
+    case MIDI_UNREGISTERED_PARAM_FINE:
+        expl = "UNREGISTERED_PARAM FINE";
         break;
     default:
+        expl = "Unkown REGISTERED_PARAM";
         LOG(99, "LOG: Unsupported registered parameter controller: %x\n", controller);
         rv = false;
         break;
@@ -186,6 +196,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
         {
         case MIDI_PITCH_BEND_SENSITIVITY:
         {
+            expl = "PITCH_BEND_SENSITIVITY";
             float val;
             val = (float)param[MIDI_PITCH_BEND_SENSITIVITY].coarse +
                   (float)param[MIDI_PITCH_BEND_SENSITIVITY].fine*0.01f;
@@ -193,6 +204,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
             break;
         }
         case MIDI_MODULATION_DEPTH_RANGE:
+            expl = "MODULATION_DEPTH_RANGE";
         {
             float val;
             val = (float)param[MIDI_MODULATION_DEPTH_RANGE].coarse +
@@ -202,6 +214,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
         }
         case MIDI_CHANNEL_FINE_TUNING:
         {
+            expl = "CHANNEL_FINE_TUNING";
             uint16_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
                               | param[MIDI_CHANNEL_FINE_TUNING].fine;
             float pitch = (float)tuning-8192.0f;
@@ -211,23 +224,32 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value)
             break;
         }
         case MIDI_CHANNEL_COARSE_TUNING:
+            expl = "CHANNEL_COARSE_TUNING";
             // This is handled by MIDI_NOTE_ON and MIDI_NOTE_OFF
             break;
 #if AAX_PATCH_LEVEL > 210112
         case MIDI_NULL_FUNCTION_NUMBER:
+            expl = "NULL_FUNCTION_NUMBER";
             // disable the data entry, data increment, and data decrement
             // controllers until a new RPN or NRPN is selected.
             rpn_enabled = false;
             break;
         case MIDI_MPE_CONFIGURATION_MESSAGE:
+            expl = "MPE_CONFIGURATION_MESSAGE";
+            break;
 #endif
         case MIDI_TUNING_PROGRAM_CHANGE:
+            expl = "TUNING_PROGRAM_CHANGEr";
+            break;
         case MIDI_TUNING_BANK_SELECT:
+            expl = "TUNING_BANK_SELECT";
             break;
         case MIDI_PARAMETER_RESET:
+            expl = "PARAMETER_RESET";
             midi.channel(channel).set_semi_tones(2.0f);
             break;
         default:
+            expl = "Unkown REGISTERED_PARAM_TYPE";
             LOG(99, "LOG: Unsupported registered parameter type: 0x%x/0x%x\n",
                      msb_type, lsb_type);
             break;
@@ -466,7 +488,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     bool rv = true;
 
     // http://midi.teragonaudio.com/tech/midispec/ctllist.htm
-    const char *expl = "Unkown";
+    std::string expl = "Unkown";
     uint8_t controller = pull_byte();
     uint8_t value = pull_byte();
     switch(controller)
@@ -619,22 +641,19 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_UNREGISTERED_PARAM_COARSE:
     case MIDI_UNREGISTERED_PARAM_FINE:
-        expl = "UNREGISTERED_PARAM";
         registered = false;
-        registered_param(track_no, controller, value);
+        registered_param(track_no, controller, value, expl);
         break;
     case MIDI_REGISTERED_PARAM_COARSE:
     case MIDI_REGISTERED_PARAM_FINE:
-        expl = "REGISTERED_PARAM";
         registered = true;
-        registered_param(track_no, controller, value);
+        registered_param(track_no, controller, value, expl);
         break;
     case MIDI_DATA_ENTRY:
     case MIDI_DATA_ENTRY|MIDI_FINE:
     case MIDI_DATA_INCREMENT:
     case MIDI_DATA_DECREMENT:
-        expl = "DATA";
-        registered_param(track_no, controller, value);
+        registered_param(track_no, controller, value, expl);
         break;
     case MIDI_SOFT_PEDAL_SWITCH:
         expl = "SOFT_PEDAL_SWITCH";
@@ -799,7 +818,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         LOG(99, "LOG: Unsupported unkown control change: 0x%x (%i)\n", controller, controller);
         break;
     }
-    CSV(channel_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl);
+    CSV(channel_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl.c_str());
 
     return rv;
 }
