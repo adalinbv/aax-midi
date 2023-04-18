@@ -357,7 +357,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_REVERB_PARAMETER15:	// Feedback Level
                 case XGMIDI_REVERB_PARAMETER16:
                 {
-                    expl = "Unknown REVER_PARAMETER";
+                    expl = "Unknown REVERB_PARAMETER";
                     uint8_t param = addr - XGMIDI_REVERB_TYPE;
                     if (param > XGMIDI_REVERB_PARAMETER10) {
                         param -= (XGMIDI_REVERB_PARAMETER1 - XGMIDI_REVERB_PARAMETER10);
@@ -802,6 +802,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                                 type, type);
                         break;
                     }
+                    expl += " VARIATION";
                     break;
                 }
                 case XGMIDI_VARIATION_PARAMETER1:
