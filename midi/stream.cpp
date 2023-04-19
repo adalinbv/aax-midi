@@ -607,7 +607,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         // the true setting of Volume Controller. Lower values of
         // Expression begin to subtract from the volume. When
         // Expression is 0% then volume is off.
-        channel.set_expression((float)value/127.0f);
+        channel.set_expression(expf((float)value/127.0f)-1.0f);
         break;
     case MIDI_MODULATION_DEPTH:
     {
