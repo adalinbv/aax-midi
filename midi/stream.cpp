@@ -496,17 +496,19 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_ALL_CONTROLLERS_OFF:
         expl = "ALL_CONTROLLERS_OFF";
         channel.set_modulation(0.0f);
-        channel.set_expression(1.0f);
+        channel.set_expression(127.0f/127.0f);
         channel.set_hold(false);
-//      channel.set_portamento(false);
+        msb_type = lsb_type = 0x7F; // (UN)REGISTERED_PARAM
+        channel.set_pitch(64.0f/64.0f);
+        channel.set_pressure(0.0f);
         channel.set_sustain(false);
         channel.set_soft(false);
         channel.set_semi_tones(2.0f);
         channel.set_pitch(1.0f);
-        msb_type = lsb_type = 0x7F;
-        // channel.set_gain(100.0f/127.0f);
-        // channel.set_pan(0.0f);
-        // intentional falltrough
+        // Do not Reset: Program change, Bank Select, Volume, Pan,
+        // Effects Controllers #91-95, Sound controllers #70-79,
+        // Other Channel mode messages (#120, #122-#127)
+        break;
     case MIDI_MONO_ALL_NOTES_OFF:
         expl = "MONO_ALL_NOTES_OFF";
         midi.process(track_no, MIDI_NOTE_OFF, 0, 0, true);

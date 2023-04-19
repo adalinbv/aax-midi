@@ -38,6 +38,8 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
      program_no(program)
 {
     set_gain(100.0f/127.0f);
+    set_expression(127.0f/127.0f);
+    set_pan(0.0f/64.f);
     set_drums(channel == MIDI_DRUMS_CHANNEL ? true : drums);
     if (is_drums() && buffer) {
        Mixer::add(buffer);
