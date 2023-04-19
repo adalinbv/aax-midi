@@ -205,7 +205,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
             uint8_t addr_high = pull_byte();
             uint8_t addr_mid = pull_byte();
             uint8_t addr_low = pull_byte();
-            uint8_t value = pull_byte();
+            uint32_t value = pull_byte();
             uint16_t addr = addr_mid << 8 | addr_low;
             uint16_t part_no = XG_part_no[addr_mid];
             auto& channel = midi.channel(part_no);
@@ -886,7 +886,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 {
                 case XGMIDI_BANK_SELECT_MSB:// 0-127
                     expl = "BANK_SELECT_MSB";
-                    bank_no = (uint16_t)value << 7;
+                    bank_no = value << 7;
                     break;
                 case XGMIDI_BANK_SELECT_LSB: // 0-127
                     expl = "BANK_SELECT_LSB";
@@ -946,7 +946,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 }
                 case XGMIDI_VOLUME: // 0-127
                     expl = "VOLUME";
-                    channel.set_gain((float)value/127.0f);
+                    channel.set_gain(float(value)/127.0f);
                     break;
                 case XGMIDI_VELOCITY_SENSE_DEPTH: // 0-127
                     expl = "VELOCITY_SENSE_DEPTH";
@@ -959,7 +959,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_PAN: // 0: random, L63 - C - R63 (1 - 64 - 127)
                     expl = "PAN";
                     if (mode != MIDI_MONOPHONIC) {
-                        channel.set_pan(((float)value-64.f)/64.f);
+                        channel.set_pan(float(value-64)/64.f);
                     }
                     break;
                 case XGMIDI_NOTE_LIMIT_LOW: // C2 - G8
@@ -977,14 +977,14 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_CHORUS_SEND: // 0-127
                 {
                     expl = "CHORUS_SEND";
-                    float val = (float)value/127.0f;
+                    float val = float(value)/127.0f;
                     midi.set_chorus_level(part_no, val);
                     break;
                 }
                 case XGMIDI_REVERB_SEND: // 0-127
                 {
                     expl = "REVERB_SEND";
-                    float val = (float)value/127.0f;
+                    float val = float(value)/127.0f;
                     midi.set_reverb_level(part_no, val);
                     break;
                 }
@@ -995,28 +995,28 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_VIBRATO_RATE: // -64 - +63
                 {
                     expl = "VIBRATO_RATE";
-                    float val = 0.5f + (float)value/64.0f;
+                    float val = 0.5f + float(value)/64.0f;
                     channel.set_vibrato_rate(val);
                     break;
                 }
                 case XGMIDI_VIBRATO_DEPTH: // -64 - +63
                 {
                     expl = "VIBRATO_DEPTH";
-                    float val = (float)value/64.0f;
+                    float val = float(value)/64.0f;
                     channel.set_vibrato_depth(val);
                     break;
                 }
                 case XGMIDI_VIBRATO_DELAY: // -64 - +63
                 {
                     expl = "VIBRATO_DELAY";
-                    float val = (float)value/64.0f;
+                    float val = float(value)/64.0f;
                     channel.set_vibrato_delay(val);
                     break;
                 }
                 case XGMIDI_FILTER_CUTOFF_FREQUENCY: // -64 - +63
                 {
                     expl = "FILTER_CUTOFF_FREQUENCY";
-                    float val = (float)value/64.0f;
+                    float val = float(value)/64.0f;
                     if (val < 1.0f) val = 0.5f + 0.5f*val;
                     channel.set_filter_cutoff(val);
                     break;
@@ -1024,7 +1024,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_FILTER_RESONANCE: // -64 - +63
                 {
                     expl = "FILTER_RESONANCE";
-                    float val = -1.0f+(float)value/16.0f; // relative: 0.0 - 8.0
+                    float val = -1.0f+float(value)/16.0f; // relative: 0.0 - 8.0
                     channel.set_filter_resonance(val);
                     break;
                 }
@@ -1141,8 +1141,8 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 uint8_t mm = pull_byte();
                 uint8_t ll = pull_byte();
                 uint8_t cc = pull_byte();
-                uint16_t tuning = mm << 7 | ll;
-                float pitch = (float)tuning-8192.0f;
+                uint32_t tuning = mm << 7 | ll;
+                float pitch = float(tuning-8192);
                 CSV(channel_no, ", %d, %d, %d", mm, ll, cc);
                 if (pitch < 0) pitch /= 8192.0f;
                 else pitch /= 8191.0f;

@@ -31,31 +31,31 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
     bool rv = true;
     uint64_t offs = offset();
     uint8_t type, devno;
-    uint8_t byte;
+    uint8_t value;
 
 #if 0
  printf(" System Exclusive:");
- push_byte(); push_byte(); push_byte();
- while ((byte = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" %x", byte);
+ push_value(); push_value(); push_value();
+ while ((value = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" %x", value);
  printf("\n");
- byte_stream::rewind( offset() - offs);
+ value_stream::rewind( offset() - offs);
 #endif
 
     // GM1 reset: F0 7E 7F 09 01 F7
     // GM2 reset: F0 7E 7F 09 03 F7
-    byte = pull_byte();
-    CSV(channel_no, ", %d", byte);
-    if (byte == GMMIDI_BROADCAST)
+    value = pull_byte();
+    CSV(channel_no, ", %d", value);
+    if (value == GMMIDI_BROADCAST)
     {
-        byte = pull_byte();
-        CSV(channel_no, ", %d", byte);
-        switch(byte)
+        value = pull_byte();
+        CSV(channel_no, ", %d", value);
+        switch(value)
         {
         case GENERAL_MIDI_SYSTEM:
-            byte = pull_byte();
-            CSV(channel_no, ", %d", byte);
-            midi.set_mode(byte);
-            switch(byte)
+            value = pull_byte();
+            CSV(channel_no, ", %d", value);
+            midi.set_mode(value);
+            switch(value)
             {
             case GMMIDI_GM_RESET:
                 expl = "GM RESET";
@@ -114,51 +114,51 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
     bool rv = true;
     uint64_t offs = offset();
     uint8_t type, devno;
-    uint16_t byte;
+    int32_t value;
 
 #if 0
  printf(" System Exclusive:");
- push_byte(); push_byte(); push_byte();
- while ((byte = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" %x", byte);
+ push_value(); push_value(); push_value();
+ while ((value = pull_byte()) != MIDI_SYSTEM_EXCLUSIVE_END) printf(" %x", value);
  printf("\n");
- byte_stream::rewind( offset() - offs);
+ value_stream::rewind( offset() - offs);
 #endif
 
-    byte = pull_byte();
-    CSV(channel_no, ", %d", byte);
-    switch(byte)
+    value = pull_byte();
+    CSV(channel_no, ", %d", value);
+    switch(value)
     {
     case MIDI_BROADCAST:
     {
-        byte = pull_byte();
-        CSV(channel_no, ", %d", byte);
-        switch(byte)
+        value = pull_byte();
+        CSV(channel_no, ", %d", value);
+        switch(value)
         {
         case MIDI_DEVICE_CONTROL:
         {
-            byte = pull_byte();
-            CSV(channel_no, ", %d", byte);
-            switch(byte)
+            value = pull_byte();
+            CSV(channel_no, ", %d", value);
+            switch(value)
             {
             case MIDI_DEVICE_VOLUME:
             {
                 expl = "DEVICE_VOLUME";
                 float v;
-                byte = pull_byte();
-                CSV(channel_no, ", %d", byte);
-                v = (float)byte;
-                byte = pull_byte();
-                CSV(channel_no, ", %d", byte);
-                v += (float)((uint16_t)(byte << 7));
+                value = pull_byte();
+                CSV(channel_no, ", %d", value);
+                v = float(value);
+                value = pull_byte();
+                CSV(channel_no, ", %d", value);
+                v += float(value << 7);
                 v /= (127.0f*127.0f);
                 midi.set_gain(v);
                 break;
             }
             case MIDI_DEVICE_BALANCE:
                 expl = "BALANCE";
-                byte = pull_byte();
-                CSV(channel_no, ", %d", byte);
-                midi.set_balance(((float)byte-64.0f)/64.0f);
+                value = pull_byte();
+                CSV(channel_no, ", %d", value);
+                midi.set_balance(float(value-64)/64.0f);
                 break;
             case MIDI_DEVICE_FINE_TUNING:
             {
@@ -166,15 +166,15 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 uint16_t tuning;
                 float pitch;
 
-                byte = pull_byte();
-                CSV(channel_no, ", %d", byte);
-                tuning = byte;
+                value = pull_byte();
+                CSV(channel_no, ", %d", value);
+                tuning = value;
 
-                byte = pull_byte();
-                CSV(channel_no, ", %d", byte);
-                tuning |= byte << 7;
+                value = pull_byte();
+                CSV(channel_no, ", %d", value);
+                tuning |= value << 7;
 
-                pitch = (float)tuning-8192.0f;
+                pitch = float(tuning-8192);
                 if (pitch < 0) pitch /= 8192.0f;
                 else pitch /= 8191.0f;
                 midi.set_tuning(pitch);
@@ -185,13 +185,13 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 expl = "COARSE_TUNING";
                 float pitch;
 
-                byte = pull_byte();     // lsb, always zero
-                CSV(channel_no, ", %d", byte);
+                value = pull_byte();     // lsb, always zero
+                CSV(channel_no, ", %d", value);
 
-                byte = pull_byte();     // msb
-                CSV(channel_no, ", %d", byte);
+                value = pull_byte();     // msb
+                CSV(channel_no, ", %d", value);
 
-                pitch = (float)byte-64.0f;
+                pitch = float(value-64);
                 if (pitch < 0) pitch /= 64.0f;
                 else pitch /= 63.0f;
                 midi.set_tuning(pitch);
@@ -215,9 +215,9 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 slot_path = pull_byte();
                 CSV(channel_no, ", %d", slot_path);
 
-                byte = pull_byte();
-                slot_path |= byte << 7;
-                CSV(channel_no, ", %d", byte);
+                value = pull_byte();
+                slot_path |= value << 7;
+                CSV(channel_no, ", %d", value);
 
                 param =  pull_byte();
                 CSV(channel_no, ", %d", param);
@@ -286,7 +286,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
             }
             default:
                expl = "Unkown DEVICE_CONTROL";
-                LOG(99, "LOG: Unsupported realtime sysex parameter: %x\n", byte);
+                LOG(99, "LOG: Unsupported realtime sysex parameter: %x\n", value);
                 break;
             }
             break;
@@ -299,18 +299,18 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
         case MIDI_KEY_BASED_INSTRUMENT:
         default:
             expl = "Unkown BROADCAST";
-            byte <= 8;
-            byte += pull_byte();
-            CSV(channel_no, ", %d", byte & 0xff);
+            value <= 8;
+            value += pull_byte();
+            CSV(channel_no, ", %d", value & 0xff);
             LOG(99, "LOG: Unsupported realtime sysex sub id: %x %x (%d %d)\n",
-                     byte >> 8, byte & 0xf, byte >> 8, byte & 0xf);
+                     value >> 8, value & 0xf, value >> 8, value & 0xf);
             break;
         }
         break;
     } // MIDI_BROADCAST
     default:
         expl = "Unkown SYSEX";
-        LOG(99, "LOG: Unknown realtime sysex device id: %x\n", byte);
+        LOG(99, "LOG: Unknown realtime sysex device id: %x\n", value);
         break;
     }
 
