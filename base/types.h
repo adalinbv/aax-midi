@@ -57,6 +57,9 @@ typedef int size_t;
 #define _MAX(a,b)       (((a)>(b)) ? (a) : (b))
 #define _MINMAX(a,b,c)  (((a)>(c)) ? (c) : (((a)<(b)) ? (b) : (a)))
 
+#define GMATH_E1		  2.71828182845904509080f
+#define GMATH_1_E1                0.36787944117144233402f
+
 char* _aax_strcasestr(const char*, const char*);
 
 #if _MSC_VER
