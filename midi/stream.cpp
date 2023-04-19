@@ -593,8 +593,10 @@ bool MIDIStream::process_control(uint8_t track_no)
 #endif
         break;
     case MIDI_BALANCE:
+        expl = "BALANCE MSB";
+        break;
     case MIDI_PAN:
-        expl = "BALANCE/PAN MSB";
+        expl = "PAN MSB";
         if (!midi.get_mono()) {
             channel.set_pan(((float)value-64.f)/64.f);
         }
