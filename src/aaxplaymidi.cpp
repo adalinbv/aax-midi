@@ -130,9 +130,9 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
             file.set(AAX_PLAYING);
         }
 
-        midi.set_csv(csv);
-        midi.set_mono(mono);
         midi.set_verbose(verbose);
+        midi.set_mono(mono);
+        midi.set_csv(csv);
         if (fm)
         {
             char *env = getenv("AAX_SHARED_DATA_DIR");
