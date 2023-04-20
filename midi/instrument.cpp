@@ -180,52 +180,52 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             case 40:	// Brush set
                 switch(key_no)
                 {
-                case 29: // EXC7
+                case 29: // EXC7: Scratch Push
                     Instrument::stop(30);
                     break;
-                case 30: // EXC7
+                case 30: // EXC7: Scratch Pull
                     Instrument::stop(29);
                     break;
-                case 42: // EXC1
+                case 42: // EXC1: Closed Hi-Hat"
                     Instrument::stop(44);
                     Instrument::stop(46);
                     break;
-                case 44: // EXC1
+                case 44: // EXC1: Pedal Hi-Hat
                     Instrument::stop(42);
                     Instrument::stop(46);
                     break;
-                case 46: // EXC1
+                case 46: // EXC1: Open Hi-Hat
                     Instrument::stop(42);
                     Instrument::stop(44);
                     break;
-                case 71: // EXC2
+                case 71: // EXC2: Short Whistle
                     Instrument::stop(72);
                     break;
-                case 72: // EXC2
+                case 72: // EXC2: Long Whistle
                     Instrument::stop(71);
                     break;
-                case 73: // EXC3
+                case 73: // EXC3: Short Guir
                     Instrument::stop(74);
                     break;
-                case 74: // EXC3
+                case 74: // EXC3: Long Guiro
                     Instrument::stop(73);
                     break;
-                case 78: // EXC4
+                case 78: // EXC4: Mute Cuica
                     Instrument::stop(79);
                     break;
-                case 79: // EXC4
+                case 79: // EXC4: Open Cuica
                     Instrument::stop(78);
                     break;
-                case 80: // EXC5
+                case 80: // EXC5: Mute Triangle
                     Instrument::stop(81);
                     break;
-                case 81: // EXC5
+                case 81: // EXC5: Open Triangle
                     Instrument::stop(80);
                     break;
-                case 86: // EXC6
+                case 86: // EXC6: Mute Surdo
                     Instrument::stop(87);
                     break;
-                case 87: // EXC6
+                case 87: // EXC6: Open Surdo
                     Instrument::stop(86);
                     break;
                 default:
@@ -235,15 +235,15 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             case 26:	// Analog Set
                 switch(key_no)
                 {
-                case 42: // EXC1
+                case 42: // EXC1: Closed Hi-Hat
                     Instrument::stop(44);
                     Instrument::stop(46);
                     break;
-                case 44: // EXC1
+                case 44: // EXC1: Pedal Hi-Hat
                     Instrument::stop(42);
                     Instrument::stop(46);
                     break;
-                case 46: // EXC1
+                case 46: // EXC1: Open Hi-Hat
                     Instrument::stop(42);
                     Instrument::stop(44);
                     break;
@@ -254,29 +254,17 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             case 48:	// Orchestra Set
                 switch(key_no)
                 {
-                case 27: // EXC1
+                case 27: // EXC1: Closed Hi-Hat
                     Instrument::stop(28);
                     Instrument::stop(29);
                     break;
-                case 28: // EXC1
+                case 28: // EXC1: Pedal Hi-Ha
                     Instrument::stop(27);
                     Instrument::stop(29);
                     break;
-                case 29: // EXC1
+                case 29: // EXC1: Open Hi-Hat
                     Instrument::stop(27);
                     Instrument::stop(28);
-                    break;
-                case 42: // EXC1
-                    Instrument::stop(44);
-                    Instrument::stop(46);
-                    break;
-                case 44: // EXC1
-                    Instrument::stop(42);
-                    Instrument::stop(46);
-                    break;
-                case 46: // EXC1
-                    Instrument::stop(42);
-                    Instrument::stop(44);
                     break;
                 default:
                     break;
@@ -285,10 +273,10 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             case 57:	// SFX Set
                 switch(key_no)
                 {
-                case 41: // EXC7
+                case 41: // EXC7: Scratch Pus
                     Instrument::stop(42);
                     break;
-                case 42: // EXC7
+                case 42: // EXC7: Scratch Pul
                     Instrument::stop(41);
                     break;
                 default:
@@ -300,7 +288,8 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
-        Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+        // A logarithmic scale is recommended for key velocity
+        Instrument::play(key_no, _log(velocity/127.0f), it->second, pitch);
         if (is_drums()) return;
 
         bool all = midi.no_active_tracks() > 0;
