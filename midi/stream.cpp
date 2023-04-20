@@ -296,7 +296,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
 
     while (!eof() && (timestamp_parts <= time_offs_parts))
     {
-        CSV(track_no+1, "%d, %ld, ", channel_no, timestamp_parts);
+        CSV(channel_no, "%d, %ld, ", channel_no, timestamp_parts);
 
         // Handle running status; if the next byte is a data byte
         // reuse the last command seen in the track
