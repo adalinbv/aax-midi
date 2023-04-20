@@ -288,8 +288,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
-        // A logarithmic scale is recommended for key velocity
-        Instrument::play(key_no, _log(velocity/127.0f), it->second, pitch);
+        Instrument::play(key_no, velocity/127.0f, it->second, pitch);
         if (is_drums()) return;
 
         bool all = midi.no_active_tracks() > 0;
