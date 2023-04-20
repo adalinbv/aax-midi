@@ -296,7 +296,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
 
     while (!eof() && (timestamp_parts <= time_offs_parts))
     {
-        CSV(channel_no, "%d, %ld, ", track_no+1, timestamp_parts);
+        CSV(track_no+1, "%d, %ld, ", channel_no, timestamp_parts);
 
         // Handle running status; if the next byte is a data byte
         // reuse the last command seen in the track
@@ -318,6 +318,11 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
         switch(message)
         {
         case MIDI_SYSTEM_EXCLUSIVE_END:
+            // When reading a MIDI File, and an F7 sysex event is encountered
+            // without a preceding F0 sysex event to start a multi-packet system
+            // exclusive message sequence, it should be presumed that the F7
+            // event is being used as an "escape".
+// http://www.music.mcgill.ca/~ich/classes/mumt306/StandardMIDIfileformat.html
             CSV(channel_no, "%d", message);
             break;
         case MIDI_SYSTEM_EXCLUSIVE:
@@ -342,7 +347,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 } catch (const std::runtime_error &e) {
                     throw(e);
                 }
-                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_ON\n", channel_no, key, velocity);
+                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 break;
             }
             case MIDI_NOTE_OFF:
@@ -823,7 +828,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         LOG(99, "LOG: Unsupported unkown control change: 0x%x (%i)\n", controller, controller);
         break;
     }
-    CSV(channel_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl.c_str());
+    CSV(track_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl.c_str());
 
     return rv;
 }
@@ -848,20 +853,20 @@ bool MIDIStream::process_sysex()
     switch(byte)
     {
     case MIDI_SYSTEM_EXCLUSIVE_ROLAND:
-        expl = "GS";
         GS_process_sysex(size-2, expl);
+        expl = "GS " + expl;
         break;
     case MIDI_SYSTEM_EXCLUSIVE_YAMAHA:
         XG_process_sysex(size-2, expl);
-        expl = "XG "+expl;
+        expl = "XG " + expl;
         break;
     case MIDI_SYSTEM_EXCLUSIVE_NON_REALTIME:
-        expl = "SYSEX NR";
         GM_process_sysex_non_realtime(size-2, expl);
+        expl = "SYSEX NR " + expl;
         break;
     case MIDI_SYSTEM_EXCLUSIVE_REALTIME:
-        expl = "SYSEX";
         GM_process_sysex_realtime(size-2, expl);
+        expl = "SYSEX " + expl;
         break;
     case MIDI_SYSTEM_EXCLUSIVE_E_MU:
         expl = "EMU";
