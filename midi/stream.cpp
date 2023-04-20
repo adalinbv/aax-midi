@@ -198,8 +198,8 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         {
             expl = "PITCH_BEND_SENSITIVITY";
             float val;
-            val = (float)param[MIDI_PITCH_BEND_SENSITIVITY].coarse +
-                  (float)param[MIDI_PITCH_BEND_SENSITIVITY].fine*0.01f;
+            val = float(param[MIDI_PITCH_BEND_SENSITIVITY].coarse) +
+                  float(param[MIDI_PITCH_BEND_SENSITIVITY].fine*0.01f);
             midi.channel(channel).set_semi_tones(val);
             break;
         }
@@ -207,17 +207,17 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             expl = "MODULATION_DEPTH_RANGE";
         {
             float val;
-            val = (float)param[MIDI_MODULATION_DEPTH_RANGE].coarse +
-                  (float)param[MIDI_MODULATION_DEPTH_RANGE].fine*0.01f;
+            val = float(param[MIDI_MODULATION_DEPTH_RANGE].coarse) +
+                  float(param[MIDI_MODULATION_DEPTH_RANGE].fine*0.01f);
             midi.channel(channel).set_modulation_depth(val);
             break;
         }
         case MIDI_CHANNEL_FINE_TUNING:
         {
             expl = "CHANNEL_FINE_TUNING";
-            uint16_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
+            uint32_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
                               | param[MIDI_CHANNEL_FINE_TUNING].fine;
-            float pitch = (float)tuning-8192.0f;
+            float pitch = float(tuning-8192);
             if (pitch < 0) pitch /= 8192.0f;
             else pitch /= 8191.0f;
             midi.channel(channel).set_tuning(pitch);
@@ -388,8 +388,8 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_PITCH_BEND:
             {
-                int16_t pitch = pull_byte() | pull_byte() << 7;
-                float pitch_bend = (float)pitch-8192.0f;
+                int32_t pitch = pull_byte() | pull_byte() << 7;
+                float pitch_bend = float(pitch-8192);
                 if (pitch_bend < 0) pitch_bend /= 8192.0f;
                 else pitch_bend /= 8191.0f;
                 pitch_bend = cents2pitch(pitch_bend, channel_no);
@@ -489,8 +489,8 @@ bool MIDIStream::process_control(uint8_t track_no)
 
     // http://midi.teragonaudio.com/tech/midispec/ctllist.htm
     std::string expl = "Unkown";
-    uint8_t controller = pull_byte();
-    uint8_t value = pull_byte();
+    uint32_t controller = pull_byte();
+    uint32_t value = pull_byte();
     switch(controller)
     {
     case MIDI_ALL_CONTROLLERS_OFF:
@@ -600,7 +600,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_PAN:
         expl = "PAN MSB";
         if (!midi.get_mono()) {
-            channel.set_pan(((float)value-64.f)/64.f);
+            channel.set_pan((float(value)-64.f)/64.f);
         }
         break;
     case MIDI_EXPRESSION:
@@ -615,7 +615,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_MODULATION_DEPTH:
     {
         expl = "MODULATION_DEPTH";
-        float depth = (float)(value << 7)/16383.0f;
+        float depth = float(value << 7)/16383.0f;
         depth = cents2modulation(depth, track_no) - 1.0f;
         channel.set_modulation(depth);
         break;
@@ -623,18 +623,18 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_CELESTE_EFFECT_DEPTH:
     {
         expl = "CELESTE_EFFECT_DEPTH";
-        float level = (float)value/127.0f;
+        float level = float(value)/127.0f;
         level = cents2pitch(level, track_no);
         channel.set_detune(level);
         break;
     }
     case MIDI_CHANNEL_VOLUME:
         expl = "CHANNEL_VOLUME";
-        if (value && channel.get_gain() != (float)value/127.0f) {
+        if (value && channel.get_gain() != float(value)/127.0f) {
             MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
-                        (float)value*100.0f/127.0f, name.c_str());
+                        float(value)*100.0f/127.0f, name.c_str());
         }
-        channel.set_gain((float)value/127.0f);
+        channel.set_gain(float(value)/127.0f);
         break;
     case MIDI_ALL_NOTES_OFF:
         expl = "ALL_NOTES_OFF";
@@ -662,7 +662,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_SOFT_PEDAL_SWITCH:
         expl = "SOFT_PEDAL_SWITCH";
-        channel.set_soft((float)value/127.0f);
+        channel.set_soft(float(value)/127.0f);
         break;
     case MIDI_LEGATO_SWITCH:
         expl = "LEGATO_SWITCH";
@@ -680,38 +680,38 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_REVERB_SEND_LEVEL:
         expl = "REVERB_SEND_LEVEL";
-        midi.set_reverb_level(track_no, (float)value/127.0f);
+        midi.set_reverb_level(track_no, float(value)/127.0f);
         break;
     case MIDI_CHORUS_SEND_LEVEL:
         expl = "CHORUS_SEND_LEVEL";
-        midi.set_chorus_level(track_no, (float)value/127.0f);
+        midi.set_chorus_level(track_no, float(value)/127.0f);
         break;
     case MIDI_FILTER_RESONANCE:
     {
         expl = "FILTER_RESONANCE";
-        float val = -1.0f+(float)value/16.0f; // relative: 0.0 - 8.0
+        float val = -1.0f+float(value)/16.0f; // relative: 0.0 - 8.0
         channel.set_filter_resonance(val);
         break;
     }
     case MIDI_CUTOFF:       // Brightness
     {
         expl = "CUTOFF";
-        float val = (float)value/64.0f;
+        float val = float(value)/64.0f;
         if (val < 1.0f) val = 0.5f + 0.5f*val;
         channel.set_filter_cutoff(val);
         break;
     }
     case MIDI_VIBRATO_RATE:
         expl = "VIBRATO_RATE";
-        channel.set_vibrato_rate(0.5f + (float)value/64.0f);
+        channel.set_vibrato_rate(0.5f + float(value)/64.0f);
         break;
     case MIDI_VIBRATO_DEPTH:
         expl = "VIBRATO_DEPTH";
-        channel.set_vibrato_depth((float)value/64.0f);
+        channel.set_vibrato_depth(float(value)/64.0f);
         break;
     case MIDI_VIBRATO_DELAY:
         expl = "VIBRATO_DELAY";
-        channel.set_vibrato_delay((float)value/64.0f);
+        channel.set_vibrato_delay(float(value)/64.0f);
         break;
     case MIDI_PORTAMENTO_CONTROL:
     {
@@ -757,11 +757,11 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_TREMOLO_EFFECT_DEPTH:
         expl = "TREMOLO_EFFECT_DEPTH";
-        channel.set_tremolo_depth((float)value/64.0f);
+        channel.set_tremolo_depth(float(value)/64.0f);
         break;
     case MIDI_PHASER_EFFECT_DEPTH:
         expl = "PHASER_EFFECT_DEPTH";
-        channel.set_phaser_depth((float)value/64.0f);
+        channel.set_phaser_depth(float(value)/64.0f);
         break;
 #if AAX_PATCH_LEVEL > 210112
     case MIDI_MODULATION_VELOCITY:
@@ -1038,7 +1038,7 @@ bool MIDIStream::process_meta()
         uint8_t dd = pull_byte();
         uint8_t cc = pull_byte(); // 1 << cc
         uint8_t bb = pull_byte();
-        uint16_t QN = 100000.0f / (float)cc;
+        uint16_t QN = 100000.0f / float(cc);
         CSV(channel_no, "%s, %d, %d, %d, %d\n", "Time_signature",
                                     nn, dd, cc, bb);
         break;

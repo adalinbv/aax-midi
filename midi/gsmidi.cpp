@@ -72,7 +72,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                 uint8_t addr_mid = pull_byte();
                 uint8_t addr_low = pull_byte();
                 uint16_t addr = addr_mid << 8 | addr_low;
-                uint8_t value = pull_byte();
+                int32_t value = pull_byte();
                 uint64_t sum = addr_high + addr_mid + addr_low + value;
                 CSV(channel_no, ", %d", value);
                 switch (addr_high)
@@ -111,7 +111,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     }
                     case GSMIDI_MASTER_VOLUME:
                         expl = "MASTER_VOLUME";
-                        midi.set_gain((float)value/127.0f);
+                        midi.set_gain(float(value)/127.0f);
                         break;
                     case GSMIDI_MASTER_KEY_SHIFT:
                         expl = "MASTER_KEY_SHIFT";
@@ -121,7 +121,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         expl = "PAN";
                         if (mode != MIDI_MONOPHONIC) {
                             for(auto& it : midi.get_channels()) {
-                                it.second->set_pan(((float)value-64.f)/64.f);
+                                it.second->set_pan(float(value-64)/64.f);
                             }
                         }
                         break;
@@ -179,7 +179,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_REVERB_LEVEL:
                     {
                         expl = "REVERB_LEVEL";
-                        float val = (float)value/127.0f;
+                        float val = float(value)/127.0f;
                         midi.set_reverb_level(track_no, val);
                         break;
                     }
@@ -251,7 +251,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_CHORUS_LEVEL:
                     {
                         expl = "CHORUS_LEVEL";
-                        float val = (float)value/127.0f;
+                        float val = float(value)/127.0f;
                         midi.set_chorus_level(track_no, val);
                         break;
                     }
@@ -266,14 +266,14 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_CHORUS_RATE:
                     {
                         expl = "CHORUS_RATE";
-                        float val = (float)value/127.0f;
+                        float val = float(value)/127.0f;
                         midi.set_chorus_rate(val);
                         break;
                     }
                     case GSMIDI_CHORUS_DEPTH:
                     {
                         expl = "CHORUS_DEPTH";
-                        float val = (float)value/127.0f;
+                        float val = float(value)/127.0f;
                         midi.set_chorus_depth(val);
                         break;
                     }
@@ -591,24 +591,24 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
     {
     case GSMIDI_PART_PAN:
         if (mode != MIDI_MONOPHONIC) {
-            channel.set_pan(((float)value-64.f)/64.f);
+            channel.set_pan((float(value)-64.f)/64.f);
         }
         break;
     case GSMIDI_PART_VIBRATO_RATE:
     {
-        float val = 0.5f + (float)value/64.0f;
+        float val = 0.5f + float(value)/64.0f;
         channel.set_vibrato_rate(val);
         break;
     }
     case GSMIDI_PART_VIBRATO_DEPTH:
     {
-        float val = (float)value/64.0f;
+        float val = float(value)/64.0f;
         channel.set_vibrato_depth(val);
         break;
     }
     case GSMIDI_PART_VIBRATO_DELAY:
     {
-        float val = (float)value/64.0f;
+        float val = float(value)/64.0f;
         channel.set_vibrato_delay(val);
         break;
     }
@@ -623,12 +623,12 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
         break;
     case GSMIDI_PART_REVERB_SEND_LEVEL:
     {
-        float val = (float)value/127.0f;
+        float val = float(value)/127.0f;
         midi.set_reverb_level(part_no, val);
         break;
     }
     case GSMIDI_PART_VOLUME:
-        channel.set_gain((float)value/127.0f);
+        channel.set_gain(float(value)/127.0f);
         break;
     case MIDI_PROGRAM_CHANGE:
         try {
