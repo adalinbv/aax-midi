@@ -28,8 +28,6 @@
 #include <midi/stream.hpp>
 #include <midi/driver.hpp>
 
-#include "base/types.h"
-
 using namespace aax;
 
 MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16_t track)
@@ -608,12 +606,12 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_EXPRESSION:
     {
         expl = "EXPRESSION MSB";
-        // When Expression is at 100% then the volume represents
-        // the true setting of Volume Controller. Lower values of
-        // Expression begin to subtract from the volume. When
-        // Expression is 0% then volume is off.
-        float v = (expf(float(value)/127.0f)-1.0)/(GMATH_E1-1.0);
-        channel.set_expression(v);
+        // When Expression is at 100% then the volume represents the true
+        // setting of Volume Controller. Lower values of Expression begin to
+        // subtract from the volume. When Expression is 0% then volume is off.
+        // Preferably, application of velocity to volume should be an
+        // exponential function.
+        channel.set_expression(_exp(float(value)/127.0f));
         break;
     }
     case MIDI_MODULATION_DEPTH:

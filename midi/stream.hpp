@@ -31,6 +31,7 @@
 
 #include <midi/shared.hpp>
 
+#include "base/types.h"
 
 namespace aax
 {
@@ -70,6 +71,7 @@ private:
     float _log2lin(float v) { return powf(10.0f,v); }
     float _lin2db(float v) { return 20.0f*log10f(v); }
     float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
+    float _exp(float v) { return (expf(v)-1.0)/(GMATH_E1-1.0); }
 
     inline float note2freq(uint32_t d) {
         return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
