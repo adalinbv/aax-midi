@@ -63,8 +63,8 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
                 midi.set_mode(MIDI_GENERAL_MIDI1);
                 for (auto& it : midi.get_channels())
                 {
-                    it.second->set_expression(127.0f/127.0f);
-                    it.second->set_gain(100.0f/127.0f);
+                    it.second->set_expression(_ln(127.0f/127.0f));
+                    it.second->set_gain(_ln(100.0f/127.0f));
                     it.second->set_pan(0.0f);
                     if (it.first != MIDI_DRUMS_CHANNEL) {
                         it.second->set_drums(false);
@@ -80,8 +80,8 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
                 midi.set_mode(MIDI_GENERAL_MIDI2);
                 for (auto& it : midi.get_channels())
                 {
-                    it.second->set_expression(127.0f/127.0f);
-                    it.second->set_gain(100.0f/127.0f);
+                    it.second->set_expression(_ln(127.0f/127.0f));
+                    it.second->set_gain(_ln(100.0f/127.0f));
                     it.second->set_pan(0.0f);
                     if (it.first != MIDI_DRUMS_CHANNEL) {
                         it.second->set_drums(false);
