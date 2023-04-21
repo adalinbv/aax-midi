@@ -614,7 +614,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         // When Expression is at 100% then the volume represents the true
         // setting of Volume Controller. Lower values of Expression begin to
         // subtract from the volume. When Expression is 0% then volume is off.
-        channel.set_expression(float(value)/127.0f);
+        channel.set_expression(_ln(float(value)/127.0f));
         break;
     }
     case MIDI_MODULATION_DEPTH:
