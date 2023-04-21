@@ -111,7 +111,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     }
                     case GSMIDI_MASTER_VOLUME:
                         expl = "MASTER_VOLUME";
-                        midi.set_gain(float(value)/127.0f);
+                        midi.set_gain(_ln(float(value)/127.0f));
                         break;
                     case GSMIDI_MASTER_KEY_SHIFT:
                         expl = "MASTER_KEY_SHIFT";
@@ -628,7 +628,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
         break;
     }
     case GSMIDI_PART_VOLUME:
-        channel.set_gain(float(value)/127.0f);
+        channel.set_gain(_ln(float(value)/127.0f));
         break;
     case MIDI_PROGRAM_CHANGE:
         try {

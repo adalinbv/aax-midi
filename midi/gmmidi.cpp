@@ -151,7 +151,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 CSV(channel_no, ", %d", value);
                 v += float(value << 7);
                 v /= (127.0f*127.0f);
-                midi.set_gain(v);
+                midi.set_gain(_ln(v));
                 break;
             }
             case MIDI_DEVICE_BALANCE:

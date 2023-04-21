@@ -946,7 +946,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 }
                 case XGMIDI_VOLUME: // 0-127
                     expl = "VOLUME";
-                    channel.set_gain(float(value)/127.0f);
+                    channel.set_gain(_ln(float(value)/127.0f));
                     break;
                 case XGMIDI_VELOCITY_SENSE_DEPTH: // 0-127
                     expl = "VELOCITY_SENSE_DEPTH";

@@ -173,10 +173,14 @@ MIDIDriver::is_drums(uint8_t n)
 void
 MIDIDriver::set_balance(float b)
 {
+#if 1
+    AeonWave::set(AAX_BALANCE, int(b*64.0f+64.0f));
+#else
     Matrix64 m;
     m.rotate(1.57*b, 0.0, 1.0, 0.0);
     m.inverse();
     AeonWave::matrix(m);
+#endif
 }
 
 void
