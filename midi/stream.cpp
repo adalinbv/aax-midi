@@ -546,42 +546,59 @@ bool MIDIStream::process_control(uint8_t track_no)
     {
         expl = "BANK_SELECT MSB";
         bool prev = channel.is_drums();
-        bool drums = (track_no == MIDI_DRUMS_CHANNEL ||
-                      value == MIDI_BANK_RYTHM ||
-                      (midi.get_mode() == MIDI_EXTENDED_GENERAL_MIDI &&
-                       value == 127)) ? true : false;
+        bool drums = false;
+
+        switch(midi.get_mode())
+        {
+        case MIDI_MODE0:
+        case MIDI_GENERAL_STANDARD:
+           if (track_no == MIDI_DRUMS_CHANNEL) drums = true;
+           // intentional fallthrough
+        case MIDI_GENERAL_MIDI2:
+        case MIDI_EXTENDED_GENERAL_MIDI:
+           bank_no = value << 7;
+           break;
+        default:
+            break;
+        }
+        break;
+
         if (prev != drums)
         {
             channel.set_drums(drums);
             std::string name = midi.get_channel_type(track_no);
             MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
         }
-        switch(midi.get_mode())
-        {
-        case MIDI_MODE0:
-        case MIDI_GENERAL_MIDI2:
-        case MIDI_GENERAL_STANDARD:
-        case MIDI_EXTENDED_GENERAL_MIDI:
-            bank_no = (uint16_t)value << 7;
-        default:
-            break;
-        }
         break;
      }
     case MIDI_BANK_SELECT|MIDI_FINE:
+    {
         expl = "BANK_SELECT LSB";
+        bool prev = channel.is_drums();
+        bool drums = false;
+
         switch(midi.get_mode())
         {
         case MIDI_GENERAL_MIDI2:
-        case MIDI_EXTENDED_GENERAL_MIDI:
-        {
             bank_no += value;
+            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7)) drums = true;
             break;
-        }
+        case MIDI_EXTENDED_GENERAL_MIDI:
+            bank_no += value;
+            if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
+            break;
         default:
             break;
         }
+
+        if (prev != drums)
+        {
+            channel.set_drums(drums);
+            std::string name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+        }
         break;
+     }
     case MIDI_FOOT_CONTROLLER:
     case MIDI_BREATH_CONTROLLER:
        expl = "FOOT_CONTROLLER/MIDI_BREATH_CONTROLLER MSB";

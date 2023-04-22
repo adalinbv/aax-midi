@@ -24,6 +24,12 @@
 #include <midi/stream.hpp>
 #include <midi/driver.hpp>
 
+/*
+ * For XG DrumKits: CC0=127, CC32=0, PgCh=xxx
+ * For XG SFXKits: CC0=126, CC32=0, PgCh=xxx
+ * For XG Melodic Banks: CC0=0, CC32=BankNo, PgChg=xx
+ */
+
 namespace aax
 {
 

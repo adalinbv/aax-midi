@@ -189,8 +189,11 @@ extern "C" {
 #define MIDI_POLY_ALL_NOTES_OFF					0x7f	// 127
 
 /* General MIDI 2 */
-#define MIDI_BANK_RYTHM						0x78	// 120
-#define MIDI_BANK_MELODY					0x07
+#define MIDI_GM2_BANK_RYTHM					0x78	// 120
+#define MIDI_GM2_BANK_MELODY					0x79
+
+/* XG MIDI */
+#define MIDI_XG_BANK_RYTHM					0x7f	// 127
 
 /* NRPN messages */
 #define MIDI_VIBRATO_RATE_RELATIVE				0x0108
