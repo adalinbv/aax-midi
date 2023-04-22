@@ -692,23 +692,6 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         program_no = drum_set_no;
     }
 
-    /* Some banks are shared among GM, GM2, GS and XG */
-    switch (program_no)
-    {
-    case GM_STANDARD_DRUM_SET:
-    case GM2_ROOM_DRUM_SET:
-    case GM2_POWER_DRUM_SET:
-    case GM2_ELECTRONIC_DRUM_SET:
-    case GM2_ANALOG_DRUM_SET:
-    case GM2_JAZZ_DRUM_SET:
-    case GM2_BRUSH_DRUM_SET:
-    case GM2_ORCHESTRA_DRUM_SET:
-       bank_no = 0;
-       break;
-    default:
-       break;
-    }
-
     inst_t empty_map;
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;

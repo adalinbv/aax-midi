@@ -581,14 +581,22 @@ bool MIDIStream::process_control(uint8_t track_no)
         {
         case MIDI_GENERAL_MIDI2:
             bank_no += value;
-            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7)) drums = true;
+            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7))
+            {
+                bank_no = 0; // shared with GM2 and GS
+                drums = true;
+            }
             break;
         case MIDI_EXTENDED_GENERAL_MIDI:
             bank_no += value;
-            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7)) drums = true;
-            else if (bank_no == (MIDI_GS_BANK_RYTHM << 7)) drums = true;
-            else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
+            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7) ||
+                bank_no == (MIDI_GS_BANK_RYTHM << 7))
+            {
+                bank_no = 0; // shared with GM2 and GS
+                drums = true;
+            }
             else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
+            else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
             break;
         default:
             break;
