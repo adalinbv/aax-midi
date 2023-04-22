@@ -546,7 +546,10 @@ bool MIDIStream::process_control(uint8_t track_no)
     {
         expl = "BANK_SELECT MSB";
         bool prev = channel.is_drums();
-        bool drums = (track_no == MIDI_DRUMS_CHANNEL || value == MIDI_BANK_RYTHM) ? true : false;
+        bool drums = (track_no == MIDI_DRUMS_CHANNEL ||
+                      value == MIDI_BANK_RYTHM ||
+                      (midi.get_mode() == MIDI_EXTENDED_GENERAL_MIDI &&
+                       value == 127)) ? true : false;
         if (prev != drums)
         {
             channel.set_drums(drums);
