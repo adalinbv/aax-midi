@@ -587,6 +587,7 @@ bool MIDIStream::process_control(uint8_t track_no)
             bank_no += value;
             if (bank_no == (MIDI_GM2_BANK_RYTHM << 7)) drums = true;
             else if (bank_no == (MIDI_GS_BANK_RYTHM << 7)) drums = true;
+            else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
             else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
             break;
         default:
