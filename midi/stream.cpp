@@ -552,7 +552,9 @@ bool MIDIStream::process_control(uint8_t track_no)
         {
         case MIDI_MODE0:
         case MIDI_GENERAL_STANDARD:
-           if (track_no == MIDI_DRUMS_CHANNEL) drums = true;
+           if (track_no == MIDI_DRUMS_CHANNEL) {
+               drums = true;
+           }
            // intentional fallthrough
         case MIDI_GENERAL_MIDI2:
         case MIDI_EXTENDED_GENERAL_MIDI:
@@ -575,11 +577,12 @@ bool MIDIStream::process_control(uint8_t track_no)
     {
         expl = "BANK_SELECT LSB";
         bool prev = channel.is_drums();
-        bool drums = false;
+        bool drums = prev;
 
         switch(midi.get_mode())
         {
         case MIDI_GENERAL_MIDI2:
+            drums = false;
             bank_no += value;
             if (bank_no == (MIDI_GM2_BANK_RYTHM << 7))
             {
@@ -588,6 +591,7 @@ bool MIDIStream::process_control(uint8_t track_no)
             }
             break;
         case MIDI_EXTENDED_GENERAL_MIDI:
+            drums = false;
             bank_no += value;
             if (bank_no == (MIDI_GM2_BANK_RYTHM << 7) ||
                 bank_no == (MIDI_GS_BANK_RYTHM << 7))
