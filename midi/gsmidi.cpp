@@ -325,27 +325,28 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         expl = "DELAY_LEVEL_RIGHT";
                         LOG(99, "LOG: Unsupported GS sysex Delay Level Right\n");
                         break;
-                    case GSMIDI_DRUM_PART0:
-                    case GSMIDI_DRUM_PART1:
-                    case GSMIDI_DRUM_PART2:
-                    case GSMIDI_DRUM_PART3:
-                    case GSMIDI_DRUM_PART4:
-                    case GSMIDI_DRUM_PART5:
-                    case GSMIDI_DRUM_PART6:
-                    case GSMIDI_DRUM_PART7:
-                    case GSMIDI_DRUM_PART8:
-                    case GSMIDI_DRUM_PART9:
-                    case GSMIDI_DRUM_PART11:
-                    case GSMIDI_DRUM_PART12:
-                    case GSMIDI_DRUM_PART13:
-                    case GSMIDI_DRUM_PART14:
-                    case GSMIDI_DRUM_PART15:
-                    case GSMIDI_DRUM_PART16:
+                    case GSMIDI_RYTHM_PART1:
+                    case GSMIDI_RYTHM_PART2:
+                    case GSMIDI_RYTHM_PART3:
+                    case GSMIDI_RYTHM_PART4:
+                    case GSMIDI_RYTHM_PART5:
+                    case GSMIDI_RYTHM_PART6:
+                    case GSMIDI_RYTHM_PART7:
+                    case GSMIDI_RYTHM_PART8:
+                    case GSMIDI_RYTHM_PART9:
+                    case GSMIDI_RYTHM_PART10:
+                    case GSMIDI_RYTHM_PART11:
+                    case GSMIDI_RYTHM_PART12:
+                    case GSMIDI_RYTHM_PART13:
+                    case GSMIDI_RYTHM_PART14:
+                    case GSMIDI_RYTHM_PART15:
+                    case GSMIDI_RYTHM_PART16:
                     {
                         expl = "DRUM_PART";
-                        uint8_t part_no = addr_mid & 0xf;
+                        uint8_t part_no = (addr_mid & 0xf)-1;
+                        if (part_no == 255) part_no = 9;
                         byte = pull_byte();
-                        CSV(part_no, ",%d", byte);
+                        CSV(part_no, ", %d", byte);
                         if (GS_checksum(sum) == byte)
                         {
                             bool drums = value ? true : false;
