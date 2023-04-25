@@ -427,9 +427,14 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                                 GS_sysex_equalizer(part_no, addr_low, value);
                             }
                             break;
-                        case GSMIDI_INSERTION_EFFECT:
+                        case GSMIDI_EFX_TYPE_EFFECT:
+                        {
+                            uint8_t lsb = pull_byte();
+                            value = value << 8 | lsb;
+                            CSV(channel_no, ", %d", lsb);
                             GS_sysex_insertion(part_no, addr_low, value, expl);
                             break;
+                        }
                         default:
                             switch (addr_mid & 0xF0)
                             {
@@ -562,207 +567,207 @@ MIDIStream::GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
 
 // SC-8850_OM page 78, 89, 91 (type), 216 (effect list)
 bool
-MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value, std::string& expl)
+MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint16_t type, std::string& expl)
 {
     bool rv = true;
     switch(addr)
     {
-    case GSMIDI_INSERTION_EFX_TYPE:
-        switch(value)
+    case GSMIDI_EFX_TYPE:
+        switch(type)
         {
-        case GSMIDI_INSERTION_THRU:
+        case GSMIDI_EFX_TYPE_THRU:
             expl = "Unsupported THRU";
             break;
-        case GSMIDI_INSERTION_STEREO_EQ:
+        case GSMIDI_EFX_TYPE_STEREO_EQ:
             expl = "Unsupported STEREO_EQ";
             break;
-        case GSMIDI_INSERTION_SPECTRUM:
+        case GSMIDI_EFX_TYPE_SPECTRUM:
             expl = "Unsupported SPECTRUM";
             break;
-        case GSMIDI_INSERTION_ENHANCER:
+        case GSMIDI_EFX_TYPE_ENHANCER:
             expl = "Unsupported ENHANCER";
             break;
-        case GSMIDI_INSERTION_HUMANIZER:
+        case GSMIDI_EFX_TYPE_HUMANIZER:
             expl = "Unsupported HUMANIZER";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE:
+        case GSMIDI_EFX_TYPE_OVERDRIVE:
             expl = "Unsupported OVERDRIVE";
             break;
-        case GSMIDI_INSERTION_DISTORTION:
+        case GSMIDI_EFX_TYPE_DISTORTION:
             expl = "Unsupported DISTORTION";
             break;
-        case GSMIDI_INSERTION_PHASER:
+        case GSMIDI_EFX_TYPE_PHASER:
             expl = "Unsupported PHASER";
             break;
-        case GSMIDI_INSERTION_AUTO_WAH:
+        case GSMIDI_EFX_TYPE_AUTO_WAH:
             expl = "Unsupported AUTO_WAH";
             break;
-        case GSMIDI_INSERTION_ROTARY:
+        case GSMIDI_EFX_TYPE_ROTARY:
             expl = "Unsupported ROTARY";
             break;
-        case GSMIDI_INSERTION_STEREO_FLANGER:
+        case GSMIDI_EFX_TYPE_STEREO_FLANGER:
             expl = "Unsupported STEREO_FLANGER";
             break;
-        case GSMIDI_INSERTION_STEP_FLANGER:
+        case GSMIDI_EFX_TYPE_STEP_FLANGER:
             expl = "Unsupported STEP_FLANGER";
             break;
-        case GSMIDI_INSERTION_TREMOLO:
+        case GSMIDI_EFX_TYPE_TREMOLO:
             expl = "Unsupported TREMOLO";
             break;
-        case GSMIDI_INSERTION_AUTO_PAN:
+        case GSMIDI_EFX_TYPE_AUTO_PAN:
             expl = "Unsupported AUTO_PAN";
             break;
-        case GSMIDI_INSERTION_COMPRESSOR:
+        case GSMIDI_EFX_TYPE_COMPRESSOR:
             expl = "Unsupported COMPRESSOR";
             break;
-        case GSMIDI_INSERTION_LIMITER:
+        case GSMIDI_EFX_TYPE_LIMITER:
             expl = "Unsupported LIMITER";
             break;
-        case GSMIDI_INSERTION_HEXA_CHORUS:
+        case GSMIDI_EFX_TYPE_HEXA_CHORUS:
             expl = "Unsupported HEXA_CHORUS";
             break;
-        case GSMIDI_INSERTION_TREMOLO_CHORUS:
+        case GSMIDI_EFX_TYPE_TREMOLO_CHORUS:
             expl = "Unsupported TREMOLO_CHORUS";
             break;
-        case GSMIDI_INSERTION_STEREO_CHORUS:
+        case GSMIDI_EFX_TYPE_STEREO_CHORUS:
             expl = "Unsupported STEREO_CHORUS";
             break;
-        case GSMIDI_INSERTION_SPACE_D:
+        case GSMIDI_EFX_TYPE_SPACE_D:
             expl = "Unsupported SPACE_D";
             break;
-        case GSMIDI_INSERTION_3D_CHORUS:
+        case GSMIDI_EFX_TYPE_3D_CHORUS:
             expl = "Unsupported 3D_CHORUS";
             break;
-        case GSMIDI_INSERTION_STEREO_DELAY:
+        case GSMIDI_EFX_TYPE_STEREO_DELAY:
             expl = "Unsupported STEREO_DELAY";
             break;
-        case GSMIDI_INSERTION_MOD_DELAY:
+        case GSMIDI_EFX_TYPE_MOD_DELAY:
             expl = "Unsupported MOD_DELAY";
             break;
-        case GSMIDI_INSERTION_3TAP_DELAY:
+        case GSMIDI_EFX_TYPE_3TAP_DELAY:
             expl = "Unsupported 3TAP_DELAY";
             break;
-        case GSMIDI_INSERTION_4TAP_DELAY:
+        case GSMIDI_EFX_TYPE_4TAP_DELAY:
             expl = "Unsupported 4TAP_DELAY";
             break;
-        case GSMIDI_INSERTION_TIME_CONTROL_DELAY:
+        case GSMIDI_EFX_TYPE_TIME_CONTROL_DELAY:
             expl = "Unsupported TIME_CONTROL_DELAY";
             break;
-        case GSMIDI_INSERTION_REVERB:
+        case GSMIDI_EFX_TYPE_REVERB:
             expl = "Unsupported REVERB";
             break;
-        case GSMIDI_INSERTION_GATE_REVERB:
+        case GSMIDI_EFX_TYPE_GATE_REVERB:
             expl = "Unsupported GATE_REVERB";
             break;
-        case GSMIDI_INSERTION_3D_DELAY:
+        case GSMIDI_EFX_TYPE_3D_DELAY:
             expl = "Unsupported 3D_DELAY";
             break;
-        case GSMIDI_INSERTION_2PITCH_SHIFTER:
+        case GSMIDI_EFX_TYPE_2PITCH_SHIFTER:
             expl = "Unsupported 2PITCH_SHIFTER";
             break;
-        case GSMIDI_INSERTION_FEEDBACK_PITCH_SHIFTER:
+        case GSMIDI_EFX_TYPE_FEEDBACK_PITCH_SHIFTER:
             expl = "Unsupported FEEDBACK_PITCH_SHIFTER";
             break;
-        case GSMIDI_INSERTION_3D_AUTO:
+        case GSMIDI_EFX_TYPE_3D_AUTO:
             expl = "Unsupported 3D_AUTO";
             break;
-        case GSMIDI_INSERTION_3D_MANUAL:
+        case GSMIDI_EFX_TYPE_3D_MANUAL:
             expl = "Unsupported 3D_MANUAL";
             break;
-        case GSMIDI_INSERTION_LOFI1:
+        case GSMIDI_EFX_TYPE_LOFI1:
             expl = "Unsupported LOFI1";
             break;
-        case GSMIDI_INSERTION_LOFI2:
+        case GSMIDI_EFX_TYPE_LOFI2:
             expl = "Unsupported LOFI2";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_TO_CHORUS:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_TO_CHORUS:
             expl = "Unsupported OVERDRIVE_TO_CHORUS";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_TO_FLANGER:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_TO_FLANGER:
             expl = "Unsupported OVERDRIVE_TO_FLANGER";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_TO_DELAY:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_TO_DELAY:
             expl = "Unsupported OVERDRIVE_TO_DELAY";
             break;
-        case GSMIDI_INSERTION_DISTORTION_TO_CHORUS:
+        case GSMIDI_EFX_TYPE_DISTORTION_TO_CHORUS:
             expl = "Unsupported DISTORTION_TO_CHORUS";
             break;
-        case GSMIDI_INSERTION_DISTORTION_TO_FLANGER:
+        case GSMIDI_EFX_TYPE_DISTORTION_TO_FLANGER:
             expl = "Unsupported DISTORTION_TO_FLANGER";
             break;
-        case GSMIDI_INSERTION_DISTORTION_TO_DELAY:
+        case GSMIDI_EFX_TYPE_DISTORTION_TO_DELAY:
             expl = "Unsupported DISTORTION_TO_DELAY";
             break;
-        case GSMIDI_INSERTION_ENHANCER_TO_CHORUS:
+        case GSMIDI_EFX_TYPE_ENHANCER_TO_CHORUS:
             expl = "Unsupported ENHANCER_TO_CHORUS";
             break;
-        case GSMIDI_INSERTION_ENHANCER_TO_FLANGER:
+        case GSMIDI_EFX_TYPE_ENHANCER_TO_FLANGER:
             expl = "Unsupported ENHANCER_TO_FLANGER";
             break;
-        case GSMIDI_INSERTION_ENHANCER_TO_DELAY:
+        case GSMIDI_EFX_TYPE_ENHANCER_TO_DELAY:
             expl = "Unsupported ENHANCER_TO_DELAY";
             break;
-        case GSMIDI_INSERTION_CHORUS_TO_DELAY:
+        case GSMIDI_EFX_TYPE_CHORUS_TO_DELAY:
             expl = "Unsupported CHORUS_TO_DELAY";
             break;
-        case GSMIDI_INSERTION_FLANGER_TO_DELAY:
+        case GSMIDI_EFX_TYPE_FLANGER_TO_DELAY:
             expl = "Unsupported FLANGER_TO_DELAY";
             break;
-        case GSMIDI_INSERTION_CHORUS_TO_FLANGER:
+        case GSMIDI_EFX_TYPE_CHORUS_TO_FLANGER:
             expl = "Unsupported CHORUS_TO_FLANGER";
             break;
-        case GSMIDI_INSERTION_ROTARY_MULTI:
+        case GSMIDI_EFX_TYPE_ROTARY_MULTI:
             expl = "Unsupported ROTARY_MULTI";
             break;
-        case GSMIDI_INSERTION_GUITAR_MULTI1:
+        case GSMIDI_EFX_TYPE_GUITAR_MULTI1:
             expl = "Unsupported GUITAR_MULTI1";
             break;
-        case GSMIDI_INSERTION_GUITAR_MILTI2:
+        case GSMIDI_EFX_TYPE_GUITAR_MILTI2:
             expl = "Unsupported GUITAR_MILTI2";
             break;
-        case GSMIDI_INSERTION_GUITAR_MULTI3:
+        case GSMIDI_EFX_TYPE_GUITAR_MULTI3:
             expl = "Unsupported GUITAR_MULTI3";
             break;
-        case GSMIDI_INSERTION_CLEAN_GUITAR_MULTI1:
+        case GSMIDI_EFX_TYPE_CLEAN_GUITAR_MULTI1:
             expl = "Unsupported CLEAN_GUITAR_MULTI1";
             break;
-        case GSMIDI_INSERTION_CLEAN_GUITAR_MULTI2:
+        case GSMIDI_EFX_TYPE_CLEAN_GUITAR_MULTI2:
             expl = "Unsupported CLEAN_GUITAR_MULTI2";
             break;
-        case GSMIDI_INSERTION_BASS_MULTI:
+        case GSMIDI_EFX_TYPE_BASS_MULTI:
             expl = "Unsupported BASS_MULTI";
             break;
-        case GSMIDI_INSERTION_RHODES_MULTI:
+        case GSMIDI_EFX_TYPE_RHODES_MULTI:
             expl = "Unsupported RHODES_MULTI";
             break;
-        case GSMIDI_INSERTION_KEYBOARD_MULTI:
+        case GSMIDI_EFX_TYPE_KEYBOARD_MULTI:
             expl = "Unsupported KEYBOARD_MULTI";
             break;
-        case GSMIDI_INSERTION_CHORUS_DELAY:
+        case GSMIDI_EFX_TYPE_CHORUS_DELAY:
             expl = "Unsupported CHORUS_DELAY";
             break;
-        case GSMIDI_INSERTION_FLANGER_DELAY:
+        case GSMIDI_EFX_TYPE_FLANGER_DELAY:
             expl = "Unsupported FLANGER_DELAY";
             break;
-        case GSMIDI_INSERTION_CHORUS_FLANGER:
+        case GSMIDI_EFX_TYPE_CHORUS_FLANGER:
             expl = "Unsupported CHORUS_FLANGER";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION12:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_DISTORTION12:
             expl = "Unsupported OVERDRIVE_DISTORTION12";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_ROTARY:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_DISTORTION_ROTARY:
             expl = "Unsupported OVERDRIVE_DISTORTION_ROTARY";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_PHASER:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_DISTORTION_PHASER:
             expl = "Unsupported OVERDRIVE_DISTORTION_PHASER";
             break;
-        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_AUTO_WAH:
+        case GSMIDI_EFX_TYPE_OVERDRIVE_DISTORTION_AUTO_WAH:
             expl = "Unsupported OVERDRIVE_DISTORTION_AUTO_WAH";
             break;
-        case GSMIDI_INSERTION_PHASER_ROTARY:
+        case GSMIDI_EFX_TYPE_PHASER_ROTARY:
             expl = "Unsupported PHASER_ROTARY";
             break;
-        case GSMIDI_INSERTION_PHASER_AUTO_WAH:
+        case GSMIDI_EFX_TYPE_PHASER_AUTO_WAH:
             expl = "Unsupported PHASER_AUTO_WAH";
             break;
         default:
@@ -770,6 +775,52 @@ MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value, std
             break;
         }
         LOG(99, "LOG %s\n", expl.c_str());
+        break;
+    case GSMIDI_EFX_PARAMETER1:
+    case GSMIDI_EFX_PARAMETER2:
+    case GSMIDI_EFX_PARAMETER3:
+    case GSMIDI_EFX_PARAMETER4:
+    case GSMIDI_EFX_PARAMETER5:
+    case GSMIDI_EFX_PARAMETER6:
+    case GSMIDI_EFX_PARAMETER7:
+    case GSMIDI_EFX_PARAMETER8:
+    case GSMIDI_EFX_PARAMETER9:
+    case GSMIDI_EFX_PARAMETER10:
+    case GSMIDI_EFX_PARAMETER11:
+    case GSMIDI_EFX_PARAMETER12:
+    case GSMIDI_EFX_PARAMETER13:
+    case GSMIDI_EFX_PARAMETER14:
+    case GSMIDI_EFX_PARAMETER15:
+    case GSMIDI_EFX_PARAMETER16:
+    case GSMIDI_EFX_PARAMETER17:
+    case GSMIDI_EFX_PARAMETER18:
+    case GSMIDI_EFX_PARAMETER19:
+    case GSMIDI_EFX_PARAMETER20:
+        expl = "EFX_PARAMETER " + std::to_string((addr - GSMIDI_EFX_PARAMETER1 + 1));
+        break;
+    case GSMIDI_EFX_SEND_LEVEL_TO_REVERB:
+        expl = "GSMIDI_EFX_SEND_LEVEL_TO_REVERB";
+        break;
+    case GSMIDI_EFX_SEND_LEVEL_TO_CHORUS:
+        expl = "GSMIDI_EFX_SEND_LEVEL_TO_CHORUS";
+        break;
+    case GSMIDI_EFX_SEND_LEVEL_TO_DELAY:
+        expl = "GSMIDI_EFX_SEND_LEVEL_TO_DELAY";
+        break;
+    case GSMIDI_EFX_CONTROL_SOURCE1:
+        expl = "GSMIDI_EFX_CONTROL_SOURCE1";
+        break;
+    case GSMIDI_EFX_CONTROL_DEPTH1:
+        expl = "GSMIDI_EFX_CONTROL_DEPTH1";
+        break;
+    case GSMIDI_EFX_CONTROL_SOURCE2:
+        expl = "GSMIDI_EFX_CONTROL_SOURCE2";
+        break;
+    case GSMIDI_EFX_CONTROL_DEPTH2:
+        expl = "GSMIDI_EFX_CONTROL_DEPTH2";
+        break;
+    case GSMIDI_EFX_SEND_EQ_TYPE:
+        expl = "GSMIDI_EFX_SEND_EQ_TYPE";
         break;
     default:
         LOG(99, "LOG: Unsupported GS sysex insertion type: 0x%02x (%d)\n",
