@@ -33,6 +33,13 @@ uint8_t MIDIStream::GS_checksum(uint64_t sum)
     return 128 - (sum % 128);
 }
 
+uint8_t MIDIStream::GS_Address2Part(uint8_t addr)
+{
+    uint8_t part_no = (addr & 0xf)-1;
+    if (part_no == 255) part_no = 9;
+    return part_no;
+}
+
 bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
 {
     bool rv = false;
@@ -86,7 +93,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
 
                         byte = pull_byte();
                         CSV(channel_no, ", %d", byte);
-                        
+
                         if (GS_checksum(sum) == byte)
                         {
                             expl = "RESET";
@@ -343,8 +350,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_RYTHM_PART16:
                     {
                         expl = "DRUM_PART";
-                        uint8_t part_no = (addr_mid & 0xf)-1;
-                        if (part_no == 255) part_no = 9;
+                        uint8_t part_no = GS_Address2Part(addr_mid);
                         byte = pull_byte();
                         CSV(part_no, ", %d", byte);
                         if (GS_checksum(sum) == byte)
@@ -554,12 +560,221 @@ MIDIStream::GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value)
     return rv;
 }
 
+// SC-8850_OM page 78, 89, 91 (type), 216 (effect list)
 bool
 MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value)
 {
-    LOG(99, "LOG: Unsupported GS sysex insertion type: 0x%02x (%d)\n",
+    bool rv = true;
+    switch(addr)
+    {
+    case GSMIDI_INSERTION_EFX_TYPE:
+        switch(value)
+        {
+        case GSMIDI_INSERTION_THRU:
+            LOG(99, "LOG: Unsupported THRU\n");
+            break;
+        case GSMIDI_INSERTION_STEREO_EQ:
+            LOG(99, "LOG: Unsupported STEREO_EQ\n");
+            break;
+        case GSMIDI_INSERTION_SPECTRUM:
+            LOG(99, "LOG: Unsupported SPECTRUM\n");
+            break;
+        case GSMIDI_INSERTION_ENHANCER:
+            LOG(99, "LOG: Unsupported ENHANCER\n");
+            break;
+        case GSMIDI_INSERTION_HUMANIZER:
+            LOG(99, "LOG: Unsupported HUMANIZER\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE:
+            LOG(99, "LOG: Unsupported OVERDRIVE\n");
+            break;
+        case GSMIDI_INSERTION_DISTORTION:
+            LOG(99, "LOG: Unsupported DISTORTION\n");
+            break;
+        case GSMIDI_INSERTION_PHASER:
+            LOG(99, "LOG: Unsupported PHASER\n");
+            break;
+        case GSMIDI_INSERTION_AUTO_WAH:
+            LOG(99, "LOG: Unsupported AUTO_WAH\n");
+            break;
+        case GSMIDI_INSERTION_ROTARY:
+            LOG(99, "LOG: Unsupported ROTARY\n");
+            break;
+        case GSMIDI_INSERTION_STEREO_FLANGER:
+            LOG(99, "LOG: Unsupported STEREO_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_STEP_FLANGER:
+            LOG(99, "LOG: Unsupported STEP_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_TREMOLO:
+            LOG(99, "LOG: Unsupported TREMOLO\n");
+            break;
+        case GSMIDI_INSERTION_AUTO_PAN:
+            LOG(99, "LOG: Unsupported AUTO_PAN\n");
+            break;
+        case GSMIDI_INSERTION_COMPRESSOR:
+            LOG(99, "LOG: Unsupported COMPRESSOR\n");
+            break;
+        case GSMIDI_INSERTION_LIMITER:
+            LOG(99, "LOG: Unsupported LIMITER\n");
+            break;
+        case GSMIDI_INSERTION_HEXA_CHORUS:
+            LOG(99, "LOG: Unsupported HEXA_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_TREMOLO_CHORUS:
+            LOG(99, "LOG: Unsupported TREMOLO_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_STEREO_CHORUS:
+            LOG(99, "LOG: Unsupported STEREO_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_SPACE_D:
+            LOG(99, "LOG: Unsupported SPACE_D\n");
+            break;
+        case GSMIDI_INSERTION_3D_CHORUS:
+            LOG(99, "LOG: Unsupported 3D_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_STEREO_DELAY:
+            LOG(99, "LOG: Unsupported STEREO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_MOD_DELAY:
+            LOG(99, "LOG: Unsupported MOD_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_3TAP_DELAY:
+            LOG(99, "LOG: Unsupported 3TAP_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_4TAP_DELAY:
+            LOG(99, "LOG: Unsupported 4TAP_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_TIME_CONTROL_DELAY:
+            LOG(99, "LOG: Unsupported TIME_CONTROL_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_REVERB:
+            LOG(99, "LOG: Unsupported REVERB\n");
+            break;
+        case GSMIDI_INSERTION_GATE_REVERB:
+            LOG(99, "LOG: Unsupported GATE_REVERB\n");
+            break;
+        case GSMIDI_INSERTION_3D_DELAY:
+            LOG(99, "LOG: Unsupported 3D_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_2PITCH_SHIFTER:
+            LOG(99, "LOG: Unsupported 2PITCH_SHIFTER\n");
+            break;
+        case GSMIDI_INSERTION_FEEDBACK_PITCH_SHIFTER:
+            LOG(99, "LOG: Unsupported FEEDBACK_PITCH_SHIFTER\n");
+            break;
+        case GSMIDI_INSERTION_3D_AUTO:
+            LOG(99, "LOG: Unsupported 3D_AUTO\n");
+            break;
+        case GSMIDI_INSERTION_3D_MANUAL:
+            LOG(99, "LOG: Unsupported 3D_MANUAL\n");
+            break;
+        case GSMIDI_INSERTION_LOFI1:
+            LOG(99, "LOG: Unsupported LOFI1\n");
+            break;
+        case GSMIDI_INSERTION_LOFI2:
+            LOG(99, "LOG: Unsupported LOFI2\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_TO_CHORUS:
+            LOG(99, "LOG: Unsupported OVERDRIVE_TO_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_TO_FLANGER:
+            LOG(99, "LOG: Unsupported OVERDRIVE_TO_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_TO_DELAY:
+            LOG(99, "LOG: Unsupported OVERDRIVE_TO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_DISTORTION_TO_CHORUS:
+            LOG(99, "LOG: Unsupported DISTORTION_TO_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_DISTORTION_TO_FLANGER:
+            LOG(99, "LOG: Unsupported DISTORTION_TO_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_DISTORTION_TO_DELAY:
+            LOG(99, "LOG: Unsupported DISTORTION_TO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_ENHANCER_TO_CHORUS:
+            LOG(99, "LOG: Unsupported ENHANCER_TO_CHORUS\n");
+            break;
+        case GSMIDI_INSERTION_ENHANCER_TO_FLANGER:
+            LOG(99, "LOG: Unsupported ENHANCER_TO_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_ENHANCER_TO_DELAY:
+            LOG(99, "LOG: Unsupported ENHANCER_TO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_CHORUS_TO_DELAY:
+            LOG(99, "LOG: Unsupported CHORUS_TO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_FLANGER_TO_DELAY:
+            LOG(99, "LOG: Unsupported FLANGER_TO_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_CHORUS_TO_FLANGER:
+            LOG(99, "LOG: Unsupported CHORUS_TO_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_ROTARY_MULTI:
+            LOG(99, "LOG: Unsupported ROTARY_MULTI\n");
+            break;
+        case GSMIDI_INSERTION_GUITAR_MULTI1:
+            LOG(99, "LOG: Unsupported GUITAR_MULTI1\n");
+            break;
+        case GSMIDI_INSERTION_GUITAR_MILTI2:
+            LOG(99, "LOG: Unsupported GUITAR_MILTI2\n");
+            break;
+        case GSMIDI_INSERTION_GUITAR_MULTI3:
+            LOG(99, "LOG: Unsupported GUITAR_MULTI3\n");
+            break;
+        case GSMIDI_INSERTION_CLEAN_GUITAR_MULTI1:
+            LOG(99, "LOG: Unsupported CLEAN_GUITAR_MULTI1\n");
+            break;
+        case GSMIDI_INSERTION_CLEAN_GUITAR_MULTI2:
+            LOG(99, "LOG: Unsupported CLEAN_GUITAR_MULTI2\n");
+            break;
+        case GSMIDI_INSERTION_BASS_MULTI:
+            LOG(99, "LOG: Unsupported BASS_MULTI\n");
+            break;
+        case GSMIDI_INSERTION_RHODES_MULTI:
+            LOG(99, "LOG: Unsupported RHODES_MULTI\n");
+            break;
+        case GSMIDI_INSERTION_KEYBOARD_MULTI:
+            LOG(99, "LOG: Unsupported KEYBOARD_MULTI\n");
+            break;
+        case GSMIDI_INSERTION_CHORUS_DELAY:
+            LOG(99, "LOG: Unsupported CHORUS_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_FLANGER_DELAY:
+            LOG(99, "LOG: Unsupported FLANGER_DELAY\n");
+            break;
+        case GSMIDI_INSERTION_CHORUS_FLANGER:
+            LOG(99, "LOG: Unsupported CHORUS_FLANGER\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION12:
+            LOG(99, "LOG: Unsupported OVERDRIVE_DISTORTION12\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_ROTARY:
+            LOG(99, "LOG: Unsupported OVERDRIVE_DISTORTION_ROTARY\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_PHASER:
+            LOG(99, "LOG: Unsupported OVERDRIVE_DISTORTION_PHASER\n");
+            break;
+        case GSMIDI_INSERTION_OVERDRIVE_DISTORTION_AUTO_WAH:
+            LOG(99, "LOG: Unsupported OVERDRIVE_DISTORTION_AUTO_WAH\n");
+            break;
+        case GSMIDI_INSERTION_PHASER_ROTARY:
+            LOG(99, "LOG: Unsupported PHASER_ROTARY\n");
+            break;
+        case GSMIDI_INSERTION_PHASER_AUTO_WAH:
+            LOG(99, "LOG: Unsupported PHASER_AUTO_WAH\n");
+            break;
+        default:
+            break;
+        }
+        break;
+    default:
+        LOG(99, "LOG: Unsupported GS sysex insertion type: 0x%02x (%d)\n",
                  addr, addr);
-    return false;
+        break;
+    }
+    return rv;
 }
 
 bool

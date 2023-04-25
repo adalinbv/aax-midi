@@ -142,6 +142,7 @@ private:
 
     uint8_t GS_mode = 0;
     uint8_t GS_checksum(uint64_t);
+    uint8_t GS_Address2Part(uint8_t);
     bool GS_process_sysex(uint64_t, std::string&);
     bool GS_sysex_equalizer(uint8_t part_no, uint8_t addr, uint8_t value);
     bool GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint8_t value);
