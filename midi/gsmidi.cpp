@@ -101,7 +101,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                             midi.set_mode(MIDI_GENERAL_STANDARD);
                             rv = true;
                         }
-                        else expl = "Unkown RESET";
+                        else expl = "RESET: Invalid checksum";
                         break;
                     case GSMIDI_MASTER_TUNE:
                     {   // 1st bit3-0: bit7-4, 2nd bit3-0: bit3-0
@@ -246,7 +246,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                             INFO("Switching to GS short delay with feedback");
                             break;
                         default:
-                            expl = "Unkown CHORUS_MACRO";
+                            expl = "Unkown CHORUS_MACRO " + std::to_string(value);
                             LOG(99, "LOG: Unsupported GS sysex Chorus type:"
                                     " 0x%02x (%d)\n", type, type);
                             break;
@@ -440,15 +440,15 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                             {
                             case GSMIDI_PART_SET:
                             case GSMIDI_PART_SWITCH:
-                                expl = "PART_SET";
-                                GS_sysex_part(part_no, addr_low, value);
+                                GS_sysex_part(part_no, addr_low, value, expl);
+                                expl = "PART_SET " + expl;
                                 break;
                             case GSMIDI_MODULATION_SET:
-                                expl = "MODULATION_SET";
-                                GS_sysex_modulation(part_no, addr_low, value);
+                                GS_sysex_modulation(part_no, addr_low, value, expl);
+                                expl = "MODULATION_SET " + expl;
                                break;
                             default:
-                                expl = "Unkown PARAMETER_CHANGE";
+                                expl = "Unkown PARAMETER_CHANGE " + std::to_string(addr_mid & 0xF);
                                 LOG(99, "LOG: GS Data Set 1: Unsupported address:"
                                         " 0x%02x 0x%02x (%d %d)\n",
                                         addr_mid, addr_low, addr_mid, addr_low);
@@ -479,7 +479,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         GS_mode = value;
                         break;
                     default:
-                        expl = "Unkown SYSTEM_PARAMETER_CHANGE";
+                        expl = "Unkown SYSTEM_PARAMETER_CHANGE " + std::to_string(addr);
                         LOG(99, "LOG: Unsupported GS sysex system parameter change\n");
                         break;
                     }
@@ -512,7 +512,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     expl = "SYSTEM_INFORMATION";
                     break;
                 default:
-                    expl = "Unkown DATA_SET1";
+                    expl = "Unkown DATA_SET1 " + std::to_string(addr_high);
                     LOG(99, "LOG: Unsupported GS sysex effect type: 0x%02x 0x%02x 0x%02x (%d %d %d)\n",
                             addr_high, addr_mid, addr_low,
                             addr_high, addr_mid, addr_low);
@@ -525,7 +525,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                 LOG(99, "LOG: Unsupported GS sysex data Request\n");
                 break;
             default:
-                expl = "Unkown MODEL_GS";
+                expl = "Unkown MODEL_GS " + std::to_string(byte);
                 LOG(99, "LOG: Unsupported GS sysex parameter category: 0x%02x (%d)\n",
                      byte, byte);
                 break;
@@ -541,7 +541,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
         break;
     } // GSMIDI_SYSTEM
     default:
-        expl = "Unkown SYSEX";
+        expl = "Unkown SYSEX " + std::to_string(type & 0xF);
         LOG(99, "LOG: Unsupported GS sysex category type: 0x%02x (%d)\n", byte, byte);
         break;
     }
@@ -831,18 +831,21 @@ MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint16_t type, std
 }
 
 bool
-MIDIStream::GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value, std::string& expl)
 {
     bool rv = true;
     switch(addr)
     {
     case GSMIDI_MODULATION_DEPTH:
+        expl = "Unsupported MODULATION_DEPTH";
         LOG(99, "LOG: Unsupported GS sysex modulation depth\n");
         break;
     case GSMIDI_BEND_RANGE:
+        expl = "Unsupported BEND_RANGE";
         LOG(99, "LOG: Unsupported GS sysex bend range\n");
         break;
     default:
+        expl = "Unkown";
         LOG(99, "LOG: Unsupported GS sysex modulation type: 0x%02x (%d)\n",
                  addr, addr);
         rv = false;
@@ -852,61 +855,75 @@ MIDIStream::GS_sysex_modulation(uint8_t part_no, uint8_t addr, uint8_t value)
 }
 
 bool
-MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
+MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::string &expl)
 {
     auto& channel = midi.channel(part_no);
     bool rv = true;
     switch(addr)
     {
-    case GSMIDI_PART_PAN:
-        if (mode != MIDI_MONOPHONIC) {
-            channel.set_pan((float(value)-64.f)/64.f);
-        }
+    case GSMIDI_PART_TONE_NUMBER:
+        expl = "Unsupported TONE_NUMBER";
         break;
-    case GSMIDI_PART_VIBRATO_RATE:
-    {
-        float val = 0.5f + float(value)/64.0f;
-        channel.set_vibrato_rate(val);
+    case GSMIDI_PART_CHANNEL_SWITCH:
+        expl = "Unsupported CHANNEL_SWITCH";
+        LOG(99, "LOG: Unsupported GS sysex part channel switch\n");
         break;
-    }
-    case GSMIDI_PART_VIBRATO_DEPTH:
-    {
-        float val = float(value)/64.0f;
-        channel.set_vibrato_depth(val);
+    case GSMIDI_PART_PITCH_BEND_SWITCH:
+        expl = "Unsupported PITCH_BEND_SWITCH";
         break;
-    }
-    case GSMIDI_PART_VIBRATO_DELAY:
-    {
-        float val = float(value)/64.0f;
-        channel.set_vibrato_delay(val);
+    case GSMIDI_PART_CHANNEL_PRESSURE_SWITCH:
+        expl = "Unsupported CHANNEL_PRESSURE_SWITCH";
         break;
-    }
-    case GSMIDI_PART_ATTACK_TIME:
-        channel.set_attack_time(value);
-        break;
-    case GSMIDI_PART_DECAY_TIME:
-        channel.set_decay_time(value);
-        break;
-    case GSMIDI_PART_RELEASE_TIME:
-        channel.set_release_time(value);
-        break;
-    case GSMIDI_PART_REVERB_SEND_LEVEL:
-    {
-        float val = float(value)/127.0f;
-        midi.set_reverb_level(part_no, val);
-        break;
-    }
-    case GSMIDI_PART_VOLUME:
-        channel.set_gain(_ln(float(value)/127.0f));
-        break;
-    case MIDI_PROGRAM_CHANGE:
+    case GSMIDI_PART_PROGRAM_CHANGE_SWITCH:
+        expl = "PROGRAM_CHANGE";
+        program_no = value;
         try {
             midi.new_channel(part_no, bank_no, program_no);
         } catch(const std::invalid_argument& e) {
             ERROR("Error: " << e.what());
         }
         break;
+    case GSMIDI_PART_CONTROL_CHANGE_SWITCH:
+        expl = "Unsupported CONTROL_CHANGE_SWITCH";
+        break;
+    case GSMIDI_PART_POLY_PRESSURE_SWITCH:
+        expl = "Unsupported POLY_PRESSURE_SWITCH";
+        break;
+    case GSMIDI_PART_NOTE_MESSAGE_SWITCH:
+        expl = "Unsupported NOTE_MESSAGE_SWITCH";
+        break;
+    case GSMIDI_PART_RPN_SWITCH:
+        expl = "Unsupported RPN_SWITCH";
+        break;
+    case GSMIDI_PART_NRPN_SWITCH:
+        expl = "Unsupported NRPN_SWITCH";
+        break;
+    case GSMIDI_PART_MODULATION_SWITCH:
+        expl = "Unsupported MODULATION_SWITCH";
+        break;
+    case GSMIDI_PART_VOLUME_SWITCH:
+        expl = "Unsupported VOLUME_SWITCH";
+        break;
+    case GSMIDI_PART_PAN_SWITCH:
+        expl = "Unsupported PAN_SWITCH";
+        break;
+    case GSMIDI_PART_EXPRESSION_SWITCH:
+        expl = "Unsupported EXPRESSION_SWITCH";
+        break;
+    case GSMIDI_PART_HOLD1_SWITCH:
+        expl = "Unsupported HOLD1_SWITCH";
+        break;
+    case GSMIDI_PART_PORTAMENTO_SWITCH:
+        expl = "Unsupported PORTAMENTO_SWITCH";
+        break;
+    case GSMIDI_PART_SOSTENUTO_SWITCH:
+        expl = "Unsupported SOSTENUTO_SWITCH";
+        break;
+    case GSMIDI_PART_SOFT_SWITCH:
+        expl = "Unsupported SOFT_SWITCH";
+        break;
     case GSMIDI_PART_POLY_MODE:
+        expl = "POLY_MODE";
         midi.process(part_no, MIDI_NOTE_OFF, 0, 0, true);
         if (value == 0) {
             mode = MIDI_MONOPHONIC;
@@ -916,11 +933,176 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value)
             mode = MIDI_POLYPHONIC;
         }
         break;
-    case GSMIDI_PART_CHANNEL_SWITCH:
-        LOG(99, "LOG: Unsupported GS sysex part channel switch\n");
+    case GSMIDI_PART_ASSIGN_MODE:
+        expl = "Unsupported ASSIGN_MODE " + std::to_string(value);
         break;
-    case GSMIDI_PART_NRPN_SWITCH:
+    case GSMIDI_PART_RYTHM_MODE:
+        expl = "Unsupported RYTHM_MODE " + std::to_string(value);
+        break;
+    case GSMIDI_PART_PITCH_KEY_SHIFT:
+        expl = "Unsupported PITCH_KEY_SHIFT";
+        break;
+    case GSMIDI_PART_PITCH_OFFSET_FINE:
+        expl = "Unsupported PITCH_OFFSET_FINE";
+        break;
+    case GSMIDI_PART_VOLUME:
+        expl = "VOLUME";
+        channel.set_gain(_ln(float(value)/127.0f));
+        break;
+    case GSMIDI_PART_VELOCITY_SENSE_DEPTH:
+        expl = "Unsupported VELOCITY_SENSE_DEPTH";
+        break;
+    case GSMIDI_PART_VELOCITY_SENSE_OFFSET:
+        expl = "Unsupported VELOCITY_SENSE_OFFSET";
+        break;
+    case GSMIDI_PART_PAN:
+        expl = "PAN";
+        if (mode != MIDI_MONOPHONIC) {
+            channel.set_pan((float(value)-64.f)/64.f);
+        }
+        break;
+
+    case GSMIDI_PART_KEYBOARD_RANGE_LOW:
+        expl = "Unsupported KEYBOARD_RANGE_LOW";
+        break;
+    case GSMIDI_PART_KEYBOARD_RANGE_HIGH:
+        expl = "Unsupported KEYBOARD_RANGE_HIGH";
+        break;
+    case GSMIDI_PART_CC1_CONTROL_NUMBER:
+        expl = "Unsupported CC1_CONTROL_NUMBER";
+        break;
+    case GSMIDI_PART_CC2_CONTROL_NUMBER:
+        expl = "Unsupported CC2_CONTROL_NUMBER";
+        break;
+    case GSMIDI_PART_CHORUS_SEND_LEVEL:
+        expl = "Unsupported CHORUS_SEND_LEVEL";
+        break;
+    case GSMIDI_PART_REVERB_SEND_LEVEL:
+    {
+        expl = "REVERB_SEND_LEVEL";
+        float val = float(value)/127.0f;
+        midi.set_reverb_level(part_no, val);
+        break;
+    }
+    case GSMIDI_PART_BANK_SELECT_SWITCH:
+    {
+        expl = "BANK_SELECT_SWITCH";
+        bool prev = channel.is_drums();
+        bool drums = false;
+
+        switch(midi.get_mode())
+        {
+        case MIDI_MODE0:
+        case MIDI_GENERAL_STANDARD:
+           if (track_no == MIDI_DRUMS_CHANNEL) {
+               drums = true;
+           }
+           // intentional fallthrough
+        case MIDI_GENERAL_MIDI2:
+        case MIDI_EXTENDED_GENERAL_MIDI:
+           bank_no = value << 7;
+           break;
+        default:
+            break;
+        }
+        break;
+
+        if (prev != drums)
+        {
+            channel.set_drums(drums);
+            std::string name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+        }
+        break;
+    }
+    case GSMIDI_PART_BANK_SELECT_LSB_SWITCH:
+    {
+        expl = "BANK_SELECT_LSB_SWITCH";
+        bool prev = channel.is_drums();
+        bool drums = prev;
+
+        switch(midi.get_mode())
+        {
+        case MIDI_GENERAL_MIDI2:
+            drums = false;
+            bank_no += value;
+            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7))
+            {
+                bank_no = 0; // shared with GM2 and GS
+                drums = true;
+            }
+            break;
+        case MIDI_EXTENDED_GENERAL_MIDI:
+            drums = false;
+            bank_no += value;
+            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7) ||
+                bank_no == (MIDI_GS_BANK_RYTHM << 7))
+            {
+                bank_no = 0; // shared with GM2 and GS
+                drums = true;
+            }
+            else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
+            else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
+            break;
+        default:
+            break;
+        }
+
+        if (prev != drums)
+        {
+            channel.set_drums(drums);
+            std::string name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+        }
+        break;
+    }
+    case GSMIDI_PART_PITCH_FINE_TUNE:
+        expl = "Unsupported PITCH_FINE_TUNE";
+        break;
+    case GSMIDI_PART_DELAY_SEND_LEVEL:
+        expl = "Unsupported DELAY_SEND_LEVEL";
+        break;
+    case GSMIDI_PART_VIBRATO_RATE:
+    {
+        expl = "VIBRATO_RATE";
+        float val = 0.5f + float(value)/64.0f;
+        channel.set_vibrato_rate(val);
+        break;
+    }
+    case GSMIDI_PART_VIBRATO_DEPTH:
+    {
+        expl = "VIBRATO_DEPTH";
+        float val = float(value)/64.0f;
+        channel.set_vibrato_depth(val);
+        break;
+    }
+    case GSMIDI_PART_CUTOFF_FREQUENCY:
+        expl = "Unsupported CUTOFF_FREQUENCY";
+        break;
+    case GSMIDI_PART_RESONANCE:
+        expl = "Unsupported RESONANCE";
+        break;
+    case GSMIDI_PART_ATTACK_TIME:
+        expl = "ATTACK_TIME";
+        channel.set_attack_time(value);
+        break;
+    case GSMIDI_PART_DECAY_TIME:
+        expl = "DECAY_TIME";
+        channel.set_decay_time(value);
+        break;
+    case GSMIDI_PART_RELEASE_TIME:
+        expl = "RELEASE_TIME";
+        channel.set_release_time(value);
+        break;
+    case GSMIDI_PART_VIBRATO_DELAY:
+    {
+        expl = "VIBRATO_DELAY";
+        float val = float(value)/64.0f;
+        channel.set_vibrato_delay(val);
+        break;
+    }
     default:
+        expl = "Unknown " + std::to_string(addr);
         LOG(99, "LOG: Unsupported GS sysex part set: 0x%02x (%d)\n", addr, addr);
         rv = false;
         break;

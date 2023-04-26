@@ -613,7 +613,7 @@ bool MIDIStream::process_control(uint8_t track_no)
             MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
         }
         break;
-     }
+    }
     case MIDI_FOOT_CONTROLLER:
     case MIDI_BREATH_CONTROLLER:
        expl = "FOOT_CONTROLLER/MIDI_BREATH_CONTROLLER MSB";
