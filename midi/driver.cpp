@@ -235,6 +235,7 @@ MIDIDriver::send_chorus_to_reverb(float val)
 void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
+    val = _ln(val);
     auto it = std::find(chorus_channels.begin(),chorus_channels.end(), part_no);
     if (val > 0 && it == chorus_channels.end()) {
         chorus_channels.push_back(part_no);
@@ -331,6 +332,7 @@ MIDIDriver::set_reverb_type(uint8_t type)
 void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
+    val = _ln(val);
     auto& part = midi.channel(part_no);
     if (val > 0.0f && part.get_reverb_level() != val)
     {
