@@ -27,6 +27,23 @@
 
 using namespace aax;
 
+void MIDIStream::GS_initialize()
+{
+    float val = 40.0f/127.0f;
+    for (auto& it : midi.get_channels())
+    {
+        midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
+        midi.set_reverb_level(it.first, val);
+        midi.set_chorus_level(it.first, 0.0f);
+        it.second->set_expression(_ln(127.0f/127.0f));
+        it.second->set_gain(_ln(100.0f/127.0f));
+        it.second->set_pan(0.0f);
+        if (it.first != MIDI_DRUMS_CHANNEL) {
+            it.second->set_drums(false);
+        } else it.second->set_drums(true);
+    }
+    midi.set_mode(MIDI_GENERAL_STANDARD);
+}
 
 uint8_t MIDIStream::GS_checksum(uint64_t sum)
 {
@@ -98,7 +115,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         if (GS_checksum(sum) == byte)
                         {
                             expl = "RESET";
-                            midi.set_mode(MIDI_GENERAL_STANDARD);
+                            GS_initialize();
                             rv = true;
                         }
                         else expl = "RESET: Invalid checksum";
@@ -477,6 +494,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_SYSTEM_MODE_SET:
                         expl = "SYSTEM_MODE_SET";
                         GS_mode = value;
+                        GS_initialize();
                         break;
                     default:
                         expl = "Unkown SYSTEM_PARAMETER_CHANGE " + std::to_string(addr);

@@ -34,9 +34,6 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
     : byte_stream(stream, len), midi(ptr), track_no(track)
 {
     timestamp_parts = pull_message()*24/600000;
-
-    float val = 40.0f/127.0f;
-    midi.set_reverb_level(track_no, val);
 }
 
 float

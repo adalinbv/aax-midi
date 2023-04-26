@@ -145,6 +145,24 @@ static XGMIDI_effect_t XGMIDI_EQ_types[XGMIDI_MAX_EQ_TYPES] = {
 
 using namespace aax;
 
+void MIDIStream::XG_initialize()
+{
+    float val = 40.0f/127.0f;
+    for (auto& it : midi.get_channels())
+    {
+        midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
+        midi.set_reverb_level(it.first, val);
+        midi.set_chorus_level(it.first, 0.0f);
+        it.second->set_expression(_ln(127.0f/127.0f));
+        it.second->set_gain(_ln(100.0f/127.0f));
+        it.second->set_pan(0.0f);
+        if (it.first != MIDI_DRUMS_CHANNEL) {
+            it.second->set_drums(false);
+        } else it.second->set_drums(true);
+    }
+    midi.set_mode(MIDI_EXTENDED_GENERAL_MIDI);
+}
+
 void
 MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
 {
@@ -224,7 +242,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     if (value == 0x00)
                     {
                         expl = "RESET";
-                        midi.set_mode(MIDI_EXTENDED_GENERAL_MIDI);
+                        XG_initialize();
                     }
                     else expl = "Unkown SYSTEM_ON";
                     rv = true;
@@ -780,16 +798,16 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                         LOG(99, "LOG: Unsupported XG sysex variation type: Lo-Fi\n");
                         break;
                     case XGMIDI_DISTORTION_DELAY:
-                        expl = "DISTORTION_DELAY"; 
+                        expl = "DISTORTION_DELAY";
                         LOG(99, "LOG: Unsupported XG sysex variation type: Distortion and Delay\n");
                         break;
                     case XGMIDI_OVER_DRIVE_DELAY:
                         expl = "OVER_DRIVE_DELAY";
-                        LOG(99, "LOG: Unsupported XG sysex variation type: Over Drive and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Over Drive and Delay\n");
                         break;
                     case XGMIDI_COMPRESSOR_DISTORTION_DELAY:
                         expl = "COMPRESSOR_DISTORTION_DELAY";
-                        LOG(99, "LOG: Unsupported XG sysex variation type: Compressor and Distortion and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Compressor and Distortion and Delay\n");
                         break;
                     case XGMIDI_COMPRESSOR_OVER_DRIVE_DELAY:
                         expl = "COMPRESSOR_OVER_DRIVE_DELAY";
@@ -797,7 +815,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                         break;
                     case XGMIDI_WAH_DISTORTION_DELAY:
                         expl = "WAH_DISTORTION_DELAY";
-                        LOG(99, "LOG: Unsupported XG sysex variation type: Wah and Distortion and Delay\n");                        
+                        LOG(99, "LOG: Unsupported XG sysex variation type: Wah and Distortion and Delay\n");
                         break;
                     case XGMIDI_WAH_OVER_DRIVE_DELAY:
                         expl = "WAH_OVER_DRIVE_DELAY";

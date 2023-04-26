@@ -330,6 +330,14 @@ MIDIDriver::set_reverb_type(uint8_t type)
 }
 
 void
+MIDIDriver::set_reverb_level(float val)
+{
+   for (auto& it: channels) {
+       set_reverb_level(it.first, val);
+   }
+}
+
+void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
     val = _ln(val);

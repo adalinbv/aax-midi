@@ -26,6 +26,55 @@
 
 using namespace aax;
 
+std::string MIDIStream::GM_initialize(uint8_t mode)
+{
+    std::string expl;
+
+    midi.set_mode(mode);
+    switch(mode)
+    {
+    case GMMIDI_GM_RESET:
+        expl = "GM RESET";
+        for (auto& it : midi.get_channels())
+        {
+            midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
+            midi.set_reverb_level(it.first, 0.0f);
+            midi.set_chorus_level(it.first, 0.0f);
+            it.second->set_expression(_ln(127.0f/127.0f));
+            it.second->set_gain(_ln(100.0f/127.0f));
+            it.second->set_pan(0.0f);
+            if (it.first != MIDI_DRUMS_CHANNEL) {
+                it.second->set_drums(false);
+            } else it.second->set_drums(true);
+        }
+        midi.set_mode(MIDI_GENERAL_MIDI1);
+        break;
+    case 0x02:
+        // midi.set_mode(MIDI_MODE0);
+        break;
+    case GMMIDI_GM2_RESET:
+        expl = "GM2 RESET";
+        for (auto& it : midi.get_channels())
+        {
+            midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
+            midi.set_reverb_level(it.first, 0.0f);
+            midi.set_chorus_level(it.first, 0.0f);
+            it.second->set_expression(_ln(127.0f/127.0f));
+            it.second->set_gain(_ln(100.0f/127.0f));
+            it.second->set_pan(0.0f);
+            if (it.first != MIDI_DRUMS_CHANNEL) {
+                it.second->set_drums(false);
+            } else it.second->set_drums(true);
+        }
+        midi.set_mode(MIDI_GENERAL_MIDI2);
+        break;
+    default:
+        expl = "Unkown SYSTEM";
+        break;
+    }
+    return expl;
+}
+
 bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
 {
     bool rv = true;
@@ -54,44 +103,7 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
         case GENERAL_MIDI_SYSTEM:
             value = pull_byte();
             CSV(channel_no, ", %d", value);
-            midi.set_mode(value);
-            switch(value)
-            {
-            case GMMIDI_GM_RESET:
-                expl = "GM RESET";
-                midi.process(channel_no, MIDI_NOTE_OFF, 0, 0, true);
-                midi.set_mode(MIDI_GENERAL_MIDI1);
-                for (auto& it : midi.get_channels())
-                {
-                    it.second->set_expression(_ln(127.0f/127.0f));
-                    it.second->set_gain(_ln(100.0f/127.0f));
-                    it.second->set_pan(0.0f);
-                    if (it.first != MIDI_DRUMS_CHANNEL) {
-                        it.second->set_drums(false);
-                    } else it.second->set_drums(true);
-                }
-                break;
-            case 0x02:
-                // midi.set_mode(MIDI_MODE0);
-                break;
-            case GMMIDI_GM2_RESET:
-                expl = "GM2 RESET";
-                midi.process(channel_no, MIDI_NOTE_OFF, 0, 0, true);
-                midi.set_mode(MIDI_GENERAL_MIDI2);
-                for (auto& it : midi.get_channels())
-                {
-                    it.second->set_expression(_ln(127.0f/127.0f));
-                    it.second->set_gain(_ln(100.0f/127.0f));
-                    it.second->set_pan(0.0f);
-                    if (it.first != MIDI_DRUMS_CHANNEL) {
-                        it.second->set_drums(false);
-                    } else it.second->set_drums(true);
-                }
-                break;
-            default:
-                expl = "Unkown SYSTEM";
-                break;
-            }
+            expl = GM_initialize(value);
             break;
         case MIDI_EOF:
         case MIDI_WAIT:

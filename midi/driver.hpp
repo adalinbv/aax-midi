@@ -207,6 +207,7 @@ public:
     void set_reverb_time_rt60(float value);
     void set_reverb_delay_depth(float value);
     void set_reverb_level(uint16_t part_no, float value);
+    void set_reverb_level(float value);
 
     // ** buffer management ******
     Buffer& buffer(std::string& name, int level=0) {
