@@ -123,7 +123,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
     if (controller != prev_controller)
     {
         prev_controller = controller;
-        rpn_enabled = true;
+        rpn = true;
     }
 
     switch(controller)
@@ -138,7 +138,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         break;
     case MIDI_DATA_ENTRY:
         expl = "DATA_ENTRY COARSE";
-        if (rpn_enabled && registered)
+        if (rpn && registered)
         {
             param[msb_type].coarse = value;
             data = true;
@@ -146,7 +146,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         break;
     case MIDI_DATA_ENTRY|MIDI_FINE:
         expl = "DATA_ENTRY FINE";
-        if (rpn_enabled && registered)
+        if (rpn && registered)
         {
             param[lsb_type].fine = value;
             data = true;
@@ -154,7 +154,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         break;
     case MIDI_DATA_INCREMENT:
         expl = "DATA_INCREMENT";
-        if (rpn_enabled)
+        if (rpn)
         {
             type = msb_type << 8 | lsb_type;
             if (++param[type].fine == 128) {
@@ -165,7 +165,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         break;
     case MIDI_DATA_DECREMENT:
         expl = "DATA_DECREMENT";
-        if (rpn_enabled)
+        if (rpn)
         {
             type = msb_type << 8 | lsb_type;
             if (param[type].fine == 0) {
@@ -232,7 +232,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             expl = "NULL_FUNCTION_NUMBER";
             // disable the data entry, data increment, and data decrement
             // controllers until a new RPN or NRPN is selected.
-            rpn_enabled = false;
+            rpn = false;
             break;
         case MIDI_MPE_CONFIGURATION_MESSAGE:
             expl = "MPE_CONFIGURATION_MESSAGE";
@@ -339,6 +339,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             {
             case MIDI_NOTE_ON:
             {
+                if (!note_message_emabled) break;
                 int16_t key = get_key(channel, pull_byte());
                 uint8_t velocity = pull_byte();
                 float pitch = get_pitch(channel);
@@ -352,6 +353,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_NOTE_OFF:
             {
+                if (!note_message_emabled) break;
                 int16_t key = get_key(channel, pull_byte());
                 uint8_t velocity = pull_byte();
                 midi.process(channel_no, message & 0xf0, key, velocity, omni);
@@ -360,6 +362,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_POLYPHONIC_AFTERTOUCH:
             {
+                if (!poly_pressure_enabled) break;
                 uint8_t key = get_key(channel, pull_byte());
                 uint8_t pressure = pull_byte();
                 if (!channel.is_drums())
@@ -377,6 +380,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_CHANNEL_AFTERTOUCH:
             {
+                if (!channel_pressure_enabled) break;
                 uint8_t pressure = pull_byte();
                 if (!channel.is_drums())
                 {
@@ -393,6 +397,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_PITCH_BEND:
             {
+                if (!pitch_bend_enabled) break;
                 int32_t pitch = pull_byte() | pull_byte() << 7;
                 float pitch_bend = float(pitch-8192);
                 if (pitch_bend < 0) pitch_bend /= 8192.0f;
@@ -404,11 +409,13 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             }
             case MIDI_CONTROL_CHANGE:
             {
+                if (!control_change_enabled) break;
                 process_control(channel_no);
                 break;
             }
             case MIDI_PROGRAM_CHANGE:
             {
+                if (!program_change_enabled) break;
                 uint8_t program_no = pull_byte();
                 CSV(channel_no, "Program_c, %d, %d, PROGRAM_CHANGE\n", channel_no, program_no);
                 try {
@@ -545,6 +552,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_BANK_SELECT:
     {
         expl = "BANK_SELECT MSB";
+        if (!bank_select_enabled) break;
         bool prev = channel.is_drums();
         bool drums = false;
 
@@ -576,6 +584,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_BANK_SELECT|MIDI_FINE:
     {
         expl = "BANK_SELECT LSB";
+        if (!bank_select_lsb_enabled) break;
         bool prev = channel.is_drums();
         bool drums = prev;
 
@@ -639,6 +648,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_PAN:
         expl = "PAN MSB";
+        if (!pan_enabled) break;
         if (!midi.get_mono()) {
             channel.set_pan((float(value)-64.f)/64.f);
         }
@@ -646,6 +656,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_EXPRESSION:
     {
         expl = "EXPRESSION MSB";
+        if (!expression_enabled) break;
         // When Expression is at 100% then the volume represents the true
         // setting of Volume Controller. Lower values of Expression begin to
         // subtract from the volume. When Expression is 0% then volume is off.
@@ -655,6 +666,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_MODULATION_DEPTH:
     {
         expl = "MODULATION_DEPTH";
+        if (!modulation_enabled) break;
         float depth = float(value << 7)/16383.0f;
         depth = cents2modulation(depth, track_no) - 1.0f;
         channel.set_modulation(depth);
@@ -670,6 +682,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     }
     case MIDI_CHANNEL_VOLUME:
         expl = "CHANNEL_VOLUME";
+        if (!volume_enabled) break;
         if (value && channel.get_gain() != float(value)/127.0f) {
             MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
                         float(value)*100.0f/127.0f, name.c_str());
@@ -686,11 +699,13 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_UNREGISTERED_PARAM_COARSE:
     case MIDI_UNREGISTERED_PARAM_FINE:
+        rpn = nrpn_enabled;
         registered = false;
         registered_param(track_no, controller, value, expl);
         break;
     case MIDI_REGISTERED_PARAM_COARSE:
     case MIDI_REGISTERED_PARAM_FINE:
+        rpn = rpn_enabled;
         registered = true;
         registered_param(track_no, controller, value, expl);
         break;
@@ -702,6 +717,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_SOFT_PEDAL_SWITCH:
         expl = "SOFT_PEDAL_SWITCH";
+        if (!soft_enabled) break;
         channel.set_soft(float(value)/127.0f);
         break;
     case MIDI_LEGATO_SWITCH:

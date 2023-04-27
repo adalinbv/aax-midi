@@ -112,7 +112,24 @@ private:
     bool polyphony = true;
     bool omni = true;
 
+    bool pitch_bend_enabled = true;
+    bool channel_pressure_enabled = true;
+    bool program_change_enabled = true;
+    bool control_change_enabled = true;
+    bool poly_pressure_enabled = true;
+    bool note_message_emabled = true;
     bool rpn_enabled = true;
+    bool nrpn_enabled = true;
+    bool modulation_enabled = true;
+    bool volume_enabled = true;
+    bool pan_enabled = true;
+    bool expression_enabled = true;
+    bool soft_enabled = true;
+    bool bank_select_enabled = true;
+    bool bank_select_lsb_enabled = true;
+    bool equalizer_enabled = true;
+
+    bool rpn = true;
     bool registered = false;
     uint8_t prev_controller = 0;
     uint16_t msb_type = 0;

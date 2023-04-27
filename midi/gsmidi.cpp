@@ -24,6 +24,14 @@
 #include <midi/stream.hpp>
 #include <midi/driver.hpp>
 
+/*
+ * The SC-8850 has two MIDI IN connectors. Each MIDI IN is able to receive data
+ * for 16 parts, meaning that if the MIDI IN connectors are used to make
+ * connections, a maximum of 32 parts can be played.
+ *
+ * Normally, MIDI IN 1 i used to play parts A01 through A16,
+ * and MIDI IN 2 is used to play parts B01 through B16
+ */
 
 using namespace aax;
 
@@ -440,6 +448,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         {
                         case GSMIDI_EQUALIZER:
                             expl = "EQUALIZER";
+                            if (!equalizer_enabled) break;
                             if (GS_mode != 1) {
                                 GS_sysex_equalizer(part_no, addr_low, value);
                             }
@@ -814,7 +823,7 @@ MIDIStream::GS_sysex_insertion(uint8_t part_no, uint8_t addr, uint16_t type, std
     case GSMIDI_EFX_PARAMETER18:
     case GSMIDI_EFX_PARAMETER19:
     case GSMIDI_EFX_PARAMETER20:
-        expl = "EFX_PARAMETER " + std::to_string((addr - GSMIDI_EFX_PARAMETER1 + 1));
+        expl = "EFX_PARAMETER" + std::to_string((addr - GSMIDI_EFX_PARAMETER1 + 1));
         break;
     case GSMIDI_EFX_SEND_LEVEL_TO_REVERB:
         expl = "GSMIDI_EFX_SEND_LEVEL_TO_REVERB";
@@ -879,15 +888,40 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
     bool rv = true;
     switch(addr)
     {
-    case GSMIDI_PART_TONE_NUMBER:
-        expl = "Unsupported TONE_NUMBER";
+    case GSMIDI_PART_TONE_NUMBER: // CC#00 VALUE 0 – 127
+    {
+        expl = "TONE_NUMBER";
+        uint8_t program_no = pull_byte(); // P.C. VALUE 1 – 128
+        process_control(value);
+        try {
+            midi.new_channel(channel_no, bank_no, program_no);
+            if (midi.is_drums(channel_no))
+            {
+                auto frames = midi.get_frames();
+                auto it = frames.find(program_no);
+                if (it != frames.end()) {
+                    name = it->second.name;
+                }
+            }
+            else
+            {
+                auto inst = midi.get_instrument(bank_no, program_no);
+                name = inst.first.name;
+            }
+        } catch(const std::invalid_argument& e) {
+            ERROR("Error: " << e.what());
+        }
         break;
-    case GSMIDI_PART_CHANNEL_SWITCH:
-        expl = "Unsupported CHANNEL_SWITCH";
-        LOG(99, "LOG: Unsupported GS sysex part channel switch\n");
+    }
+    case GSMIDI_PART_RX_CHANNEL: // 1 – 16, 0 = OFF
+        expl = "Unsupported RC CHANNEL";
+        LOG(99, "LOG: Unsupported GS sysex part channel\n");
         break;
     case GSMIDI_PART_PITCH_BEND_SWITCH:
-        expl = "Unsupported PITCH_BEND_SWITCH";
+        expl = "PITCH_BEND_SWITCH";
+#if AAX_PATCH_LEVEL > 210112
+        channel.set_pitch_slide_state(value);
+#endif
         break;
     case GSMIDI_PART_CHANNEL_PRESSURE_SWITCH:
         expl = "Unsupported CHANNEL_PRESSURE_SWITCH";
@@ -911,7 +945,8 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         expl = "Unsupported NOTE_MESSAGE_SWITCH";
         break;
     case GSMIDI_PART_RPN_SWITCH:
-        expl = "Unsupported RPN_SWITCH";
+        expl = "RPN_SWITCH";
+        rpn_enabled = value;
         break;
     case GSMIDI_PART_NRPN_SWITCH:
         expl = "Unsupported NRPN_SWITCH";
@@ -929,13 +964,18 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         expl = "Unsupported EXPRESSION_SWITCH";
         break;
     case GSMIDI_PART_HOLD1_SWITCH:
-        expl = "Unsupported HOLD1_SWITCH";
+        expl = "HOLD1_SWITCH";
+        channel.set_hold(value);
         break;
     case GSMIDI_PART_PORTAMENTO_SWITCH:
-        expl = "Unsupported PORTAMENTO_SWITCH";
+        expl = "PORTAMENTO_SWITCH";
+#if AAX_PATCH_LEVEL > 210112
+        channel.set_pitch_slide_state(value >= 0x40);
+#endif
         break;
     case GSMIDI_PART_SOSTENUTO_SWITCH:
-        expl = "Unsupported SOSTENUTO_SWITCH";
+        expl = "SOSTENUTO_SWITCH";
+        channel.set_sustain(value);
         break;
     case GSMIDI_PART_SOFT_SWITCH:
         expl = "Unsupported SOFT_SWITCH";
@@ -952,10 +992,10 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         }
         break;
     case GSMIDI_PART_ASSIGN_MODE:
-        expl = "Unsupported ASSIGN_MODE " + std::to_string(value);
+        expl = "Unsupported ASSIGN_MODE";
         break;
     case GSMIDI_PART_RYTHM_MODE:
-        expl = "Unsupported RYTHM_MODE " + std::to_string(value);
+        expl = "Unsupported RYTHM_MODE";
         break;
     case GSMIDI_PART_PITCH_KEY_SHIFT:
         expl = "Unsupported PITCH_KEY_SHIFT";
@@ -1003,77 +1043,13 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         break;
     }
     case GSMIDI_PART_BANK_SELECT_SWITCH:
-    {
         expl = "BANK_SELECT_SWITCH";
-        bool prev = channel.is_drums();
-        bool drums = false;
-
-        switch(midi.get_mode())
-        {
-        case MIDI_MODE0:
-        case MIDI_GENERAL_STANDARD:
-           if (track_no == MIDI_DRUMS_CHANNEL) {
-               drums = true;
-           }
-           // intentional fallthrough
-        case MIDI_GENERAL_MIDI2:
-        case MIDI_EXTENDED_GENERAL_MIDI:
-           bank_no = value << 7;
-           break;
-        default:
-            break;
-        }
+        bank_select_enabled = value;
         break;
-
-        if (prev != drums)
-        {
-            channel.set_drums(drums);
-            std::string name = midi.get_channel_type(track_no);
-            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
-        }
-        break;
-    }
     case GSMIDI_PART_BANK_SELECT_LSB_SWITCH:
-    {
         expl = "BANK_SELECT_LSB_SWITCH";
-        bool prev = channel.is_drums();
-        bool drums = prev;
-
-        switch(midi.get_mode())
-        {
-        case MIDI_GENERAL_MIDI2:
-            drums = false;
-            bank_no += value;
-            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7))
-            {
-                bank_no = 0; // shared with GM2 and GS
-                drums = true;
-            }
-            break;
-        case MIDI_EXTENDED_GENERAL_MIDI:
-            drums = false;
-            bank_no += value;
-            if (bank_no == (MIDI_GM2_BANK_RYTHM << 7) ||
-                bank_no == (MIDI_GS_BANK_RYTHM << 7))
-            {
-                bank_no = 0; // shared with GM2 and GS
-                drums = true;
-            }
-            else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
-            else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
-            break;
-        default:
-            break;
-        }
-
-        if (prev != drums)
-        {
-            channel.set_drums(drums);
-            std::string name = midi.get_channel_type(track_no);
-            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
-        }
+        bank_select_lsb_enabled = value;
         break;
-    }
     case GSMIDI_PART_PITCH_FINE_TUNE:
         expl = "Unsupported PITCH_FINE_TUNE";
         break;
@@ -1125,5 +1101,6 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         rv = false;
         break;
     }
+    expl += ": " + std::to_string(value);
     return rv;
 }
