@@ -891,6 +891,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
     case GSMIDI_PART_TONE_NUMBER: // CC#00 VALUE 0 – 127
     {
         expl = "TONE_NUMBER";
+#if 0
         uint8_t program_no = pull_byte(); // P.C. VALUE 1 – 128
         process_control(value);
         try {
@@ -911,6 +912,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         } catch(const std::invalid_argument& e) {
             ERROR("Error: " << e.what());
         }
+#endif
         break;
     }
     case GSMIDI_PART_RX_CHANNEL: // 1 – 16, 0 = OFF
