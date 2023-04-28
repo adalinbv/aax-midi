@@ -342,28 +342,28 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 }
                 case XGMIDI_REVERB_PARAMETER1:	// Reverb Time
                 {
-                    expl = "REVERB_PARAMETER1";
+                    expl = "REVERB_PARAMETER1: Time";
                     float reverb_time = XGMIDI_reverb_time[value];
                     midi.set_reverb_time_rt60(reverb_time);
                     break;
                 }
                 case XGMIDI_REVERB_PARAMETER2:	// Diffusion
                 {
-                    expl = "REVERB_PARAMETER2";
+                    expl = "REVERB_PARAMETER2: Diffusion";
                     float decay_depth = 0.1f*MAX_REVERB_EFFECTS_TIME*value;
                     midi.set_reverb_decay_depth(decay_depth);
                     break;
                 }
                 case XGMIDI_REVERB_PARAMETER3:	// Initial Delay
                 {
-                    expl = "REVERB_PARAMETER2";
+                    expl = "REVERB_PARAMETER2: Initial Delay";
                     float delay_depth = XGMIDI_delay_time_table[value]*1e-3f;
                     midi.set_reverb_delay_depth(delay_depth);
                     break;
                 }
                 case XGMIDI_REVERB_PARAMETER5:	// LPF Cutoff
                 {
-                    expl = "XGMIDI_REVERB_PARAMETER5";
+                    expl = "XGMIDI_REVERB_PARAMETER5: LPF Cutoff";
                     float cutoff_freq = XGMIDI_EQ_frequency_table[value];
                     midi.set_reverb_cutoff_frequency(cutoff_freq);
                     break;
@@ -391,9 +391,12 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     break;
                 }
                 case XGMIDI_REVERB_RETURN:
+                {
                     expl = "REVERB_RETURN";
-                    LOG(99, "LOG: Unsupported XG sysex Reverb Return\n");
+                    float val = float(value)/127.0f;
+                    midi.set_reverb_decay_level(val);
                     break;
+                }
                 case XGMIDI_REVERB_PAN:
                     expl = "REVERB_PAN";
                     LOG(99, "LOG: Unsupported XG sysex Reverb Pan\n");
@@ -983,7 +986,8 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 case XGMIDI_PAN: // 0: random, L63 - C - R63 (1 - 64 - 127)
                     expl = "PAN";
                     if (mode != MIDI_MONOPHONIC) {
-                        channel.set_pan(float(value-64)/64.f);
+                        if (value == 0) channel.set_pan(-1.0f + 2.0f*rand()/RAND_MAX);
+                        else channel.set_pan(float(value-64)/64.f);
                     }
                     break;
                 case XGMIDI_NOTE_LIMIT_LOW: // C2 - G8

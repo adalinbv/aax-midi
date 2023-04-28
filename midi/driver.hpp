@@ -193,11 +193,13 @@ public:
     /* chorus */
     void set_chorus(const char *t);
     void set_chorus_type(uint8_t value);
+    void set_chorus_delay(float delay);
     void set_chorus_depth(float depth);
     void set_chorus_feedback(float feedback);
     void set_chorus_rate(float rate);
     void set_chorus_level(uint16_t part_no, float lvl);
     void send_chorus_to_reverb(float val);
+    void set_chorus_cutoff_frequency(float fc);
 
     /* reverb */
     void set_reverb(const char *t);
@@ -206,6 +208,7 @@ public:
     void set_reverb_decay_depth(float value);
     void set_reverb_time_rt60(float value);
     void set_reverb_delay_depth(float value);
+    void set_reverb_decay_level(float value) { reverb_decay_level = value; }
     void set_reverb_level(uint16_t part_no, float value);
     void set_reverb_level(float value);
 

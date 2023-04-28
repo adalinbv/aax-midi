@@ -303,6 +303,18 @@ enum {
 #define GSMIDI_REVERB_DELAY					0x06
 #define GSMIDI_REVERB_PAN_DELAY					0x07
 
+/* delay parameters */
+#define GSMIDI_DELAY1						0x00
+#define GSMIDI_DELAY2						0x01
+#define GSMIDI_DELAY3						0x02
+#define GSMIDI_DELAY4						0x03
+#define GSMIDI_PAN_DELAY1					0x04
+#define GSMIDI_PAN_DELAY2					0x05
+#define GSMIDI_PAN_DELAY3					0x06
+#define GSMIDI_PAN_DELAY4					0x07
+#define GSMIDI_DELAY_TO_REVERB					0x08
+#define GSMIDI_PAN_REPEAT					0x09
+
 /* chorus parameters */
 #define GSMIDI_CHORUS1						0x00
 #define GSMIDI_CHORUS2						0x01
@@ -310,8 +322,8 @@ enum {
 #define GSMIDI_CHORUS4						0x03
 #define GSMIDI_FEEDBACK_CHORUS					0x04
 #define GSMIDI_FLANGER						0x05
-#define GSMIDI_DELAY1						0x06
-#define GSMIDI_DELAY1_FEEDBACK					0x07
+#define GSMIDI_CHORUS_DELAY1					0x06
+#define GSMIDI_CHORUS_DELAY1_FEEDBACK				0x07
 
 /* insertion effects */
 #define GSMIDI_EFX_TYPE						0x00

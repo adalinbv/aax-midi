@@ -252,6 +252,19 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 }
 
 void
+MIDIDriver::set_chorus_delay(float ms) {
+#if 0
+    chorus_depth = ms*1e-3f;
+    if (ms > 0.0f) {
+        MESSAGE(4, "Set chorus delay to %.0f%%\n", chorus_delay*100.0f);
+    }
+    for(int i=0; i<chorus_channels.size(); ++i) {
+        midi.channel(i).set_chorus_depth(chorus_depth);
+    }
+#endif
+}
+
+void
 MIDIDriver::set_chorus_depth(float ms) {
     chorus_depth = ms*1e-3f;
     if (ms > 0.0f) {
@@ -281,6 +294,20 @@ MIDIDriver::set_chorus_feedback(float feedback) {
         midi.channel(i).set_chorus_feedback(feedback);
     }
 }
+
+void
+MIDIDriver::set_chorus_cutoff_frequency(float fc)
+{
+#if AAX_PATCH_LEVEL >= 230425
+    if (fc < 22000.0f) {
+        MESSAGE(4, "Set chorus cutoff frequency to %.2fHz\n", fc);
+    }
+    for(int i=0; i<chorus_channels.size(); ++i) {
+        midi.channel(i).set_chorus_cutoff(fc);
+    }
+#endif
+}
+
 
 void
 MIDIDriver::set_reverb(const char *t)

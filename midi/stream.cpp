@@ -339,23 +339,26 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             {
             case MIDI_NOTE_ON:
             {
-                if (!note_message_emabled) break;
-                int16_t key = get_key(channel, pull_byte());
+                if (!note_message_enabled) break;
+                int16_t key = pull_byte();
                 uint8_t velocity = pull_byte();
+                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
+                if (key < key_range_low || key > key_range_high) break;
                 float pitch = get_pitch(channel);
                 try {
+                    key = get_key(channel, key);
                     midi.process(channel_no, message & 0xf0, key, velocity, omni, pitch);
                 } catch (const std::runtime_error &e) {
                     throw(e);
                 }
-                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 break;
             }
             case MIDI_NOTE_OFF:
             {
-                if (!note_message_emabled) break;
-                int16_t key = get_key(channel, pull_byte());
+                if (!note_message_enabled) break;
+                int16_t key = pull_byte();
                 uint8_t velocity = pull_byte();
+                key = get_key(channel, key);
                 midi.process(channel_no, message & 0xf0, key, velocity, omni);
                 CSV(channel_no, "Note_off_c, %d, %d, %d, NOTE_OFF\n", channel_no, key, velocity);
                 break;

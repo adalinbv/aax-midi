@@ -117,13 +117,15 @@ private:
     bool program_change_enabled = true;
     bool control_change_enabled = true;
     bool poly_pressure_enabled = true;
-    bool note_message_emabled = true;
+    bool note_message_enabled = true;
     bool rpn_enabled = true;
     bool nrpn_enabled = true;
     bool modulation_enabled = true;
     bool volume_enabled = true;
     bool pan_enabled = true;
     bool expression_enabled = true;
+    bool hold1_enabled = true;
+    bool sustain_enabled = true;
     bool soft_enabled = true;
     bool bank_select_enabled = true;
     bool bank_select_lsb_enabled = true;
@@ -132,6 +134,10 @@ private:
     bool rpn = true;
     bool registered = false;
     uint8_t prev_controller = 0;
+
+    uint8_t key_range_low = 0;
+    uint8_t key_range_high = 127;
+
     uint16_t msb_type = 0;
     uint16_t lsb_type = 0;
     std::map<uint16_t,struct param_t> param = {
