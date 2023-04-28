@@ -891,7 +891,6 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
     case GSMIDI_PART_TONE_NUMBER: // CC#00: MIDI_BANK_SELECT MSB
     {
         expl = "TONE_NUMBER";
-        if (!bank_select_enabled) break;
         bool prev = channel.is_drums();
         bool drums = false;
 
@@ -905,6 +904,27 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
             channel.set_drums(drums);
             std::string name = midi.get_channel_type(track_no);
             MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+        }
+
+        uint8_t program_no = pull_byte();
+        CSV(channel_no, ", %d", program_no);
+        try {
+            midi.new_channel(channel_no, bank_no, program_no);
+            if (midi.is_drums(channel_no))
+            {
+                auto frames = midi.get_frames();
+                auto it = frames.find(program_no);
+                if (it != frames.end()) {
+                    name = it->second.name;
+                }
+            }
+            else
+            {
+                auto inst = midi.get_instrument(bank_no, program_no);
+                name = inst.first.name;
+            }
+        } catch(const std::invalid_argument& e) {
+            ERROR("Error: " << e.what());
         }
         break;
     }
