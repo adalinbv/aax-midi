@@ -15,17 +15,18 @@ typedef struct {
  *  0   Chorus Level            0 ~ 64 ~ 127
  *  1   Chorus Pre-LFP          0 ~ 7(*)
  *  2   Chorus Feedback         0 ~  8 ~ 127
- *  3   Chorus Delay            0 ~ 90 ~ 127
+ *  3   Chorus Delay            0 ~ 90 ~ 127(#)
  *  4   Chorus Rate             0 ~  3 ~ 127
  *  5   Chorus Depth            0 ~ 19 ~ 127
  *  6   Chorus to Reverb        0 ~ 127
  *  7   Chorus to Delay         0 ~ 127
  *
  * *) Pre-LPF higher values will cut more of the high frequencies.
+ * #) Initial delay before chorus starts.
  */
 #define GSMIDI_MAX_CHORUS_TYPES         8
 static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
-// param:                     0,  1    2    3    4    5    6   7
+// param:                     0   1    2    3    4    5    6   7
  { "chorus1",              { 64,  0,   0, 112,   9,   5,   0,  0 } },
  { "chorus2",              { 64,  0,   5,  80,   3,  19,   0,  0 } },
  { "chorus3",              { 64,  0,   8,  80,   3,  19,   0,  0 } },
@@ -64,7 +65,7 @@ static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
  */
 #define GSMIDI_MAX_DELAY_TYPES		10
 static GSMIDI_effect_t GSMIDI_delay_types[GSMIDI_MAX_DELAY_TYPES] = {
-// param:		 0,  1     2    3    4    5    6    7    8   9
+// param:		 0   1     2    3    4    5    6    7    8   9
  { "delay1",          { 64,  0,  340,   4,   4, 127,   0,   0,  16,  0 } },
  { "delay2",          { 64,  0,  550,   4,   4, 127,   0,   0,  16,  0 } },
  { "delay3",          { 64,  0, 1000,   4,   4, 127,   0,   0,   8,  0 } },
@@ -77,6 +78,35 @@ static GSMIDI_effect_t GSMIDI_delay_types[GSMIDI_MAX_DELAY_TYPES] = {
  { "pan-repeat",      { 64,  0,  750,  88, 133,  97, 127,  67, -24,  0 } }
 };
 
+/* REVERB
+ *  p   description             range
+ *  --  -----------             ---------
+ *  0   Reverb Level            0 ~ 64 ~ 127
+ *  1   Reverb Character        0 ~ 4 ~ 7(*)
+ *  2   Reverb Pre-LFP          0 ~ 7
+ *  3   Reverb Time             0 ~ 64 ~ 127
+ *  4   Reverb Delay feedback   0 ~ 127
+ *  5   Reverb Pre Delay Time   0 ~ 127 (ms)
+ *
+ * *) 0-5 are reverb effects and 6 and 7 are delay effects
+ *    Corresponds to the REVERB MACRO of the same number.
+ */
+#define GSMIDI_MAX_REVERB_TYPES		8
+static GSMIDI_effect_t GSMIDI_reverb_types[GSMIDI_MAX_REVERB_TYPES] = {
+// param:                 0   1   2    3    4    5
+ { "room1",            { 64,  0,  3,  80,   0,   0 } },
+ { "room2",            { 64,  1,  4,  56,   0,   0 } },
+ { "room3",            { 64,  2,  0,  64,   0,   0 } },
+ { "hall1",            { 64,  3,  4,  72,   0,   0 } },
+ { "hall2",            { 64,  4,  0,  64,   0,   0 } },
+ { "plate",            { 64,  5,  0,  88,   0,   0 } },
+ { "reverb-delay",     { 64,  6,  0,  32,  40,   0 } },
+ { "reverb-pan-delay", { 64,  7,  0,  64,  32,   0 } },
+};
+
+static float GSMIDI_reverb_character[8] = {
+ 0.007f, 0.012f, 0.027f, 0.035f, 0.035f, 0.0095f, 0.0f, 0.0f
+};
 #define PHASING_MIN      50e-6f
 #define PHASING_MAX      10e-3f
 #define FLANGING_MIN     10e-3f
@@ -97,7 +127,7 @@ float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
 
 int write_chorus()
 {
-   for (int i=0; i<GSMIDI_MAX_DELAY_TYPES; ++i)
+   for (int i=0; i<GSMIDI_MAX_CHORUS_TYPES; ++i)
    {
       char fname[256];
 
@@ -112,11 +142,11 @@ int write_chorus()
          int cl = type->param[0];	// Level 0-64-127: default 64
          int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int fb = type->param[2];	// Feedback Level
-         int ct = type->param[3];	// Delay Time: 0.1ms-1.0s, def. 340ms.
+//       int ct = type->param[3];	// Delay Time: 0.1ms-1.0s, def. 340ms.
          int cr = type->param[4];	// Rate: 0-127
          int cd = type->param[5];	// Depth: 0-127
-         int crev = type->param[6];	// Chorus to Reverb: 0-127
-         int ddly = type->param[7];	// Chorus to Delay: 1-27
+//       int crev = type->param[6];	// Chorus to Reverb: 0-127
+//       int ddly = type->param[7];	// Chorus to Delay: 1-27
 
          float gain = cl/128.0f;
          float rate = 10.0f*cr/127.0f;
@@ -182,13 +212,14 @@ int write_chorus()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
 
    return 0;
 }
-
 
 int write_delay()
 {
@@ -211,9 +242,9 @@ int write_delay()
          int dll = type->param[6];	// Delay Level Left
          int dlr = type->param[7];	// Delay Level Right
          int fb = type->param[8];	// Feedback Level
-         int drev = type->param[9];	// Delay to reverb
+//       int drev = type->param[9];	// Delay to reverb
 
-         int delay_level = (dlc+dll+dlr)/3.0f;
+         float delay_level = (dl/127.0f)*(dlc+dll+dlr)/3.0f;
          float gain = (fb<0 ? -1.f : 1.f)*delay_level/128.0f; // * (dlc/127.0f);
          float feedback = abs(fb)/64.0f;
          float lfo_offset = dtc;
@@ -262,6 +293,77 @@ int write_delay()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
+
+         fclose(stream);
+      }
+      else printf(" Failed to open for writing: %s\n", strerror(errno));
+   }
+
+   return 0;
+}
+
+static float
+get_decay_depth(float time, float level) {
+    if (level < 0.001f) level = 0.001f;
+    return 5.0f*time*powf(LEVEL_60DB, level);
+}
+
+int write_reverb()
+{
+   for (int i=0; i<GSMIDI_MAX_REVERB_TYPES; ++i)
+   {
+      char fname[256];
+
+      GSMIDI_effect_t *type = &GSMIDI_reverb_types[i];
+
+      snprintf(fname, 255, "%s.aaxs", type->name);
+      printf("Generating: %s\n", fname);
+
+      FILE *stream = fopen(fname, "w+");
+      if (stream)
+      {
+         int rl = type->param[0];	// Reverb Level 0-64-127: default 64
+         int rc = type->param[1];	// Reverb Character: 0-5, 6, 7
+         int rfc = type->param[2];	// Pre LPF cutoff behavior: 0-7, def. 0
+         int rt = type->param[3];	// Reverb Time: 0-64-127
+//       int rb = type->param[4];	// Reverb Delay Feedback: 0-127
+//       int dpd = type->param[5];	// Reverb pre Delay Time: 0-127 ms
+
+         float val = (7-rfc)/7.0f;
+         float fc = 500.0f+_log2lin(val*_lin2log(22000.0f-500.0f));
+         if (fc >= 20000.0f) fc = 0.0f;
+
+         float delay_depth = GSMIDI_reverb_character[rc];
+         float decay_level = rl/127.0f;
+         float decay_time = 1.66f*rt/127.0f;
+         float decay_depth = get_decay_depth(decay_time, decay_level);
+
+         fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+         fprintf(stream, "<aeonwave>\n\n");
+         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, "  <effect type=\"reverb\" src=\"1st-order\">\n");
+         fprintf(stream, "   <slot n=\"0\">\n");
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
+         fprintf(stream, "   </slot>\n");
+         fprintf(stream, "  </effect>\n");
+         fprintf(stream, " </audioframe>\n\n");
+
+         fprintf(stream, " <mixer>\n");
+         fprintf(stream, "  <effect type=\"reveb\" src=\"2nd-order\">\n");
+         fprintf(stream, "   <slot n=\"0\">\n");
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
+         fprintf(stream, "   </slot>\n");
+         fprintf(stream, "  </effect>\n");
+         fprintf(stream, " </mixer>\n\n");
+         fprintf(stream, "</aeonwave>\n");
+
+         fclose(stream);
       }
       else printf(" Failed to open for writing: %s\n", strerror(errno));
    }
@@ -273,6 +375,7 @@ int main()
 {
    write_chorus();
    write_delay();
+   write_reverb();
 
    return 0;
 }
