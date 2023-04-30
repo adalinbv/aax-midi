@@ -42,13 +42,13 @@ static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
  *  --	-----------		---------
  *  0	Delay Level		0 ~ 127
  *  1	Delay Pre-LFP		0 ~ 7
- *  2	Delay Time Center	1 ~ 115 (0.1ms ~ 1sec)*
- *  3	Delay Time Ratio Left	1 ~ 120	(4 ~ 500%)#
- *  4	Delay Time Ratio Right	1 ~ 120	(4 ~ 500%)#
+ *  2	Delay Time Center	1 ~ 115 (0.1ms ~ 1sec) (*)
+ *  3	Delay Time Ratio Left	1 ~ 120	(4% ~ 500%) (#)
+ *  4	Delay Time Ratio Right	1 ~ 120	(4% ~ 500%) (#)
  *  5	Delay Level Center	0 ~ 127
  *  6	Delay Level Left	0 ~ 127
  *  7	Delay Level Right	0 ~ 127
- *  8	Delay Feedback		0 ~ 64 ~ 127 (-64 ~ 0 ~ +63)
+ *  8	Delay Feedback		-64 ~ 16 ~ 63 (%)
  *  9	Delay To Reverb		0 ~ 127
  *
  * *) The releation between the DELAY TIME CENTER value and the actual delay
@@ -62,6 +62,8 @@ static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
  *
  * #) DELAY TIME RATIO LEFT and DELAY TIME RATIO RIGHT specify the ratio in
  *    releation to DELAY TIME CENTER. The resolution is (100/24)%
+ *
+ * %) With negative values, the delay will be fed back with inverted phase.
  */
 #define GSMIDI_MAX_DELAY_TYPES		10
 static GSMIDI_effect_t GSMIDI_delay_types[GSMIDI_MAX_DELAY_TYPES] = {
@@ -172,8 +174,8 @@ int write_chorus()
          fprintf(stream, "<aeonwave>\n\n");
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, " src=\"true\">\n");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine|1st-order\"");
+         fprintf(stream, " src=\"1st-order\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -193,8 +195,8 @@ int write_chorus()
 
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, " src=\"true\">\n");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine|2nd-order\"");
+         fprintf(stream, " src=\"2nd-order\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -238,16 +240,17 @@ int write_delay()
          int dl = type->param[0];	// Delay Level 0-64-127: default 64
          int dfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int dtc = type->param[2];	// Delay Offset: 0.1ms-1.0s, def. 340ms.
-         int dlc = type->param[5];	// Delay Level Center (ms)
-         int dll = type->param[6];	// Delay Level Left
-         int dlr = type->param[7];	// Delay Level Right
+//       int dtrl = type->param[3];	// Delay time ratio left (%)
+//       int dtrr = type->param[4];	// Delay time ratio right (%)
+//       int dlc = type->param[5];	// Delay Level Center (ms)
+//       int dll = type->param[6];	// Delay Level Left
+//       int dlr = type->param[7];	// Delay Level Right
          int fb = type->param[8];	// Feedback Level
 //       int drev = type->param[9];	// Delay to reverb
 
-         float delay_level = (dl/127.0f)*(dlc+dll+dlr)/3.0f;
-         float gain = (fb<0 ? -1.f : 1.f)*delay_level/128.0f; // * (dlc/127.0f);
+         float gain = (fb < 0 ? -1.0f : 1.0f)*dl/127.0f;
          float feedback = abs(fb)/64.0f;
-         float lfo_offset = dtc;
+         float lfo_offset = dtc*1e3f;
 
          float val = (7-dfc)/7.0f;
          float fc = _log2lin(val*_lin2log(22000.0f));
@@ -256,12 +259,12 @@ int write_delay()
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
          fprintf(stream, "<aeonwave>\n\n");
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"delay\" src=\"true\">\n");
+         fprintf(stream, "  <effect type=\"delay\" src=\"1st-order\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
          fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
@@ -275,12 +278,12 @@ int write_delay()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"delay\" src=\"true\">\n");
+         fprintf(stream, "  <effect type=\"delay\" src=\"2nd-order\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
          fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
