@@ -70,6 +70,9 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
     chorus.tie(chorus_rate, AAX_CHORUS_EFFECT, AAX_LFO_FREQUENCY);
     chorus.tie(chorus_feedback, AAX_CHORUS_EFFECT, AAX_FEEDBACK_GAIN);
 
+    // TODO: delay
+    delay.tie(delay_state, AAX_DELAY_EFFECT);
+
     reverb.tie(reverb_decay_level, AAX_REVERB_EFFECT, AAX_DECAY_LEVEL);
     reverb.tie(reverb_decay_depth, AAX_REVERB_EFFECT, AAX_DECAY_DEPTH);
     reverb.tie(reverb_cutoff_frequency, AAX_REVERB_EFFECT, AAX_CUTOFF_FREQUENCY);
@@ -95,17 +98,22 @@ MIDIDriver::set_path()
 void
 MIDIDriver::start()
 {
-    reverb_state = AAX_REVERB_2ND_ORDER;
-    set_reverb_type(4);
-    reverb.set(AAX_INITIALIZED);
-    reverb.set(AAX_PLAYING);
-    AeonWave::add(reverb);
-
     chorus_state = AAX_SINE_WAVE;
     set_chorus_type(2);
     chorus.set(AAX_INITIALIZED);
     chorus.set(AAX_PLAYING);
     AeonWave::add(chorus);
+
+    delay_state = AAX_REVERB_2ND_ORDER;
+    delay.set(AAX_INITIALIZED);
+    delay.set(AAX_PLAYING);
+    AeonWave::add(delay);
+
+    reverb_state = AAX_REVERB_2ND_ORDER;
+    set_reverb_type(4);
+    reverb.set(AAX_INITIALIZED);
+    reverb.set(AAX_PLAYING);
+    AeonWave::add(reverb);
 
     midi.set_gain(1.0f);
     midi.set(AAX_PLAYING);
@@ -115,6 +123,7 @@ void
 MIDIDriver::stop()
 {
     chorus.set(AAX_STOPPED);
+    delay.set(AAX_STOPPED);
     reverb.set(AAX_STOPPED);
     midi.set(AAX_STOPPED);
 }
@@ -126,6 +135,13 @@ MIDIDriver::rewind()
     uSPP = tempo/PPQN;
 
     chorus_channels.clear();
+
+    for (const auto& it : delay_channels)
+    {
+        delay.remove(*it.second);
+        AeonWave::add(*it.second);
+    }
+    delay_channels.clear();
 
     for (const auto& it : reverb_channels)
     {
@@ -308,6 +324,56 @@ MIDIDriver::set_chorus_cutoff_frequency(float fc)
 #endif
 }
 
+
+void
+MIDIDriver::set_delay(const char *t)
+{
+// TODO:
+#if 0
+    Buffer& buf = AeonWave::buffer(t);
+    delay.add(buf);
+    for(auto& it : channels) {
+        it.second->set_delay(buf);
+    }
+#endif
+}
+
+void
+MIDIDriver::set_delay_level(uint16_t part_no, float val)
+{
+// TODO:
+#if 0
+    val = _ln(val);
+    auto& part = midi.channel(part_no);
+    if (val > 0.0f && part.get_delay_level() != val)
+    {
+        auto it = delay_channels.find(part_no);
+        if (it == delay_channels.end())
+        {
+            it = channels.find(part_no);
+            if (it != channels.end() && it->second)
+            {
+                AeonWave::remove(*it->second);
+                delay.add(*it->second);
+                delay_channels[it->first] = it->second;
+                MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
+                        part_no, val*100, get_channel_name(part_no).c_str());
+            }
+        }
+        part.set_delay_level(val);
+    }
+    else
+    {
+        auto it = delay_channels.find(part_no);
+        if (it != delay_channels.end() && it->second)
+        {
+            delay.remove(*it->second);
+            AeonWave::add(*it->second);
+            MESSAGE(3, "Remove part %i from delay\n", part_no);
+        }
+    }
+#endif
+}
 
 void
 MIDIDriver::set_reverb(const char *t)

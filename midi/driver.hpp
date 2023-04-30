@@ -79,6 +79,7 @@ public:
         MIDIDriver(n, nullptr, m) {}
 
     virtual ~MIDIDriver() {
+        AeonWave::remove(delay);
         AeonWave::remove(reverb);
         for (auto it : buffers) {
             aaxBufferDestroy(*it.second.second); it.second.first = 0;
@@ -201,6 +202,10 @@ public:
     void send_chorus_to_reverb(float val);
     void set_chorus_cutoff_frequency(float fc);
 
+    /* delay */
+    void set_delay(const char *t);
+    void set_delay_level(uint16_t part_no, float value);
+
     /* reverb */
     void set_reverb(const char *t);
     void set_reverb_type(uint8_t value);
@@ -283,6 +288,7 @@ private:
     std::string track_name;
     _channel_map_t channels;
     std::vector<int> chorus_channels;
+    _channel_map_t delay_channels;
     _channel_map_t reverb_channels;
 
     // banks name and audio-frame filter and effects file
@@ -340,6 +346,9 @@ private:
     Status chorus_state = AAX_FALSE;
     aax::Mixer chorus = aax::Mixer(*this);
     float chorus_to_reverb = 0.0f;
+
+    Status delay_state = AAX_FALSE;
+    aax::Mixer delay = aax::Mixer(*this);
 
     uint8_t reverb_type = 4;
     float reverb_time = 0.0f;

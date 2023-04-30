@@ -332,47 +332,47 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         {
                         case GSMIDI_DELAY1:
                             expl = "DELAY1";
-                            midi.set_reverb("GS/delay1");
+                            midi.set_delay("GS/delay1");
                             INFO("Switching to GS Delay1");
                             break;
                         case GSMIDI_DELAY2:
                             expl = "DELAY2";
-                            midi.set_reverb("GS/delay2");
+                            midi.set_delay("GS/delay2");
                             INFO("Switching to GS Delay2");
                             break;
                         case GSMIDI_DELAY3:
                             expl = "DELAY3";
-                            midi.set_reverb("GS/delay3");
+                            midi.set_delay("GS/delay3");
                             INFO("Switching to GS Delay3");
                             break;
                         case GSMIDI_DELAY4:
                             expl = "DELAY4";
-                            midi.set_reverb("GS/delay4");
+                            midi.set_delay("GS/delay4");
                             INFO("Switching to GS Delay4");
                             break;
                         case GSMIDI_PAN_DELAY1:
                             expl = "PAN_DELAY1";
-                            midi.set_reverb("GS/pan-delay1");
+                            midi.set_delay("GS/pan-delay1");
                             INFO("Switching to GS Pan-Delay1");
                             break;
                         case GSMIDI_PAN_DELAY2:
                             expl = "PAN_DELAY2";
-                            midi.set_reverb("GS/pan-delay2");
+                            midi.set_delay("GS/pan-delay2");
                             INFO("Switching to GS Pan-Delay2");
                             break;
                         case GSMIDI_PAN_DELAY3:
                             expl = "PAN_DELAY3";
-                            midi.set_reverb("GS/pan-delay3");
+                            midi.set_delay("GS/pan-delay3");
                             INFO("Switching to GS Pan-Delay3");
                             break;
                         case GSMIDI_PAN_DELAY4:
                             expl = "PAN_DELAY4";
-                            midi.set_reverb("GS/pan-delay4");
+                            midi.set_delay("GS/pan-delay4");
                             INFO("Switching to GS Pan-Delay4");
                             break;
                         case GSMIDI_DELAY_TO_REVERB:
                             expl = "DELAY_TO_REVERB";
-                            midi.set_reverb("GS/delay-to-reverb");
+                            midi.set_delay("GS/delay-to-reverb");
                             INFO("Switching to GS Delay to Reverb");
                             break;
                         case GSMIDI_PAN_REPEAT:
