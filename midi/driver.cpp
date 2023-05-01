@@ -65,12 +65,16 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
         }
     }
 
-    chorus.tie(chorus_level, AAX_VOLUME_FILTER, AAX_GAIN);
+    chorus.tie(chorus_level, AAX_CHORUS_EFFECT, AAX_DELAY_GAIN);
     chorus.tie(chorus_depth, AAX_CHORUS_EFFECT, AAX_LFO_OFFSET);
     chorus.tie(chorus_rate, AAX_CHORUS_EFFECT, AAX_LFO_FREQUENCY);
     chorus.tie(chorus_feedback, AAX_CHORUS_EFFECT, AAX_FEEDBACK_GAIN);
+    chorus.tie(chorus_state, AAX_CHORUS_EFFECT);
 
-    // TODO: delay
+    delay.tie(delay_level, AAX_DELAY_EFFECT, AAX_DELAY_GAIN);
+    delay.tie(delay_depth, AAX_DELAY_EFFECT, AAX_LFO_OFFSET);
+    delay.tie(delay_rate, AAX_DELAY_EFFECT, AAX_LFO_FREQUENCY);
+    delay.tie(delay_feedback, AAX_DELAY_EFFECT, AAX_FEEDBACK_GAIN);
     delay.tie(delay_state, AAX_DELAY_EFFECT);
 
     reverb.tie(reverb_decay_level, AAX_REVERB_EFFECT, AAX_DECAY_LEVEL);
@@ -98,6 +102,7 @@ MIDIDriver::set_path()
 void
 MIDIDriver::start()
 {
+
     chorus_state = AAX_SINE_WAVE;
     set_chorus_type(2);
     chorus.set(AAX_INITIALIZED);
@@ -235,8 +240,8 @@ void
 MIDIDriver::set_chorus(const char *t)
 {
     Buffer& buf = AeonWave::buffer(t);
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).add(buf);
+    for (auto& it : channels) {
+        it.second->set_chorus(buf);
     }
 }
 
@@ -246,25 +251,50 @@ MIDIDriver::send_chorus_to_reverb(float val)
     if (val > 0.0f) {
         MESSAGE(3, "Send %.0f%% chorus to reverb\n", val*100);
     }
+    chorus_to_reverb = val;
+}
+
+void
+MIDIDriver::set_chorus_level(float val)
+{
+    for (auto& it : chorus_channels) {
+        set_chorus_level(it.first, val);
+    }
 }
 
 void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
-    val = _ln(val);
-    auto it = std::find(chorus_channels.begin(),chorus_channels.end(), part_no);
-    if (val > 0 && it == chorus_channels.end()) {
-        chorus_channels.push_back(part_no);
-    } else if (it != chorus_channels.end()) {
-        chorus_channels.erase(it);
-    }
-
     auto& part = midi.channel(part_no);
-    if (val > 0.0f && part.get_chorus_level() != val) {
-        MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n", part_no, val*100.0f,
-                    get_channel_name(part_no).c_str());
+    if (val > 0.0f && part.get_chorus_level() != val)
+    {
+        auto it = chorus_channels.find(part_no);
+        if (it == chorus_channels.end())
+        {
+            it = channels.find(part_no);
+            if (it != channels.end() && it->second)
+            {
+                if (AeonWave::remove(*it->second))
+                {
+                    chorus.add(*it->second);
+                    chorus_channels[it->first] = it->second;
+                }
+                MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
+                        part_no, val*100, get_channel_name(part_no).c_str());
+            }
+        }
+        part.set_chorus_level(_ln(val));
     }
-    part.set_chorus_level(val);
+    else
+    {
+        auto it = chorus_channels.find(part_no);
+        if (it != chorus_channels.end() && it->second)
+        {
+            chorus.remove(*it->second);
+            AeonWave::add(*it->second);
+            MESSAGE(3, "Remove part %i from chorus\n", part_no);
+        }
+    }
 }
 
 void
@@ -274,52 +304,52 @@ MIDIDriver::set_chorus_delay(float ms) {
     if (ms > 0.0f) {
         MESSAGE(4, "Set chorus delay to %.0f%%\n", chorus_delay*100.0f);
     }
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).set_chorus_depth(chorus_depth);
+    for (auto& it : chorus_channels) {
+        set_chorus_depth(it.first, val);
     }
 #endif
 }
 
 void
-MIDIDriver::set_chorus_depth(float ms) {
-    chorus_depth = ms*1e-3f;
-    if (ms > 0.0f) {
+MIDIDriver::set_chorus_depth(float val) {
+    if (val > 0.0f) {
         MESSAGE(4, "Set chorus depth to %.0f%%\n", chorus_depth*100.0f);
     }
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).set_chorus_depth(chorus_depth);
+
+    for (auto& it : chorus_channels) {
+        it.second->set_chorus_depth(val);
     }
 }
 
 void
-MIDIDriver::set_chorus_rate(float rate) {
-    if (rate > 0.0f) {
-        MESSAGE(4, "Set chorus rate to %.2fHz\n", rate);
+MIDIDriver::set_chorus_rate(float val) {
+    if (val > 0.0f) {
+        MESSAGE(4, "Set chorus rate to %.2fHz\n", val);
     }
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).set_chorus_rate(rate);
-    }
-}
-
-void
-MIDIDriver::set_chorus_feedback(float feedback) {
-    if (feedback > 0.0f) {
-        MESSAGE(4, "Set chorus feedback to %.0f%%\n", feedback);
-    }
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).set_chorus_feedback(feedback);
+    for (auto& it : chorus_channels) {
+        it.second->set_chorus_rate(val);
     }
 }
 
 void
-MIDIDriver::set_chorus_cutoff_frequency(float fc)
+MIDIDriver::set_chorus_feedback(float val) {
+    if (val > 0.0f) {
+        MESSAGE(4, "Set chorus feedback to %.0f%%\n", val);
+    }
+    for (auto& it : chorus_channels) {
+        it.second->set_chorus_feedback(val);
+    }
+}
+
+void
+MIDIDriver::set_chorus_cutoff_frequency(float val)
 {
-#if AAX_PATCH_LEVEL >= 230425
-    if (fc < 22000.0f) {
-        MESSAGE(4, "Set chorus cutoff frequency to %.2fHz\n", fc);
+    if (val < 22000.0f) {
+        MESSAGE(4, "Set chorus cutoff frequency to %.2fHz\n", val);
     }
-    for(int i=0; i<chorus_channels.size(); ++i) {
-        midi.channel(i).set_chorus_cutoff(fc);
+#if AAX_PATCH_LEVEL >= 230425
+    for (auto& it : chorus_channels) {
+        it.second->set_chorus_cutoff(val);
     }
 #endif
 }
@@ -328,8 +358,7 @@ MIDIDriver::set_chorus_cutoff_frequency(float fc)
 void
 MIDIDriver::set_delay(const char *t)
 {
-// TODO:
-#if 0
+#if AAX_PATCH_LEVEL >= 230425
     Buffer& buf = AeonWave::buffer(t);
     delay.add(buf);
     for(auto& it : channels) {
@@ -339,11 +368,25 @@ MIDIDriver::set_delay(const char *t)
 }
 
 void
+MIDIDriver::send_delay_to_reverb(float val)
+{
+    if (val > 0.0f) {
+        MESSAGE(3, "Send %.0f%% delay to reverb\n", val*100);
+    }
+}
+
+void
+MIDIDriver::set_delay_level(float val)
+{
+    for (auto& it: delay_channels) {
+        set_delay_level(it.first, val);
+    }
+}
+
+void
 MIDIDriver::set_delay_level(uint16_t part_no, float val)
 {
-// TODO:
-#if 0
-    val = _ln(val);
+#if AAX_PATCH_LEVEL >= 230425
     auto& part = midi.channel(part_no);
     if (val > 0.0f && part.get_delay_level() != val)
     {
@@ -353,14 +396,16 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
             it = channels.find(part_no);
             if (it != channels.end() && it->second)
             {
-                AeonWave::remove(*it->second);
-                delay.add(*it->second);
-                delay_channels[it->first] = it->second;
+                if (AeonWave::remove(*it->second))
+                {
+                    delay.add(*it->second);
+                    delay_channels[it->first] = it->second;
+                }
                 MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
                         part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
-        part.set_delay_level(val);
+        part.set_delay_level(_ln(val));
     }
     else
     {
@@ -371,6 +416,56 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from delay\n", part_no);
         }
+    }
+#endif
+}
+
+void
+MIDIDriver::set_delay_depth(float ms) {
+    delay_depth = ms*1e-3f;
+    if (ms > 0.0f) {
+        MESSAGE(4, "Set delays depth to %.0f%%\n", delay_depth*100.0f);
+    }
+#if AAX_PATCH_LEVEL >= 230425
+    for(auto& it : delay_channels) {
+        it.second->set_delay_depth(delay_depth);
+    }
+#endif
+}
+
+void
+MIDIDriver::set_delay_rate(float rate) {
+    if (rate > 0.0f) {
+        MESSAGE(4, "Set delay rate to %.2fHz\n", rate);
+    }
+#if AAX_PATCH_LEVEL >= 230425
+    for(auto& it : delay_channels) {
+        it.second->set_delay_rate(rate);
+    }
+#endif
+}
+
+void
+MIDIDriver::set_delay_feedback(float feedback) {
+    if (feedback > 0.0f) {
+        MESSAGE(4, "Set delay feedback to %.0f%%\n", feedback);
+    }
+#if AAX_PATCH_LEVEL >= 230425
+    for(auto& it : delay_channels) {
+        it.second->set_delay_feedback(feedback);
+    }
+#endif
+}
+
+void
+MIDIDriver::set_delay_cutoff_frequency(float fc)
+{
+    if (fc < 22000.0f) {
+        MESSAGE(4, "Set delay cutoff frequency to %.2fHz\n", fc);
+    }
+#if AAX_PATCH_LEVEL >= 230425
+    for(auto& it : delay_channels) {
+        it.second->set_chorus_cutoff(fc);
     }
 #endif
 }
@@ -425,15 +520,14 @@ MIDIDriver::set_reverb_type(uint8_t type)
 void
 MIDIDriver::set_reverb_level(float val)
 {
-   for (auto& it: channels) {
-       set_reverb_level(it.first, val);
-   }
+    for (auto& it: channels) {
+        set_reverb_level(it.first, val);
+    }
 }
 
 void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
-    val = _ln(val);
     auto& part = midi.channel(part_no);
     if (val > 0.0f && part.get_reverb_level() != val)
     {
@@ -450,7 +544,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                         part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
-        part.set_reverb_level(val);
+        part.set_reverb_level(_ln(val));
     }
     else
     {
@@ -465,23 +559,23 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 }
 
 void
-MIDIDriver::set_reverb_cutoff_frequency(float value) {
-    reverb_cutoff_frequency = value;
+MIDIDriver::set_reverb_cutoff_frequency(float val) {
+    reverb_cutoff_frequency = val;
 }
 void
-MIDIDriver::set_reverb_time_rt60(float value) {
-    reverb_time = value;
-    reverb_decay_level = powf(LEVEL_60DB, 0.2f*reverb_decay_depth/value);
+MIDIDriver::set_reverb_time_rt60(float val) {
+    reverb_time = val;
+    reverb_decay_level = powf(LEVEL_60DB, 0.2f*reverb_decay_depth/val);
 }
 void
-MIDIDriver::set_reverb_decay_depth(float value) {
-    reverb_decay_depth = 0.1f*value;
+MIDIDriver::set_reverb_decay_depth(float val) {
+    reverb_decay_depth = 0.1f*val;
     set_reverb_time_rt60(reverb_time);
 }
 void
-MIDIDriver::set_reverb_delay_depth(float value) {
+MIDIDriver::set_reverb_delay_depth(float val) {
     for(auto& it : reverb_channels) {
-        it.second->set_reverb_delay_depth(value);
+        it.second->set_reverb_delay_depth(val);
     }
 }
 

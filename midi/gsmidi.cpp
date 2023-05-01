@@ -37,12 +37,21 @@ using namespace aax;
 
 void MIDIStream::GS_initialize()
 {
-    float val = 40.0f/127.0f;
+    midi.set_chorus("GS/chorus3");
+    midi.set_chorus_level(64.0f/127.0f);
+    INFO("Switching to GS type 3 chorus");
+
+    midi.set_delay("GS/delay1");
+    midi.set_delay_level(64.0f/127.0f);
+    INFO("Switching to GS Delay1");
+
+    midi.set_reverb("GS/hall2");
+    midi.set_reverb_level(40.0f/127.0f);
+    INFO("Switching to GS Hall2 reveberation");
+
     for (auto& it : midi.get_channels())
     {
         midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
-        midi.set_reverb_level(it.first, val);
-        midi.set_chorus_level(it.first, 0.0f);
         it.second->set_expression(_ln(127.0f/127.0f));
         it.second->set_gain(_ln(100.0f/127.0f));
         it.second->set_pan(0.0f);
@@ -165,42 +174,42 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         case GSMIDI_REVERB_ROOM1:
                             expl = "REVERB_ROOM1";
                             midi.set_reverb("GS/room1");
-                            INFO("Switching to Small Room reveberation");
+                            INFO("Switching to GS Room1 reveberation");
                             break;
                         case GSMIDI_REVERB_ROOM2:
                             expl = "REVERB_ROOM2";
                             midi.set_reverb("GS/room2");
-                            INFO("Switching to Medium Room reveberation");
+                            INFO("Switching to GS Room2 reveberation");
                             break;
                         case GSMIDI_REVERB_ROOM3:
                             expl = "REVERB_ROOM3";
                             midi.set_reverb("GS/room3");
-                            INFO("Switching to Large Room reveberation");
+                            INFO("Switching to GS Room3 reveberation");
                             break;
                         case GSMIDI_REVERB_HALL1:
                             expl = "REVERB_HALL1";
                             midi.set_reverb("GS/hall1");
-                            INFO("Switching to Concert Hall Reveberation");
+                            INFO("Switching to GS Hall1 Reveberation");
                             break;
                         case GSMIDI_REVERB_HALL2:
                             expl = "REVERB_HALL2";
                             midi.set_reverb("GS/hall2");
-                            INFO("Switching to Large Concert Hall reveberation");
+                            INFO("Switching to GS Hall2 reveberation");
                             break;
                         case GSMIDI_REVERB_PLATE:
                             expl = "REVERB_PLATE";
                             midi.set_reverb("GS/plate");
-                            INFO("Switching to Plate reveberation");
+                            INFO("Switching to GS Plate reveberation");
                             break;
                         case GSMIDI_REVERB_DELAY:
                             expl = "REVERB_DELAY";
                             midi.set_reverb("GS/reverb-delay");
-                            INFO("Switching to Delay reveberation");
+                            INFO("Switching to GS Delay reveberation");
                             break;
                         case GSMIDI_REVERB_PAN_DELAY:
                             expl = "REVERB_PAN_DELAY";
                             midi.set_reverb("GS/reverb-pan-delay");
-                            INFO("Switching to Pan-Delay reveberation");
+                            INFO("Switching to GS Pan-Delay reveberation");
                             break;
                         default:
                             expl = "REVERB_MACRO";
@@ -383,34 +392,44 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                             break;
                         }
                         break;
-                        break;
                     case GSMIDI_DELAY_PRE_LPF:
+                    {
                         expl = "DELAY_PRE_LPF";
-                        LOG(99, "LOG: Unsupported GS sysex Delay Pre-LPF\n");
+                        float val = (7-value)/7.0f;
+                        float fc = _log2lin(val*_lin2log(22000.0f));
+                        midi.set_delay_cutoff_frequency(fc);
                         break;
+                    }
                     case GSMIDI_DELAY_TIME_RATIO_LEFT:
                         expl = "DELAY_TIME_RATIO_LEFT";
                         LOG(99, "LOG: Unsupported GS sysex Delay Time Ratio left\n");
                         break;
                     case GSMIDI_DELAY_TIME_CENTER:
+                    {
                         expl = "DELAY_TIME_CENTER";
+                        float val = 4.0f*value/127.0f;
+                        midi.set_delay_depth(val);
                         LOG(99, "LOG: Unsupported GS sysex Delay Time Center\n");
                         break;
+                    }
                     case GSMIDI_DELAY_TIME_RATIO_RIGHT:
                         expl = "DELAY_TIME_RATIO_RIGHT";
                         LOG(99, "LOG: Unsupported GS sysex Delay Time Ratio Right\n");
                         break;
                     case GSMIDI_DELAY_FEEDBACK:
                         expl = "DELAY_FEEDBACK";
-                        LOG(99, "LOG: Unsupported GS sysex Delay Feedback\n");
+                        midi.set_delay_feedback(0.763f*value*1e-2f);
                         break;
                     case GSMIDI_DELAY_LEVEL:
+                    {
                         expl = "DELAY_LEVEL";
-                        LOG(99, "LOG: Unsupported GS sysex Delay Level\n");
+                        float val = float(value)/127.0f;
+                        midi.set_delay_level(track_no, val);
                         break;
+                    }
                     case GSMIDI_DELAY_SEND_LEVEL_TO_REVERB:
                         expl = "DELAY_SEND_LEVEL_TO_REVERB";
-                        LOG(99, "LOG: Unsupported GS sysex Delay Send Level To Reverb\n");
+                        midi.send_delay_to_reverb(value/127.0f);
                         break;
                     case GSMIDI_DELAY_LEVEL_LEFT:
                         expl = "DELAY_LEVEL_LEFT";

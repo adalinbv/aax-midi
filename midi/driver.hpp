@@ -201,10 +201,19 @@ public:
     void set_chorus_level(uint16_t part_no, float lvl);
     void send_chorus_to_reverb(float val);
     void set_chorus_cutoff_frequency(float fc);
+    void set_chorus_level(float value);
 
     /* delay */
     void set_delay(const char *t);
-    void set_delay_level(uint16_t part_no, float value);
+    void set_delay_type(uint8_t value);
+    void set_delay_delay(float delay);
+    void set_delay_depth(float depth);
+    void set_delay_feedback(float feedback);
+    void set_delay_rate(float rate);
+    void set_delay_level(uint16_t part_no, float lvl);
+    void send_delay_to_reverb(float val);
+    void set_delay_cutoff_frequency(float fc);
+    void set_delay_level(float value);
 
     /* reverb */
     void set_reverb(const char *t);
@@ -287,7 +296,7 @@ private:
     std::string effects;
     std::string track_name;
     _channel_map_t channels;
-    std::vector<int> chorus_channels;
+    _channel_map_t chorus_channels;
     _channel_map_t delay_channels;
     _channel_map_t reverb_channels;
 
@@ -340,15 +349,20 @@ private:
 
     uint8_t chorus_type = 2;
     Param chorus_rate = 0.4f;
-    Param chorus_level = _ln(0.54f);
+    Param chorus_level = _ln(0.5f);
     Param chorus_feedback = 0.06f;
     Param chorus_depth = Param(6300.0f, AAX_MICROSECONDS);
     Status chorus_state = AAX_FALSE;
     aax::Mixer chorus = aax::Mixer(*this);
     float chorus_to_reverb = 0.0f;
 
+    Param delay_rate = 0.0f;
+    Param delay_level = _ln(0.5f);
+    Param delay_feedback = 0.25f;
+    Param delay_depth = Param(340000.0f, AAX_MICROSECONDS);
     Status delay_state = AAX_FALSE;
     aax::Mixer delay = aax::Mixer(*this);
+    float delay_to_reverb = 0.0f;
 
     uint8_t reverb_type = 4;
     float reverb_time = 0.0f;
