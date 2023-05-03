@@ -266,24 +266,26 @@ void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
     auto& part = midi.channel(part_no);
-    if (val > 0.0f && part.get_chorus_level() != val)
+    if (val > 0.0f)
     {
-        auto it = chorus_channels.find(part_no);
-        if (it == chorus_channels.end())
+        if (part.get_chorus_level() == 0.0f)
         {
-            it = channels.find(part_no);
-            if (it != channels.end() && it->second)
+            auto it = chorus_channels.find(part_no);
+            if (it == chorus_channels.end())
             {
-                if (AeonWave::remove(*it->second))
+                it = channels.find(part_no);
+                if (it != channels.end() && it->second)
                 {
-                    chorus.add(*it->second);
-                    chorus_channels[it->first] = it->second;
+                    if (AeonWave::remove(*it->second))
+                    {
+                        chorus.add(*it->second);
+                        chorus_channels[it->first] = it->second;
+                    }
+                    MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
+                            part_no, val*100, get_channel_name(part_no).c_str());
                 }
-                MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
-                        part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
-        part.set_chorus_level(_ln(val));
     }
     else
     {
@@ -295,6 +297,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from chorus\n", part_no);
         }
     }
+    part.set_chorus_level(_ln(val));
 }
 
 void
@@ -388,24 +391,26 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
 {
 #if AAX_PATCH_LEVEL >= 230425
     auto& part = midi.channel(part_no);
-    if (val > 0.0f && part.get_delay_level() != val)
+    if (val > 0.0f)
     {
-        auto it = delay_channels.find(part_no);
-        if (it == delay_channels.end())
+        if (part.get_delay_level() == 0.0f)
         {
-            it = channels.find(part_no);
-            if (it != channels.end() && it->second)
+            auto it = delay_channels.find(part_no);
+            if (it == delay_channels.end())
             {
-                if (AeonWave::remove(*it->second))
+                it = channels.find(part_no);
+                if (it != channels.end() && it->second)
                 {
-                    delay.add(*it->second);
-                    delay_channels[it->first] = it->second;
+                    if (AeonWave::remove(*it->second))
+                    {
+                        delay.add(*it->second);
+                        delay_channels[it->first] = it->second;
+                    }
+                    MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
+                            part_no, val*100, get_channel_name(part_no).c_str());
                 }
-                MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
-                        part_no, val*100, get_channel_name(part_no).c_str());
             }
         }
-        part.set_delay_level(_ln(val));
     }
     else
     {
@@ -417,6 +422,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from delay\n", part_no);
         }
     }
+    part.set_delay_level(_ln(val));
 #endif
 }
 
@@ -529,22 +535,24 @@ void
 MIDIDriver::set_reverb_level(uint16_t part_no, float val)
 {
     auto& part = midi.channel(part_no);
-    if (val > 0.0f && part.get_reverb_level() != val)
+    if (val > 0.0f)
     {
-        auto it = reverb_channels.find(part_no);
-        if (it == reverb_channels.end())
+        if (part.get_reverb_level() == 0.0f)
         {
-            it = channels.find(part_no);
-            if (it != channels.end() && it->second)
+            auto it = reverb_channels.find(part_no);
+            if (it == reverb_channels.end())
             {
-                AeonWave::remove(*it->second);
-                reverb.add(*it->second);
-                reverb_channels[it->first] = it->second;
-                MESSAGE(3, "Set part %i reverb to %.0f%%: %s\n",
-                        part_no, val*100, get_channel_name(part_no).c_str());
+                it = channels.find(part_no);
+                if (it != channels.end() && it->second)
+                {
+                    AeonWave::remove(*it->second);
+                    reverb.add(*it->second);
+                    reverb_channels[it->first] = it->second;
+                    MESSAGE(3, "Set part %i reverb to %.0f%%: %s\n",
+                            part_no, val*100, get_channel_name(part_no).c_str());
+                }
             }
         }
-        part.set_reverb_level(_ln(val));
     }
     else
     {
@@ -556,6 +564,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from reverb\n", part_no);
         }
     }
+    part.set_reverb_level(_ln(val));
 }
 
 void
