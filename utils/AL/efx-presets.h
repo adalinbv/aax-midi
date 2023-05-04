@@ -6,29 +6,90 @@
 #ifndef EFXEAXREVERBPROPERTIES_DEFINED
 #define EFXEAXREVERBPROPERTIES_DEFINED
 typedef struct {
-    float flDensity;
-    float flDiffusion;
-    float flGain;
-    float flGainHF;
-    float flGainLF;
-    float flDecayTime;
-    float flDecayHFRatio;
-    float flDecayLFRatio;
-    float flReflectionsGain;
-    float flReflectionsDelay;
+    // Controls the coloration of the late reverb (high pass cutoff).
+    // Lowering the value adds more coloration to the late reverb.
+    float flDensity; // 0.0 ~ 1.0, default 1.0
+
+    // Controls the echo density in the reverberation decay. It’s set by
+    // default to 1.0, which provides the highest density. Reducing diffusion
+    // gives the reverberation a more "grainy" character that is especially
+    // noticeable with percussive sound sources. With a diffusion value of 0.0,
+    // the later reverberation sounds like a succession of distinct echoes.
+    float flDiffusion; // 0.0 ~ 1.0, default 1.0 (linear)
+
+    // Master volume control for the reflected sound.
+    // (both early reflections and reverberation)
+    float flGain; // 0.0 ~ 1.0, default 0.32 (linear)
+
+    // Tweaks reflected sound by attenuating it at high frequencies.
+    float flGainHF; // 0.0 ~ 1.0, default 0.89 (linear)
+    float flGainLF; // 0.0 ~ 1.0, default 0.0 (linear)
+
+    // Sets the reverberation decay time.
+    // 0.1 (typically a small room with very dead surfaces) to
+    // 20.0 (typically a large room with very live surfaces).
+    float flDecayTime; // 1.0 ~ 20.0, default 1.49 (seconds)
+
+    // The ratio of high-frequency decay time relative to the time set by
+    // Decay Time. The Decay HF Ratio value 1.0 is neutral:
+    // the decay time is equal for all frequencies.
+    float flDecayHFRatio; // 0.1 ~ 20.0, default 0.83 (linear)
+    float flDecayLFRatio; // 0.1 ~ 20.0, default 1.0 (linear)
+
+    // Controls the overall amount of initial reflections relative to the Gain
+    // property. Max. of 3.16 (+10 dB) to a minimum of 0.0 (-100 dB)
+    float flReflectionsGain; // 0.0 ~ 3.16, default 0.05 (linear)
+
+    // The amount of delay between the arrival time of the direct path
+    // from the source to the first reflection from the source.
+    float flReflectionsDelay; // 0.0 ~ 0.3, default 0.007 (seconds)
     float flReflectionsPan[3];
-    float flLateReverbGain;
-    float flLateReverbDelay;
+
+    // Controls the overall amount of later reverberation relative to the
+    // Gain property. Ranges from a maximum of 10.0 (+20 dB) to a
+    // minimum of 0.0 (-100 dB) (no late reverberation at all)
+    float flLateReverbGain; // 0.0 ~ 10.0, default 1.26 (linear)
+
+    //
+    float flLateReverbDelay; // 0.0 ~ 0.1, default 0.011 (seconds)
     float flLateReverbPan[3];
-    float flEchoTime;
-    float flEchoDepth;
-    float flModulationTime;
-    float flModulationDepth;
-    float flAirAbsorptionGainHF;
-    float flHFReference;
-    float flLFReference;
-    float flRoomRolloffFactor;
-    int   iDecayHFLimit;
+
+    float flEchoTime; // 0.075 ~ 0.5, default 0.25 (seconds);
+    float flEchoDepth; // 0.0 ~ 1.0, default 0.0 (linear)
+
+    float flModulationTime; // 0.04 ~ 4.0, default 0.25 (seconds)
+    float flModulationDepth; // 0.0 ~ 1.0, default 0.0 (linear)
+
+    // Controls the distance-dependent attenuation at high frequencies caused
+    // by the propagation medium. It applies to reflected sound only. You can
+    // use Air Absorption Gain HF to simulate sound transmission through foggy
+    // air, dry air, smoky atmosphere, and so on.
+    // The default value is 0.994 (-0.05 dB) per meter, which roughly
+    // corresponds to typical condition of atmospheric humidity, temperature,
+    // and so on.
+    //
+    // Lowering the value simulates a more absorbent medium (more humidity in
+    // the air, for example); raising the value simulates a less absorbent
+    // medium (dry desert air, for example).
+    float flAirAbsorptionGainHF; // 0.892 ~ 1.0, default 0.994 (linear)
+
+    float flHFReference; // 1000.0 ~ 20000.0, default 5000.0 (Hz)
+    float flLFReference; // 20.0 ~ 1000.0, default 250.0 (Hz)
+
+    // One of two methods available to attenuate the reflected sound
+    // (containing both reflections and reverberation) according to
+    // source-listener distance. It’s defined the same way as OpenAL’s
+    // Rolloff Factor, but operates on reverb sound instead of direct-path sound
+    // Setting the Room Rolloff Factor value to 1.0 specifies that the
+    // reflected sound will decay by 6 dB every time the distance doubles.
+    float flRoomRolloffFactor; // 0.0 ~ 10.0, default 0.0
+
+    // This limit, when on, maintains a natural sounding reverberation decay by
+    // allowing you to increase the value of Decay Time without the risk of
+    // getting an unnaturally long decay time at high frequencies. If this flag
+    // is set to AL_FALSE, high-frequency decay time isn’t automatically limited
+    int   iDecayHFLimit; // AL_FLASE, AL_TRUE, default: AL_TRUE
+
 } EFXEAXREVERBPROPERTIES, *LPEFXEAXREVERBPROPERTIES;
 #endif
 
