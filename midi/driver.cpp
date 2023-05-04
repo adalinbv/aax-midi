@@ -206,27 +206,27 @@ MIDIDriver::set_chorus_type(uint8_t type)
     switch(type)
     {
     case 0:
-        midi.set_chorus("chorus/chorus1");
+        midi.set_chorus("chorus/GM2/chorus1");
         INFO("Switching to type 1 chorus");
         break;
     case 1:
-        midi.set_chorus("chorus/chorus2");
+        midi.set_chorus("chorus/GM2/chorus2");
         INFO("Switching to type 2 chorus");
         break;
     case 2:
-        midi.set_chorus("chorus/chorus3");
+        midi.set_chorus("chorus/GM2/chorus3");
         INFO("Switching to type 3 chorus");
         break;
     case 3:
-        midi.set_chorus("chorus/chorus4");
+        midi.set_chorus("chorus/GM2/chorus4");
         INFO("Switching to type 4 chorus");
         break;
     case 4:
-        midi.set_chorus("chorus/chorus_freedback");
+        midi.set_chorus("chorus/GM2/chorus_freedback");
         INFO("Switching to feedback chorus");
         break;
     case 5:
-        midi.set_chorus("chorus/flanger");
+        midi.set_chorus("chorus/GM2/flanger");
         INFO("Switching to flanging");
         break;
     default:
@@ -493,27 +493,27 @@ MIDIDriver::set_reverb_type(uint8_t type)
     switch (type)
     {
     case 0:
-        midi.set_reverb("reverb/room-small");
+        midi.set_reverb("reverb/GM2/room-small");
         INFO("Switching to Small Room reveberation");
         break;
     case 1:
-        midi.set_reverb("reverb/room-medium");
+        midi.set_reverb("reverb/GM2/room-medium");
         INFO("Switching to Medium Room reveberation");
         break;
     case 2:
-        midi.set_reverb("reverb/room-large");
+        midi.set_reverb("reverb/GM2/room-large");
         INFO("Switching to Large Room reveberation");
         break;
     case 3:
-        midi.set_reverb("reverb/concerthall");
+        midi.set_reverb("reverb/GM2/concerthall");
         INFO("Switching to Concert Hall Reveberation");
         break;
     case 4:
-        midi.set_reverb("reverb/concerthall-large");
+        midi.set_reverb("reverb/GM2/concerthall-large");
         INFO("Switching to Large Concert Hall reveberation");
         break;
     case 8:
-        midi.set_reverb("reverb/plate");
+        midi.set_reverb("reverb/GM2/plate");
         INFO("Switching to Plate reveberation");
         break;
     default:
