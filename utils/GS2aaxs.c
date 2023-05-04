@@ -27,11 +27,11 @@ typedef struct {
 #define GSMIDI_MAX_CHORUS_TYPES         8
 static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
 // param:                     0   1    2    3    4    5    6   7
- { "chorus1",              { 64,  0,   0, 112,   9,   5,   0,  0 } },
- { "chorus2",              { 64,  0,   5,  80,   3,  19,   0,  0 } },
+ { "chorus1",              { 64,  0,   0, 112,   3,   5,   0,  0 } },
+ { "chorus2",              { 64,  0,   5,  80,   9,  19,   0,  0 } },
  { "chorus3",              { 64,  0,   8,  80,   3,  19,   0,  0 } },
  { "chorus4",              { 64,  0,  16,  64,   9,  16,   0,  0 } },
- { "chorus-feedback",      { 64,  0,  65, 127,   2,  24,   0,  0 } },
+ { "chorus-feedback",      { 64,  0,  64, 127,   2,  24,   0,  0 } },
  { "flanger",              { 64,  0, 112, 127,   1,   5,   0,  0 } },
  { "chorus-short-delay",   { 64,  0,   0, 127,   0, 127,   0,  0 } },
  { "chorus-delay-feedback",{ 64,  0,  80, 127,   0, 127,   0,  0 } },
@@ -174,8 +174,7 @@ int write_chorus()
          fprintf(stream, "<aeonwave>\n\n");
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine|1st-order\"");
-         fprintf(stream, " src=\"1st-order\">\n");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -195,8 +194,7 @@ int write_chorus()
 
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine|2nd-order\"");
-         fprintf(stream, " src=\"2nd-order\">\n");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -259,7 +257,7 @@ int write_delay()
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
          fprintf(stream, "<aeonwave>\n\n");
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"delay\" src=\"1st-order\">\n");
+         fprintf(stream, "  <effect type=\"delay\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
@@ -278,7 +276,7 @@ int write_delay()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"delay\" src=\"2nd-order\">\n");
+         fprintf(stream, "  <effect type=\"delay\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
@@ -344,7 +342,7 @@ int write_reverb()
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
          fprintf(stream, "<aeonwave>\n\n");
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"reverb\" src=\"1st-order\">\n");
+         fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
          fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
@@ -355,7 +353,7 @@ int write_reverb()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"reveb\" src=\"2nd-order\">\n");
+         fprintf(stream, "  <effect type=\"reveb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
          fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
