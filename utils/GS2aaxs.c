@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <time.h>
 
 typedef struct {
     const char* name;
@@ -127,6 +128,40 @@ float _log2lin(float v) { return powf(10.0f,v); }
 float _lin2db(float v) { return 20.0f*log10f(v); }
 float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
 
+void
+print_header(FILE *stream)
+{   
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds);
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n<!--\n");
+    fprintf(stream, " * Copyright (C) 2017-%d by Erik Hofman.\n", year);
+    fprintf(stream, " * Copyright (C) 2017-%d by Adalin B.V.\n", year);
+    fprintf(stream, " * All rights reserved.\n");
+    fprintf(stream, " *\n");
+    fprintf(stream, " * This file is part of AeonWave and covered by the\n");
+    fprintf(stream, " * Creative Commons Attribution-ShareAlike 4.0 International Public License\n");
+    fprintf(stream, " * https://creativecommons.org/licenses/by-sa/4.0/legalcode\n");
+    fprintf(stream, "-->\n\n");
+
+}
+
+void
+print_info(FILE *stream)
+{
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds);
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n <info>\n");
+    fprintf(stream, "  <license type=\"Attribution-ShareAlike 4.0 International\"/>\n");
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Adalin B.V.\"/>\n", year);
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Erik Hofman\"/>\n", year);
+    fprintf(stream, "  <contact author=\"Erik Hofman\" website=\"aeonwave.xyz\"/>\n");
+    fprintf(stream, " </info>\n\n");
+}
+
 int write_chorus()
 {
    for (int i=0; i<GSMIDI_MAX_CHORUS_TYPES; ++i)
@@ -171,10 +206,17 @@ int write_chorus()
          float feedback = fb/127.0f;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -195,6 +237,7 @@ int write_chorus()
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"chorus\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
@@ -255,7 +298,13 @@ int write_delay()
          if (fc >= 20000.0f) fc = 0.0f;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"delay\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -340,7 +389,13 @@ int write_reverb()
          float decay_depth = get_decay_depth(decay_time, decay_level);
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");

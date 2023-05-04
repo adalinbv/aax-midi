@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <time.h>
 
 #include <aax/midi.h>
 
@@ -362,6 +363,40 @@ float _log2lin(float v) { return powf(10.0f,v); }
 float _lin2db(float v) { return 20.0f*log10f(v); }
 float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
 
+void
+print_header(FILE *stream)
+{
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds);
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n<!--\n");
+    fprintf(stream, " * Copyright (C) 2017-%d by Erik Hofman.\n", year);
+    fprintf(stream, " * Copyright (C) 2017-%d by Adalin B.V.\n", year);
+    fprintf(stream, " * All rights reserved.\n");
+    fprintf(stream, " *\n");
+    fprintf(stream, " * This file is part of AeonWave and covered by the\n");
+    fprintf(stream, " * Creative Commons Attribution-ShareAlike 4.0 International Public License\n");
+    fprintf(stream, " * https://creativecommons.org/licenses/by-sa/4.0/legalcode\n");
+    fprintf(stream, "-->\n\n");
+
+}
+
+void
+print_info(FILE *stream)
+{
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds);
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n <info>\n");
+    fprintf(stream, "  <license type=\"Attribution-ShareAlike 4.0 International\"/>\n");
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Adalin B.V.\"/>\n", year);
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Erik Hofman\"/>\n", year);
+    fprintf(stream, "  <contact author=\"Erik Hofman\" website=\"aeonwave.xyz\"/>\n");
+    fprintf(stream, " </info>\n\n");
+}
+
 int write_reverb()
 {
    for (int i=0; i<XGMIDI_MAX_REVERB_TYPES; ++i)
@@ -408,9 +443,15 @@ int write_reverb()
          float decay_level = powf(LEVEL_60DB, 0.2f*decay_depth/reverb_time);
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"reverb\" src=\"true\">\n");
+         fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff_freq);
          fprintf(stream, "    <param n=\"1\">%5.4f</param>\n", delay_depth);
@@ -427,7 +468,7 @@ int write_reverb()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"reverb\" src=\"true\">\n");
+         fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff_freq);
          fprintf(stream, "    <param n=\"1\">%5.4f</param>\n", delay_depth);
@@ -478,7 +519,7 @@ int write_chorus()
          int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz
          int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz
 
-         float lfo_frequency = XGMIDI_LFO_frequency_table_Hz[f];
+         float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = XGMIDI_delay_offset_table_ms[dt];
          float lfo_depth = 0.5f*pd/127.0f;
          float gain = (dw - 1)/127.0f;
@@ -491,12 +532,20 @@ int write_chorus()
          float high_cutoff = XGMIDI_EQ_frequency_table_Hz[hf];
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"chorus\" src=\"sine\">\n");
+         fprintf(stream, "  <effect type=\"chorus\"");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", lfo_frequency);
+         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
          fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\" type=\"usec\">%5.1f</param>\n", lfo_offset*1e3f);
          fprintf(stream, "   </slot>\n");
@@ -530,10 +579,12 @@ int write_chorus()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"chorus\" src=\"sine\">\n");
+         fprintf(stream, "  <effect type=\"chorus\"");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", lfo_frequency);
+         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
          fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\" type=\"usec\">%5.1f</param>\n", lfo_offset*1e3f);
          fprintf(stream, "   </slot>\n");
@@ -599,7 +650,7 @@ int write_phasing()
          int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz
          int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz
 
-         float lfo_frequency = XGMIDI_LFO_frequency_table_Hz[f];
+         float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = dt/127.0f;
          float lfo_depth = pd/127.0f - lfo_offset;
          float gain = (dw - 1)/127.0f;
@@ -612,12 +663,20 @@ int write_phasing()
          float feedback = _MAX(fb - 64, 0)/127.0f;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"phasing\" src=\"sine\">\n");
+         fprintf(stream, "  <effect type=\"phasing\"");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", lfo_frequency);
+         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
          fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
@@ -649,10 +708,12 @@ int write_phasing()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"phasing\" src=\"sine\">\n");
+         fprintf(stream, "  <effect type=\"phasing\"");
+         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", lfo_frequency);
+         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
          fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
@@ -717,7 +778,13 @@ int write_distortion()
 
          distortion_fact =  distortion_fact* distortion_fact;
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -788,7 +855,13 @@ int write_equalizer()
          float high_cutoff = XGMIDI_EQ_frequency_table_Hz[hf];
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+         print_header(stream);
+
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <filter type=\"equalizer\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -860,7 +933,13 @@ int write_amp_simulator()
 
       distortion_fact =  distortion_fact* distortion_fact;
       fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+      print_header(stream);
+
       fprintf(stream, "<aeonwave>\n\n");
+
+      print_info(stream);
+
       fprintf(stream, " <audioframe>\n");
       if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
          fprintf(stream, "  <filter type=\"frequency\">\n");
@@ -946,7 +1025,13 @@ int write_style_list()
       int i = 0;
 
       fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+
+      print_header(stream);
+
       fprintf(stream, "<aeonwave>\n\n");
+
+      print_info(stream);
+
       fprintf(stream, " <midi id=\"%i\" name=\"XG-MIDI\">\n",
                          MIDI_SYSTEM_EXCLUSIVE_YAMAHA);
 

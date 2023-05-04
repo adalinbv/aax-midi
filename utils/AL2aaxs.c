@@ -3,6 +3,7 @@
 #include <string.h>
 #include <errno.h>
 #include <math.h>
+#include <time.h>
 
 #include "AL/efx-presets.h"
 
@@ -148,6 +149,40 @@ get_decay_depth(float time, float level) {
     return 5.0f*time*powf(LEVEL_60DB, level);
 }
 
+void
+print_header(FILE *stream)
+{
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds); 
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n<!--\n");
+    fprintf(stream, " * Copyright (C) 2017-%d by Erik Hofman.\n", year);
+    fprintf(stream, " * Copyright (C) 2017-%d by Adalin B.V.\n", year);
+    fprintf(stream, " * All rights reserved.\n");
+    fprintf(stream, " *\n");
+    fprintf(stream, " * This file is part of AeonWave and covered by the\n");
+    fprintf(stream, " * Creative Commons Attribution-ShareAlike 4.0 International Public License\n");
+    fprintf(stream, " * https://creativecommons.org/licenses/by-sa/4.0/legalcode\n");
+    fprintf(stream, "-->\n\n");
+
+}
+
+void
+print_info(FILE *stream)
+{
+    time_t seconds=time(NULL);
+    struct tm* current_time=localtime(&seconds);
+    int year = current_time->tm_year + 1900;
+
+    fprintf(stream, "\n <info>\n");
+    fprintf(stream, "  <license type=\"Attribution-ShareAlike 4.0 International\"/>\n");
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Adalin B.V.\"/>\n", year);
+    fprintf(stream, "  <copyright from=\"2017\" until=\"%d\" by=\"Erik Hofman\"/>\n", year);
+    fprintf(stream, "  <contact author=\"Erik Hofman\" website=\"aeonwave.xyz\"/>\n");
+    fprintf(stream, " </info>\n\n");
+}
+
 int write_reverb()
 {
    for (int i=0; i<AL_MAX_REVERB_TYPES; ++i)
@@ -181,7 +216,7 @@ int write_reverb()
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
-#if 1
+#if 0
  fprintf(stream, "<!--\n");
  fprintf(stream, " Density: %f\n", type->param.flDensity);
  fprintf(stream, " Diffusion: %f\n", type->param.flDiffusion);
@@ -196,12 +231,13 @@ int write_reverb()
  fprintf(stream, " Modulation Depth: %f\n", mod_depth);
  fprintf(stream, "-->\n\n");
 #endif
+         print_header(stream);
 
          fprintf(stream, "<aeonwave>\n\n");
+
+         print_info(stream);
+
          fprintf(stream, " <audioframe");
-         if (type->param.flModulationDepth > 0.0f) {
-             fprintf(stream, "src=\"sine\"");
-         }
          fprintf(stream, ">\n");
          fprintf(stream, "  <effect type=\"reverb\"");
          if (type->param.flModulationDepth > 0.0f) {
@@ -227,7 +263,7 @@ int write_reverb()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"reveb\"");
+         fprintf(stream, "  <effect type=\"reverb\"");
          if (type->param.flModulationDepth > 0.0f) {
              fprintf(stream, "src=\"sine\"");
          }
