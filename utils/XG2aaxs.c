@@ -131,32 +131,32 @@ static struct {
 } XGMIDI_style_list[129] = {
  {   1, "rock", "Rock Mixture", "Hardcore Mixture" },
  {   2, "synthpop", "80sMixt", "80's Mixture Rock" },
- {   3, "rock", "HardCore", "Hard Core Punk" },
+ {   3, "punk", "HardCore", "Hard Core Punk" },
  {   4, "rock", "MeloCore", "Melodious Core" },
  {   5, "rock", "SkaCore", "Ska Core" },
  {   6, "rock", "RkBoogie", "Rock Boogie" },
- {   7, "metal", "GrungeRk", "Grunge Rock" },
+ {   7, "grunge", "GrungeRk", "Grunge Rock" },
  {   8, "rock", "MondoRk", "Mondo Rock" },
  {   9, "synthpop", "IrishRk", "80's Irish Rock" },
  {  10, "synthpop", "BritRock", "British Rock" },
  {  11, "rock", "RckShufl", "80's Rock Shuffle" },
  {  12, "pop", "CollgeRk", "College Rock" },
- {  13, "rock", "GlamRock", "Glam Rock" },
+ {  13, "synthpop", "GlamRock", "Glam Rock" },
  {  14, "classic-rock", "70sRock", "70's Rock" },
  {  15, "classic-rock", "FolkRock", "70's 8-beat Folk Rock" },
  {  16, "classic-rock", "ArtRock", "70's Art Rock" },
- {  17, "pop", "PunkRock", "70's Punk Rock" },
+ {  17, "punk", "PunkRock", "70's Punk Rock" },
  {  18, "rock", "PubRock", "Pub Rock" },
- {  19, "classic-rock", "FunkRock", "Funk Rock" },
+ {  19, "funk", "FunkRock", "Funk Rock" },
  {  20, "rock", "LatinRk", "Latin Rock" },
- {  21, "hardrock", "60sHard", "60's Hard Rock" },
+ {  21, "rock-n-roll", "60sHard", "60's Hard Rock" },
  {  22, "hardrock", "70sHard1", "70's Hard Rock1" },
  {  23, "hardrock", "70sHard2", "70's Hard Rock2" },
  {  24, "hardrock", "70sHR&R", "70's Hard Rock 'n Roll" },
  {  25, "hardrock", "16btHard", "16-beat Hard Rock" },
  {  26, "hardrock", "AmercHR1", "American Hard Rock1" },
  {  27, "hardrock", "AmercHR2", "American Hard Rock2" },
- {  28, "hardrock", "ProgHard", "90's Progressive Hard" },
+ {  28, "gothic", "ProgHard", "90's Progressive Hard" },
  {  29, "metal", "SpeedMtl", "Speed Metal" },
  {  30, "metal", "PowerMtl", "Power Metal" },
  {  31, "metal", "Thrash", "Thrash Metal" },
@@ -168,29 +168,29 @@ static struct {
  {  37, "rnb", "Gangsta", "Gangsta" },
  {  38, "rnb", "Rap", "Rap" },
  {  39, "rnb", "Jazz Hip", "Jazz Hip Hop" },
- {  40, "dance", "DanceSwg", "Dance Swing" },
+ {  40, "jazz-combo", "DanceSwg", "Dance Swing" },
  {  41, "house", "House", "House" },
  {  42, "house", "GrgHouse", "Garage House" },
- {  43, "dance", "R&BSwing", "90's RnB Swing" },
- {  44, "dance", "Slow Jam", "90's RnB Slow Jam" },
+ {  43, "jazz", "R&BSwing", "90's RnB Swing" },
+ {  44, "rnb", "Slow Jam", "90's RnB Slow Jam" },
  {  45, "rnb", "Pop RnB", "90's Pop RnB" },
- {  46, "dance", "Smooth" "90's RnB Smooth" },
+ {  46, "ballad", "Smooth" "90's RnB Smooth" },
  {  47, "house", "PopTekno", "Pop Techno" },
  {  48, "house", "EuroTek", "Euro Techno" },
  {  49, "dance", "Eurobeat", "Eurobeat" },
- {  50, "sytnhpop", "ElectrRk", "Electro Rock" },
- {  51, "dance", "Bigbeat", "Bigbeat" },
+ {  50, "electronic", "ElectrRk", "Electro Rock" },
+ {  51, "house", "Bigbeat", "Bigbeat" },
  {  52, "dance", "DigiRk1", "Digital Rock1" },
  {  53, "dance", "DigiRk2", "Digital Rock2" },
  {  54, "dance", "IndustRk", "Industrial Rock" },
- {  55, "funk", "PsychRk", "Psychedelic Rock" },
+ {  55, "psychedelic", "PsychRk", "Psychedelic Rock" },
  {  56, "pop", "Lite Pop", "Light Pop" },
  {  57, "pop", "AOR Pop", "A.O.R. Pop" },
  {  58, "pop", "LatinPop", "Latin Pop" },
  {  59, "synthpop", "BritPop", "80's British Pop" },
  {  60, "pop", "16bt Pop", "16-beat Pop" },
  {  61, "pop", "24bt Pop", "24-beat Pop" },
- {  62, "pop", "TechFusn", "80's Technical Fusion" },
+ {  62, "fusion", "TechFusn", "80's Technical Fusion" },
  {  63, "pop", "DetroPop", "Detroit Pop Shuffle" },
  {  64, "pop", "Mid8btRk", "Med-tempo 8-beat Rock Pop" },
  {  65, "pop", "Acoustic", "Acoustic Pop" },
@@ -202,20 +202,20 @@ static struct {
  {  71, "rnb", "RnB Wlz", "RnB Waltz" },
  {  72, "rnb", "Rock RnB", "Rock RnB" },
  {  73, "rock-n-roll", "RocknRol", "Rock'n' Roll" },
- {  74, "rock-n-roll", "TrainTm", "Train Time" },
+ {  74, "rock", "TrainTm", "Train Time" },
  {  75, "rockabilly", "Rockably", "Rockabilly" },
- {  76, "rock-n-roll", "Oldies", "Oldies" },
- {  77, "rock-n-roll", "Liverpol", "Liverpool Pop" },
+ {  76, "room", "Oldies", "Oldies" },
+ {  77, "pop", "Liverpol", "Liverpool Pop" },
  {  78, "surf", "SurfRock", "Surf Rock" },
- {  79, "funk", "DscFunk", "Disco Funk" },
+ {  79, "disco", "DscFunk", "Disco Funk" },
  {  80, "disco", "70sDisco", "70's Disco" },
  {  81, "funk", "FP Funk", "FP Funk" },
  {  82, "funk", "JB Funk", "JB Funk" },
  {  83, "funk", "JazzFunk", "Jazz Funk" },
  {  84, "jazz-combo", "ComboJz", "Combo Jazz" },
- {  85, "bigban", "Big Band", "Big Band Jazz" },
+ {  85, "bigband", "Big Band", "Big Band Jazz" },
  {  86, "ballad", "JazBalld", "Jazz Ballad" },
- {  87, "jazz", "JazWaltz", "Jazz Waltz" },
+ {  87, "jazz-combo", "JazWaltz", "Jazz Waltz" },
  {  88, "jazz", "Bebop Fast", "Bebop" },
  {  89, "jazz", "CoolJazz", "Cool Jazz" },
  {  90, "jazz", "AfroJazz", "Afro Jazz" },
@@ -229,7 +229,7 @@ static struct {
  {  98, "country", "CW Rock", "Country Rock" },
  {  99, "country", "CW Pop", "Country Pop" },
  { 100, "country", "16Contry", "16-beat Country Rock" },
- { 101, "country", "CW Balld", "Country Ballad" },
+ { 101, "ballad", "CW Balld", "Country Ballad" },
  { 102, "country", "CW Waltz", "Country Waltz" },
  { 103, "country", "Bluegras", "Bluegrass" },
  { 104, "latin", "Samba", "Samba" },
@@ -540,7 +540,11 @@ int write_chorus()
          print_info(stream);
 
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"chorus\"");
+         fprintf(stream, "  <effect type=\"");
+         if (lfo_depth < 10) fprintf(stream, "phasing");
+         else if (lfo_depth < 60) fprintf(stream, "chorus");
+         else fprintf(stream, "delay");
+         fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -579,7 +583,11 @@ int write_chorus()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"chorus\"");
+         fprintf(stream, "  <effect type=\"");
+         if (lfo_depth < 10) fprintf(stream, "phasing");
+         else if (lfo_depth < 60) fprintf(stream, "chorus");
+         else fprintf(stream, "delay");
+         fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");

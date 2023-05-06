@@ -214,7 +214,11 @@ int write_chorus()
          print_info(stream);
 
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"chorus\"");
+         fprintf(stream, "  <effect type=\"");
+         if (lfo_depth < 10) fprintf(stream, "phasing");
+         else if (lfo_depth < 60) fprintf(stream, "chorus");
+         else fprintf(stream, "delay");
+         fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -235,7 +239,11 @@ int write_chorus()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"chorus\"");
+         fprintf(stream, "  <effect type=\"");
+         if (lfo_depth < 10) fprintf(stream, "phasing");
+         else if (lfo_depth < 60) fprintf(stream, "chorus");
+         else fprintf(stream, "delay");
+         fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
