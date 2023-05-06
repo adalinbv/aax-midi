@@ -52,17 +52,17 @@ static GSMIDI_effect_t GSMIDI_chorus_types[GSMIDI_MAX_CHORUS_TYPES] = {
  *  8	Delay Feedback		-64 ~ 16 ~ 63 (%)
  *  9	Delay To Reverb		0 ~ 127
  *
- * *) The releation between the DELAY TIME CENTER value and the actual delay
+ * *) The relation between the DELAY TIME CENTER value and the actual delay
  *    time is as follows:
  *    DELAY TIME	Time Range[ms]    |	DELAY TIME	Time Range[ms]
- *    01-14		 0.1 ~  2.0	  |	46-50		 50.0 ~  100.0
- *    14-23		 2.0 ~  5.0	  |	50-5a		100.0 ~  200.0
- *    23-2d		 5.0 ~ 10.0	  |	5a-69		200.0 ~  500.0
- *    2d -37		10.0 ~ 20.0	  |	69-73		500.0 ~ 1000.0
- *    37-46		20.0 ~ 50.0	  |
+ *       1- 20		 0.1 ~  2.0	  |	  70- 90	 50.0 ~  100.0
+ *      20- 35		 2.0 ~  5.0	  |	  80- 90	100.0 ~  200.0
+ *      35- 45		 5.0 ~ 10.0	  |	  90-105	200.0 ~  500.0
+ *      45- 55		10.0 ~ 20.0	  |	 105-115	500.0 ~ 1000.0
+ *      55- 70		20.0 ~ 50.0	  |
  *
  * #) DELAY TIME RATIO LEFT and DELAY TIME RATIO RIGHT specify the ratio in
- *    releation to DELAY TIME CENTER. The resolution is (100/24)%
+ *    relation to DELAY TIME CENTER. The resolution is (100/24)%
  *
  * %) With negative values, the delay will be fed back with inverted phase.
  */
@@ -264,6 +264,46 @@ int write_chorus()
    return 0;
 }
 
+/*
+ * *) The relation between the DELAY TIME CENTER value and the actual delay
+ *    time is as follows:
+ *    DELAY TIME        Time Range[ms]    |     DELAYTIME       Time Range[ms]
+ *       1- 20           0.1 ~  2.0       |       70- 80         50.0 ~  100.0
+ *      20- 35           2.0 ~  5.0       |       80- 90        100.0 ~  200.0
+ *      35- 45           5.0 ~ 10.0       |       90-105        200.0 ~  500.0
+ *      45- 55          10.0 ~ 20.0       |      105-115        500.0 ~ 1000.0
+ *      55- 70          20.0 ~ 50.0       |
+ */
+#if 0
+static float
+delay_time_to_offset_ms(int dt)
+{
+   float rv;
+
+   if (dt < 20) {
+      rv = 1e-3f*(0.1f + (2.0f-0.1f)*(dt-1)/(20.0f-1.0f));
+   } else if (dt < 35) {
+      rv = 1e-3f*(2.0f + (5.0f-2.0f)*(dt-20)/(35.0f-20.0f));
+   } else if (dt < 45) {
+      rv = 1e-3f*(5.0f + (10.0f-5.0f)*(dt-35)/(45.0f-35.0f));
+   } else if (dt < 55) {
+      rv = 1e-3f*(10.0f + (20.0f-10.0f)*(dt-45)/(55.0f-45.0f));
+   } else if (dt < 70) {
+      rv = 1e-3f*(20.0f + (50.0f-20.0f)*(dt-55)/(70.0f-55.0f));
+   } else if (dt < 80) {
+      rv = 1e-3f*(50.0f + (100.0f-50.0f)*(dt-70)/(80.0f-70.0f));
+   } else if (dt < 90) {
+      rv = 1e-3f*(100.0f + (200.0f-100.0f)*(dt-80)/(90.0f-80.0f));
+   } else if (dt < 105) {
+      rv = 1e-3f*(200.0f + (500.0f-200.0f)*(dt-90)/(105.0f-90.0f));
+   } else {
+      rv = 1e-3f*(500.0f + (1000.0f-500.0f)*(dt-105)/(115.0f-105.0f));
+   }
+
+   return rv;
+}
+#endif
+
 int write_delay()
 {
    for (int i=0; i<GSMIDI_MAX_DELAY_TYPES; ++i)
@@ -278,20 +318,39 @@ int write_delay()
       FILE *stream = fopen(fname, "w+");
       if (stream)
       {
+#if 0
+ *  0   Delay Level             0 ~ 127
+ *  1   Delay Pre-LFP           0 ~ 7
+ *  2   Delay Time Center       1 ~ 115 (0.1ms ~ 1sec) (*)
+ *  3   Delay Time Ratio Left   1 ~ 120 (4% ~ 500%) (#)
+ *  4   Delay Time Ratio Right  1 ~ 120 (4% ~ 500%) (#)
+ *  5   Delay Level Center      0 ~ 127
+ *  6   Delay Level Left        0 ~ 127
+ *  7   Delay Level Right       0 ~ 127
+ *  8   Delay Feedback          -64 ~ 16 ~ 63 (%)
+ *  9   Delay To Reverb         0 ~ 127
+ *
+ * #) DELAY TIME RATIO LEFT and DELAY TIME RATIO RIGHT specify the ratio in
+ *    relation to DELAY TIME CENTER. The resolution is (100/24)%
+#endif
          int dl = type->param[0];	// Delay Level 0-64-127: default 64
          int dfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int dtc = type->param[2];	// Delay Offset: 0.1ms-1.0s, def. 340ms.
-//       int dtrl = type->param[3];	// Delay time ratio left (%)
-//       int dtrr = type->param[4];	// Delay time ratio right (%)
+         int dtrl = type->param[3];	// Delay time ratio left (%)
+         int dtrr = type->param[4];	// Delay time ratio right (%)
 //       int dlc = type->param[5];	// Delay Level Center (ms)
 //       int dll = type->param[6];	// Delay Level Left
 //       int dlr = type->param[7];	// Delay Level Right
          int fb = type->param[8];	// Feedback Level
 //       int drev = type->param[9];	// Delay to reverb
+         char pan = (dtrl != dtrr);
 
          float gain = (fb < 0 ? -1.0f : 1.0f)*dl/127.0f;
          float feedback = abs(fb)/64.0f;
          float lfo_offset = dtc*1e3f;
+
+         float lfo_offset_l = lfo_offset * (dtrl/100.0f);
+         float lfo_offset_r = lfo_offset * (dtrr/100.0f);
 
          float val = (7-dfc)/7.0f;
          float fc = _log2lin(val*_lin2log(22000.0f));
@@ -306,12 +365,22 @@ int write_delay()
          print_info(stream);
 
          fprintf(stream, " <audioframe>\n");
-         fprintf(stream, "  <effect type=\"delay\">\n");
+         fprintf(stream, "  <effect type=\"delay\"");
+         if (pan) fprintf(stream, " stereo=\"true\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+         if (pan)
+         {
+            fprintf(stream, "    <param n=\"2\" type=\"usec\">%.1f</param>\n", lfo_offset_r);
+            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset_l);
+         }
+         else
+         {
+            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
+            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+         }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
@@ -325,12 +394,22 @@ int write_delay()
          fprintf(stream, " </audioframe>\n\n");
 
          fprintf(stream, " <mixer>\n");
-         fprintf(stream, "  <effect type=\"delay\">\n");
+         fprintf(stream, "  <effect type=\"delay\"");
+         if (pan) fprintf(stream, " stereo=\"true\"");
+         fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+         if (pan)
+         {
+            fprintf(stream, "    <param n=\"2\" type=\"usec\">%.1f</param>\n", lfo_offset_r);
+            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset_l);
+         }
+         else
+         {
+            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
+            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+         }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
