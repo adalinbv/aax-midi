@@ -282,8 +282,6 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
                         chorus.add(*it->second);
                         chorus_channels[it->first] = it->second;
                     }
-                    MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
-                            part_no, val*100, get_channel_name(part_no).c_str());
                 }
             }
         }
@@ -299,6 +297,9 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
         }
     }
 #endif
+    MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
+                part_no, val*100, get_channel_name(part_no).c_str());
+
     part.set_chorus_level(_ln(val));
 }
 
@@ -393,6 +394,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
 {
 #if AAX_PATCH_LEVEL >= 230425
     auto& part = midi.channel(part_no);
+#if 0
     if (val > 0.0f)
     {
         if (part.get_delay_level() == 0.0f)
@@ -408,8 +410,6 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
                         delay.add(*it->second);
                         delay_channels[it->first] = it->second;
                     }
-                    MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
-                            part_no, val*100, get_channel_name(part_no).c_str());
                 }
             }
         }
@@ -424,6 +424,9 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from delay\n", part_no);
         }
     }
+# endif
+    MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
+                part_no, val*100, get_channel_name(part_no).c_str());
     part.set_delay_level(_ln(val));
 #endif
 }
