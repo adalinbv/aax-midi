@@ -266,6 +266,7 @@ void
 MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 {
     auto& part = midi.channel(part_no);
+#if 0
     if (val > 0.0f)
     {
         if (part.get_chorus_level() == 0.0f)
@@ -297,6 +298,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from chorus\n", part_no);
         }
     }
+#endif
     part.set_chorus_level(_ln(val));
 }
 
@@ -537,7 +539,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
     auto& part = midi.channel(part_no);
     if (val > 0.0f)
     {
-        if (part.get_reverb_level() == 0.0f)
+        if (1 || part.get_reverb_level() == 0.0f)
         {
             auto it = reverb_channels.find(part_no);
             if (it == reverb_channels.end())
