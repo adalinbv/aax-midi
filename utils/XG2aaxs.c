@@ -22,6 +22,7 @@ static float XGMIDI_LFO_frequency_table_Hz[128] = {	// Hz
  30.2f, 31.6f, 32.9f, 34.3f, 37.f, 39.7f
 };
 
+#if 0
 static float XGMIDI_delay_offset_table_ms[128] = {	// ms
  0.f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f,
  1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f,
@@ -35,6 +36,7 @@ static float XGMIDI_delay_offset_table_ms[128] = {	// ms
  29.6f, 31.2f, 32.8f, 34.3f, 35.9f, 37.f, 39.f, 40.6f, 42.2f, 43.7f, 45.3f,
  46.9f, 48.4f, 50.f
 };
+#endif
 
 static float XGMIDI_delay_time_table_200ms[128] = {	// ms
  0.1f, 1.7f, 3.2f, 4.8f, 6.4f, 8.0f, 9.5f, 11.1f, 12.7f, 14.3f, 15.8f, 17.4f,
@@ -303,6 +305,7 @@ static XGMIDI_effect_t XGMIDI_reverb_types[XGMIDI_MAX_REVERB_TYPES] = {
 
 #define XGMIDI_MAX_CHORUS_TYPES         16
 static XGMIDI_effect_t XGMIDI_chorus_types[XGMIDI_MAX_CHORUS_TYPES] = {
+//      param:    1    2    3    4  5   6   7   8   9   10  11  12  13 14 15 16
  { "chorus1",  {  6,  54,  77, 106, 0, 28, 64, 46, 64,  64, 46, 64, 10, 0, 0, 0 } },
  { "chorus2",  {  8,  63,  64,  30, 0, 28, 62, 42, 58,  64, 46, 64, 10, 0, 0, 0 } },
  { "chorus3",  {  4,  44,  64, 110, 0, 28, 64, 46, 66,  64, 46, 64, 10, 0, 0, 0 } },
@@ -314,11 +317,18 @@ static XGMIDI_effect_t XGMIDI_chorus_types[XGMIDI_MAX_CHORUS_TYPES] = {
  { "flanger1", { 14,  14, 104,   2, 0, 28, 64, 46, 64,  96, 40, 64, 10, 4, 0, 0 } },
  { "flanger2", { 32,  17,  26,   2, 0, 28, 64, 46, 60,  96, 40, 64, 10, 4, 0, 0 } },
  { "flanger3", {  4, 109, 109,   2, 0, 28, 64, 46, 64, 127, 40, 64, 10, 4, 0, 0 } },
-  { "symphonic",{ 12,  25,  16,   0, 0, 28, 64, 46, 64, 127, 46, 64, 10, 0, 0, 0 } },
+//      param:    1   2  3   4  5   6   7   8   9   10  11  12  13 14 15 16
+ { "symphonic",{ 12, 25, 0, 16, 0, 28, 64, 46, 64, 127, 46, 64, 10, 0, 0, 0 } },
+//      param:           1   2  3  4  5   6   7   8   9   10  11  12  13 14 15 16
  { "rotary-speaker" , { 81, 35, 0, 0, 0, 24, 60, 45, 54, 127, 33, 52, 30, 0, 0, 0 } },
- { "karaoke1", { 63,  97,  0, 48, 0, 0, 0, 0, 0, 64, 2, 0, 0, 0, 0, 0 } },
- { "karaoke2", { 55, 105,  0, 50, 0, 0, 0, 0, 0, 64, 1, 0, 0, 0, 0, 0 } },
- { "karaoke3", { 43, 110, 14, 53, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0 } }
+//      param:    1   2    3  4  5   6  7   8  9  10 11  12  13 14 15 16
+ { "karaoke1", {  0, 63,  97, 0, 0,  0, 0, 48, 0, 64, 0, 64, 10, 0, 0, 0 } },
+ { "karaoke2", {  0, 55, 105, 0, 0,  0, 0, 50, 0, 64, 0, 64, 10, 0, 0, 0 } },
+ { "karaoke3", {  0, 43, 110, 0, 0, 14, 0, 53, 0, 64, 0, 64, 10, 0, 0, 0 } }
+
+// "karaoke1", { 63,  97,  0, 48, 0, 0, 0, 0, 0, 64, 2, 0, 0, 0, 0, 0 } },
+// "karaoke2", { 55, 105,  0, 50, 0, 0, 0, 0, 0, 64, 1, 0, 0, 0, 0, 0 } },
+// "karaoke3", { 43, 110, 14, 53, 0, 0, 0, 0, 0, 64, 0, 0, 0, 0, 0, 0 } }
 };
 
 #define XGMIDI_MAX_PHASING_TYPES        2
@@ -397,6 +407,12 @@ print_info(FILE *stream)
     fprintf(stream, " </info>\n\n");
 }
 
+static float
+get_decay_depth(float time, float level) {
+    if (level < 0.001f) level = 0.001f;
+    return 5.0f*time*powf(LEVEL_60DB, level);
+}
+
 int write_reverb()
 {
    for (int i=0; i<XGMIDI_MAX_REVERB_TYPES; ++i)
@@ -410,37 +426,38 @@ int write_reverb()
 
       FILE *stream = fopen(fname, "w+");
       if (stream)
-      {
-         int rt = type->param[0];	// Reverb Time 0.3 ~ 30.0s (0-69)
-         int df = type->param[1];	// Diffusion 0 ~ 10 (0-10)
-         int id = type->param[2];	// Initial Delay 0 ~ 63 (0-63 )
-         int fc = type->param[4];	// LPF Cutoff 1.0k ~ Thru (34-60)
-//       int dw = type->param[9];	// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
-//       int ds = type->param[11];	// Density 0 ~ 4 (0-4)
+      { // # = table number
+         int rt = type->param[0];	// Reverb Time 0.3 ~ 30.0s (0-69) #4
+//       int df = type->param[1];	// Diffusion 0 ~ 10
+         int id = type->param[2];	// Initial Delay 0 ~ 63
+//       int hc = type->param[3];	// HPF Cutoff Thru ~ 8.0kHz (0-52) #3
+         int lc = type->param[4];	// LPF Cutoff 1.0k ~ Thru (34-60)
+         int w = type->param[5];	// Width 0.5 ~ 10.2m (0-37) #11
+         int h = type->param[6];	// Heigt 0.5 ~ 20.2m (0-73) #11
+         int d = type->param[7];	// Depth 0.5 ~ 30.2m (0-104) #11
+//       int wv = type->param[8];	// Wall Vary 0 ~ 30
+         int dw = type->param[9];	// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
+//       int rd = type->param[10];	// Rev Delay 0 ~ 63 #5
+//       int ds = type->param[11];	// Density 0 ~ 4
+//       int re = type->param[12];	// Rev/Er Balance R<E63 ~ R=E ~ R63>E (1-127)
          int hd = type->param[13];	// High Damp 0.1 ~ 1.0 (1-10)
-
+//       int fb = type->param[14];	// Feedback Level -63 ~ +63 (1-127)
+//
          /* room dimansions */
-         int size = type->param[5];
-         float width = XGMIDI_reverb_dimensions_m[size];
-
-         size = type->param[6];
-         float height = XGMIDI_reverb_dimensions_m[size];
-
-         size = type->param[7];
-         float depth = XGMIDI_reverb_dimensions_m[size];
-
-         float density = 0.0f; // XGMIDI_reverb_types[i].param[9]/63.0f;
+         float width = XGMIDI_reverb_dimensions_m[w];
+         float height = XGMIDI_reverb_dimensions_m[h];
+         float depth = XGMIDI_reverb_dimensions_m[d];
+         float density = 0.0f;
 
          /* basic parameters */
-         float cutoff_freq = XGMIDI_EQ_frequency_table_Hz[fc];
+         float cutoff_freq = XGMIDI_EQ_frequency_table_Hz[lc];
          cutoff_freq = (1.1f - 0.1f*hd) * cutoff_freq;
 
          float delay_depth = XGMIDI_delay_time_table_200ms[id]*1e-3f;
 
-         float reverb_time = XGMIDI_reverb_time_sec[rt];
-
-         float decay_depth = 0.1f*MAX_REVERB_EFFECTS_TIME*df;
-         float decay_level = powf(LEVEL_60DB, 0.2f*decay_depth/reverb_time);
+         float decay_time = XGMIDI_reverb_time_sec[rt];
+         float decay_level = dw/63.0f;
+         float decay_depth = get_decay_depth(decay_time, decay_level);
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
@@ -453,16 +470,16 @@ int write_reverb()
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff_freq);
-         fprintf(stream, "    <param n=\"1\">%5.4f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%4.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%4.3f</param>\n", decay_depth);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff_freq);
+         fprintf(stream, "    <param n=\"1\">%.4f</param>\n", delay_depth);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%3.1f</param>\n", width);
-         fprintf(stream, "    <param n=\"1\">%3.1f</param>\n", height);
-         fprintf(stream, "    <param n=\"2\">%3.1f</param>\n", depth);
-         fprintf(stream, "    <param n=\"3\">%4.3f</param>\n", density);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", width);
+         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", height);
+         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", depth);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", density);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
@@ -470,16 +487,16 @@ int write_reverb()
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff_freq);
-         fprintf(stream, "    <param n=\"1\">%5.4f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%4.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%4.3f</param>\n", decay_depth);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff_freq);
+         fprintf(stream, "    <param n=\"1\">%.4f</param>\n", delay_depth);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%3.1f</param>\n", width);
-         fprintf(stream, "    <param n=\"1\">%3.1f</param>\n", height);
-         fprintf(stream, "    <param n=\"2\">%3.1f</param>\n", depth);
-         fprintf(stream, "    <param n=\"3\">%4.3f</param>\n", density);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", width);
+         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", height);
+         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", depth);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", density);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </mixer>\n\n");
@@ -506,30 +523,38 @@ int write_chorus()
 
       FILE *stream = fopen(fname, "w+");
       if (stream)
-      {
-         int f = type->param[0];	// LFO Frequency 0.00 ~ 39.7Hz (0-127)
-         int pd = type->param[1];	// LFO PM Depth 0 ~ 127 (0-127)
+      { // # = table number
+         int f = type->param[0];	// LFO Frequency 0.0 ~ 39.7Hz (0-127) #1
+         int pd = type->param[1];	// LFO Depth 0 ~ 127 (0-127)
          int fb = type->param[2];	// Feedback Level -63 ~ +63 (1-127)
-         int dt = type->param[3];	// Delay Offset 0 ~ 127 (0-127)
+//       int dt = type->param[3];	// Delay Offset 0 ~ 127 (0-127) #2
+
+         int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz #3
+         int lg = type->param[6];	// EQ Low Gain -12 ~ +12dB (52-76)
+         int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz #3
+         int hg = type->param[8];	// EQ High Gain -12 ~ +12dB (52-76)
          int dw = type->param[9];	// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
 
-         int lg = type->param[6];	// EQ Low Gain -12 ~ +12dB (52-76)
+         int mf = type->param[10];	// EQ Mid Frequency 100H ~10.0kHz #3
          int mg = type->param[11];	// EQ Mid Gain -12 ~ +12dB (52-76)
-         int hg = type->param[8];	// EQ High Gain -12 ~ +12dB (52-76)
-         int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz
-         int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz
+         int mw = type->param[12];	// EQ Mid Width 1.0 ~ 12.0
+//       int ad = type->param[13];	// LFO AM Depth 0 ~ 127
+					// FO Phase Difference (flanger)
+         char stereo = type->param[14]; // mono/stereo
 
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
-         float lfo_offset = XGMIDI_delay_offset_table_ms[dt];
-         float lfo_depth = 0.5f*pd/127.0f;
-         float gain = (dw - 1)/127.0f;
-         float feedback = _MAX(fb - 64, 0)/127.0f;
+//       float lfo_offset = 0.0f; // XGMIDI_delay_offset_table_ms[dt]*1e3f;
+         float lfo_depth = pd/127.0f;
+         float gain = dw/126.0f;
+         float feedback = fb/126.0f;
 
          float low_gain = _db2lin(-12.0f + 24.0f*(lg-52.0f)/24.0f);
          float mid_gain = _db2lin(-12.0f + 24.0f*(mg-52.0f)/24.0f);
          float high_gain = _db2lin(-12.0f + 24.0f*(hg-52.0f)/24.0f);
          float low_cutoff = XGMIDI_EQ_frequency_table_Hz[lf];
+         float mid_cutoff = XGMIDI_EQ_frequency_table_Hz[mf];
          float high_cutoff = XGMIDI_EQ_frequency_table_Hz[hf];
+         float mid_Q = 0.1f*mw;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
@@ -541,24 +566,31 @@ int write_chorus()
 
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
-         else fprintf(stream, "delay");
+         fprintf(stream, "phasing");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         if (stereo) fprintf(stream, " stereo=\"true\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%5.1f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
+         if (rate || stereo)
+         {
+            fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
+            fprintf(stream, "    <param n=\"3\">0.0</param>\n");
+         }
+         else
+         {
+            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
+            fprintf(stream, "    <param n=\"3\">%.1f</param>\n", lfo_depth);
+         }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%2.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"1\">%2.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", 0.0f);
+             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
          }
          fprintf(stream, "  </effect>\n");
@@ -566,17 +598,25 @@ int write_chorus()
              fprintf(stream, "  <filter type=\"equalizer\">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
              if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
                  fprintf(stream, "   </slot>\n");
                  fprintf(stream, "   <slot n=\"1\">\n");
              }
-             fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             if (low_cutoff < mid_cutoff) {
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", mid_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", mid_Q);
+                 fprintf(stream, "   </slot>\n");
+                 fprintf(stream, "   <slot n=\"2\">\n");
+             }
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
              fprintf(stream, "  </filter>\n");
          }
@@ -584,24 +624,31 @@ int write_chorus()
 
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
-         else fprintf(stream, "delay");
+         fprintf(stream, "phasing");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+         if (stereo) fprintf(stream, " stereo=\"true\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%5.1f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
+         if (rate || stereo)
+         {
+            fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
+            fprintf(stream, "    <param n=\"3\">0.0</param>\n");
+         }
+         else
+         {
+            fprintf(stream, "    <param n=\"2\">0.0</param>\n"); 
+            fprintf(stream, "    <param n=\"3\">%.1f</param>\n", lfo_depth);
+         }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%2.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"1\">%2.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", 0.0f);
+             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
          }
          fprintf(stream, "  </effect>\n");
@@ -609,17 +656,25 @@ int write_chorus()
              fprintf(stream, "  <filter type=\"equalizer\">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
              if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
                  fprintf(stream, "   </slot>\n");
                  fprintf(stream, "   <slot n=\"1\">\n");
              }
-             fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             if (low_cutoff < mid_cutoff) {
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", mid_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", mid_Q);
+                 fprintf(stream, "   </slot>\n");
+                 fprintf(stream, "   <slot n=\"2\">\n");
+             }
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
              fprintf(stream, "  </filter>\n");
          }
@@ -646,29 +701,33 @@ int write_phasing()
 
       FILE *stream = fopen(fname, "w+");
       if (stream)
-      {
-         int f = type->param[0];	// LFO Frequency 0.00 ~ 39.7Hz (0-127)
-         int pd = type->param[1];	// LFO Depth 0 ~ 127 (0-127)
+      {	// # = table number
+         int f = type->param[0];	// LFO Frequency 0.0 ~ 39.7Hz (0-127) #1
+         int ld = type->param[1];	// LFO Depth 0 ~ 127 (0-127)
          int dt = type->param[2];	// Phase Shift Offset 0 ~ 127 (0-127)
          int fb = type->param[3];	// Feedback Level -63 ~ +63 (1-127)
+
+         int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz
+         int lg = type->param[6];	// EQ Low Gain -12 ~ +12dB (52-76)
+         int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz
+         int hg = type->param[8];	// EQ High Gain -12 ~ +12dB (52-76)
          int dw = type->param[9];	// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
 
-         int lg = type->param[6];	// EQ Low Gain -12 ~ +12dB (52-76)
-         int hg = type->param[8];	// EQ High Gain -12 ~ +12dB (52-76)
-         int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz
-         int hf = type->param[7];	// EQ High Frequency 500Hz ~ 16.0kHz
+//       int st = type->param[10];	// Stage 1 ~ 10
+//       int df = type->param[11];	// Diffusion mono/stereo
+//       int pd = type->param[12];	// Phase Difference -180 ~ 180 deg.
 
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = dt/127.0f;
-         float lfo_depth = pd/127.0f - lfo_offset;
-         float gain = (dw - 1)/127.0f;
+         float lfo_depth = (ld - dt)/127.0f;
+         float gain = dw/126.0f;
 
          float low_gain = lg/64.0f;
          float mid_gain = 1.0f;
          float high_gain = hg/64.0f;
          float low_cutoff = XGMIDI_EQ_frequency_table_Hz[lf];
          float high_cutoff = XGMIDI_EQ_frequency_table_Hz[hf];
-         float feedback = _MAX(fb - 64, 0)/127.0f;
+         float feedback = 0.5f*fb/126.0f;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
@@ -683,33 +742,33 @@ int write_phasing()
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", lfo_offset);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"1\">%5.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", feedback);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          if (low_gain != 1.0f || mid_gain != 1.0f || high_gain != 1.0f) {
              fprintf(stream, "  <filter type=\"equalizer\">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
              if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
                  fprintf(stream, "   </slot>\n");
                  fprintf(stream, "   <slot n=\"1\">\n");
              }
-             fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
              fprintf(stream, "  </filter>\n");
          }
@@ -720,33 +779,33 @@ int write_phasing()
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", lfo_offset);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%2.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"1\">%2.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", feedback);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          if (low_gain != 1.0f || mid_gain != 1.0f || high_gain != 1.0f) {
              fprintf(stream, "  <filter type=\"equalizer\">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
              if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
                  fprintf(stream, "   </slot>\n");
                  fprintf(stream, "   <slot n=\"1\">\n");
              }
-             fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
              fprintf(stream, "   </slot>\n");
              fprintf(stream, "  </filter>\n");
          }
@@ -796,10 +855,10 @@ int write_distortion()
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", distortion_fact);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", clipping_fact);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mix_fact);
-         fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", asymmetry);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
@@ -807,10 +866,10 @@ int write_distortion()
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", distortion_fact);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", clipping_fact);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mix_fact);
-         fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", asymmetry);
+         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
+         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </mixer>\n\n");
@@ -873,16 +932,16 @@ int write_equalizer()
          fprintf(stream, " <audioframe>\n");
          fprintf(stream, "  <filter type=\"equalizer\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </filter>\n");
          fprintf(stream, " </audioframe>\n\n");
@@ -890,16 +949,16 @@ int write_equalizer()
          fprintf(stream, " <mixer>\n");
          fprintf(stream, "  <filter type=\"equalizer\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", low_cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", low_gain);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", high_cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", high_gain);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
+         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </filter>\n");
          fprintf(stream, " </mixer>\n\n");
@@ -952,19 +1011,19 @@ int write_amp_simulator()
       if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
          fprintf(stream, "  <filter type=\"frequency\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"2\">%2.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </filter>\n");
       }
       fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
       fprintf(stream, "   <slot n=\"0\">\n");
-      fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", distortion_fact);
-      fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", clipping_fact);
-      fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mix_fact);
-      fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", asymmetry);
+      fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
+      fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
+      fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
+      fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
       fprintf(stream, "   </slot>\n");
       fprintf(stream, "  </effect>\n");
       fprintf(stream, " </audioframe>\n\n");
@@ -973,19 +1032,19 @@ int write_amp_simulator()
       if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
          fprintf(stream, "  <filter type=\"frequency\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%5.1f</param>\n", cutoff);
-         fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"2\">%2.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"3\">%2.1f</param>\n", 1.0f);
+         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff);
+         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", gain);
+         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", 0.0f);
+         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </filter>\n");
       }
       fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
       fprintf(stream, "   <slot n=\"0\">\n");
-      fprintf(stream, "    <param n=\"0\">%5.3f</param>\n", distortion_fact);
-      fprintf(stream, "    <param n=\"1\">%5.3f</param>\n", clipping_fact);
-      fprintf(stream, "    <param n=\"2\">%5.3f</param>\n", mix_fact);
-      fprintf(stream, "    <param n=\"3\">%5.3f</param>\n", asymmetry);
+      fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
+      fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
+      fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
+      fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
       fprintf(stream, "   </slot>\n");
       fprintf(stream, "  </effect>\n");
       fprintf(stream, " </mixer>\n\n");
