@@ -160,7 +160,7 @@ int write_chorus()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
          if (lfo_depth < 10) fprintf(stream, "phasing");
          else if (lfo_depth < 60) fprintf(stream, "chorus");
@@ -185,7 +185,7 @@ int write_chorus()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
          if (lfo_depth < 10) fprintf(stream, "phasing");
          else if (lfo_depth < 60) fprintf(stream, "chorus");
@@ -261,7 +261,7 @@ int write_reverb()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
@@ -272,7 +272,7 @@ int write_reverb()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"reveb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);

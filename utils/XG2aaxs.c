@@ -467,7 +467,7 @@ int write_reverb()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff_freq);
@@ -484,7 +484,7 @@ int write_reverb()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"reverb\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff_freq);
@@ -564,7 +564,7 @@ int write_chorus()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
          fprintf(stream, "phasing");
          fprintf(stream, "\"");
@@ -622,7 +622,7 @@ int write_chorus()
          }
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
          fprintf(stream, "phasing");
          fprintf(stream, "\"");
@@ -737,7 +737,7 @@ int write_phasing()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"phasing\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
@@ -774,7 +774,7 @@ int write_phasing()
          }
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"phasing\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
@@ -852,7 +852,7 @@ int write_distortion()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
@@ -863,7 +863,7 @@ int write_distortion()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
@@ -929,7 +929,7 @@ int write_equalizer()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe>\n");
+         fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <filter type=\"equalizer\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
@@ -946,7 +946,7 @@ int write_equalizer()
          fprintf(stream, "  </filter>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <filter type=\"equalizer\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
@@ -1007,7 +1007,7 @@ int write_amp_simulator()
 
       print_info(stream);
 
-      fprintf(stream, " <audioframe>\n");
+      fprintf(stream, " <audioframe mode=\"append\">\n");
       if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
          fprintf(stream, "  <filter type=\"frequency\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
@@ -1028,7 +1028,7 @@ int write_amp_simulator()
       fprintf(stream, "  </effect>\n");
       fprintf(stream, " </audioframe>\n\n");
 
-      fprintf(stream, " <mixer>\n");
+      fprintf(stream, " <mixer mode=\"append\">\n");
       if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
          fprintf(stream, "  <filter type=\"frequency\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");

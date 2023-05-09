@@ -237,7 +237,7 @@ int write_reverb()
 
          print_info(stream);
 
-         fprintf(stream, " <audioframe");
+         fprintf(stream, " <audioframe mode\"append\"");
          fprintf(stream, ">\n");
          fprintf(stream, "  <effect type=\"reverb\"");
          if (type->param.flModulationDepth > 0.0f) {
@@ -262,7 +262,7 @@ int write_reverb()
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer>\n");
+         fprintf(stream, " <mixer mode\"append\">\n");
          fprintf(stream, "  <effect type=\"reverb\"");
          if (type->param.flModulationDepth > 0.0f) {
              fprintf(stream, "src=\"sine\"");
