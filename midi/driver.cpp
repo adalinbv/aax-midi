@@ -241,7 +241,9 @@ MIDIDriver::set_chorus(const char *t)
 {
     Buffer& buf = AeonWave::buffer(t);
     for (auto& it : channels) {
-        it.second->set_chorus(buf);
+        if (it.second->get_chorus_level() > 0.0f) {
+            it.second->set_chorus(buf);
+        }
     }
 }
 
@@ -368,7 +370,9 @@ MIDIDriver::set_delay(const char *t)
     Buffer& buf = AeonWave::buffer(t);
     delay.add(buf);
     for(auto& it : channels) {
-        it.second->set_delay(buf);
+        if (it.second->get_delay_level() > 0.0f) {
+            it.second->set_delay(buf);
+        }
     }
 #endif
 }
@@ -487,7 +491,9 @@ MIDIDriver::set_reverb(const char *t)
     Buffer& buf = AeonWave::buffer(t);
     reverb.add(buf);
     for(auto& it : channels) {
-        it.second->set_reverb(buf);
+        if (it.second->get_reverb_level() > 0.0f) {
+            it.second->set_reverb(buf);
+        }
     }
 }
 
