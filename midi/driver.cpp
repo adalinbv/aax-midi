@@ -206,27 +206,27 @@ MIDIDriver::set_chorus_type(uint8_t type)
     switch(type)
     {
     case 0:
-        midi.set_chorus("chorus/GM2/chorus1");
+        midi.set_chorus("GM2/chorus1");
         INFO("Switching to type 1 chorus");
         break;
     case 1:
-        midi.set_chorus("chorus/GM2/chorus2");
+        midi.set_chorus("GM2/chorus2");
         INFO("Switching to type 2 chorus");
         break;
     case 2:
-        midi.set_chorus("chorus/GM2/chorus3");
+        midi.set_chorus("GM2/chorus3");
         INFO("Switching to type 3 chorus");
         break;
     case 3:
-        midi.set_chorus("chorus/GM2/chorus4");
+        midi.set_chorus("GM2/chorus4");
         INFO("Switching to type 4 chorus");
         break;
     case 4:
-        midi.set_chorus("chorus/GM2/chorus_freedback");
+        midi.set_chorus("GM2/chorus_freedback");
         INFO("Switching to feedback chorus");
         break;
     case 5:
-        midi.set_chorus("chorus/GM2/flanger");
+        midi.set_chorus("GM2/flanger");
         INFO("Switching to flanging");
         break;
     default:
@@ -239,10 +239,10 @@ MIDIDriver::set_chorus_type(uint8_t type)
 void
 MIDIDriver::set_chorus(const char *t)
 {
-    Buffer& buf = AeonWave::buffer(t);
+    chorus_buffer = &AeonWave::buffer(t);
     for (auto& it : channels) {
         if (it.second->get_chorus_level() > 0.0f) {
-            it.second->set_chorus(buf);
+            it.second->set_chorus(*chorus_buffer);
         }
     }
 }
@@ -281,6 +281,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
                 {
                     if (AeonWave::remove(*it->second))
                     {
+                        it->second->add(*chorus_buffer);
                         chorus.add(*it->second);
                         chorus_channels[it->first] = it->second;
                     }
@@ -294,6 +295,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
         if (it != chorus_channels.end() && it->second)
         {
             chorus.remove(*it->second);
+            it->second->add(nullBuffer);
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from chorus\n", part_no);
         }
@@ -302,6 +304,8 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
     MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
                 part_no, val*100, get_channel_name(part_no).c_str());
 
+    aax::Buffer& disabled = AeonWave::buffer("GM2/chorus0");
+    part.set_chorus(val > 0.0f ? *chorus_buffer : disabled);
     part.set_chorus_level(_ln(val));
 }
 
@@ -367,11 +371,11 @@ void
 MIDIDriver::set_delay(const char *t)
 {
 #if AAX_PATCH_LEVEL >= 230425
-    Buffer& buf = AeonWave::buffer(t);
-    delay.add(buf);
+    delay_buffer = &AeonWave::buffer(t);
+    delay.add(*delay_buffer);
     for(auto& it : channels) {
         if (it.second->get_delay_level() > 0.0f) {
-            it.second->set_delay(buf);
+            it.second->set_delay(*delay_buffer);
         }
     }
 #endif
@@ -411,6 +415,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
                 {
                     if (AeonWave::remove(*it->second))
                     {
+                        it->second->add(*delay_buffer);
                         delay.add(*it->second);
                         delay_channels[it->first] = it->second;
                     }
@@ -424,6 +429,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
         if (it != delay_channels.end() && it->second)
         {
             delay.remove(*it->second);
+            it->second->add(nullBuffer);
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from delay\n", part_no);
         }
@@ -431,6 +437,8 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
 # endif
     MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
                 part_no, val*100, get_channel_name(part_no).c_str());
+    aax::Buffer& disabled = AeonWave::buffer("GM2/delay0");
+    part.set_delay(val > 0.0f ? *delay_buffer : disabled);
     part.set_delay_level(_ln(val));
 #endif
 }
@@ -488,11 +496,11 @@ MIDIDriver::set_delay_cutoff_frequency(float fc)
 void
 MIDIDriver::set_reverb(const char *t)
 {
-    Buffer& buf = AeonWave::buffer(t);
-    reverb.add(buf);
+    reverb_buffer = &AeonWave::buffer(t);
+    reverb.add(*reverb_buffer);
     for(auto& it : channels) {
         if (it.second->get_reverb_level() > 0.0f) {
-            it.second->set_reverb(buf);
+            it.second->set_reverb(*reverb_buffer);
         }
     }
 }
@@ -557,6 +565,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                 if (it != channels.end() && it->second)
                 {
                     AeonWave::remove(*it->second);
+                    it->second->set_reverb(*reverb_buffer);
                     reverb.add(*it->second);
                     reverb_channels[it->first] = it->second;
                     MESSAGE(3, "Set part %i reverb to %.0f%%: %s\n",
@@ -571,6 +580,8 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
         if (it != reverb_channels.end() && it->second)
         {
             reverb.remove(*it->second);
+            aax::Buffer& disabled = AeonWave::buffer("GM2/room0");
+            it->second->set_reverb(disabled);
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from reverb\n", part_no);
         }
