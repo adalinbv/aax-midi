@@ -272,8 +272,6 @@ public:
     int simd64 = (capabilities & AAX_SIMD256);
     int simd = (capabilities & AAX_SIMD);
 private:
-    float _ln(float v) { return powf(v, GMATH_1_E1); }
-
     void set_path();
 
     std::string preset_file(aaxConfig c, std::string& name) {
@@ -349,7 +347,7 @@ private:
 
     uint8_t chorus_type = 2;
     Param chorus_rate = 0.4f;
-    Param chorus_level = _ln(0.5f);
+    Param chorus_level = 0.5f;
     Param chorus_feedback = 0.06f;
     Param chorus_depth = Param(6300.0f, AAX_MICROSECONDS);
     Status chorus_state = AAX_FALSE;
@@ -358,7 +356,7 @@ private:
     float chorus_to_reverb = 0.0f;
 
     Param delay_rate = 0.0f;
-    Param delay_level = _ln(0.5f);
+    Param delay_level = 0.5f;
     Param delay_feedback = 0.25f;
     Param delay_depth = Param(340000.0f, AAX_MICROSECONDS);
     Status delay_state = AAX_FALSE;
@@ -368,7 +366,7 @@ private:
 
     uint8_t reverb_type = 4;
     float reverb_time = 0.0f;
-    Param reverb_decay_level = _ln(0.66f);
+    Param reverb_decay_level = 0.66f;
     Param reverb_decay_depth = 0.3f;
     Param reverb_cutoff_frequency = 790.0f;
     Status reverb_state = AAX_FALSE;

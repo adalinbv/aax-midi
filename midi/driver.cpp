@@ -306,7 +306,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
 
     aax::Buffer& disabled = AeonWave::buffer("GM2/chorus0");
     part.set_chorus(val > 0.0f ? *chorus_buffer : disabled);
-    part.set_chorus_level(_ln(val));
+    part.set_chorus_level(val);
 }
 
 void
@@ -439,7 +439,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
                 part_no, val*100, get_channel_name(part_no).c_str());
     aax::Buffer& disabled = AeonWave::buffer("GM2/delay0");
     part.set_delay(val > 0.0f ? *delay_buffer : disabled);
-    part.set_delay_level(_ln(val));
+    part.set_delay_level(val);
 #endif
 }
 
@@ -586,7 +586,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
             MESSAGE(3, "Remove part %i from reverb\n", part_no);
         }
     }
-    part.set_reverb_level(_ln(val));
+    part.set_reverb_level(val);
 }
 
 void
