@@ -5,16 +5,16 @@
 #include <math.h>
 #include <time.h>
 
-#include "AL/efx-presets.h"
+#include "EAX/efx-presets.h"
 
 typedef struct {
     const char* name;
     EFXEAXREVERBPROPERTIES param;
-} AL_effect_t;
+} EAX_effect_t;
 
-#define AL_MAX_REVERB_TYPES	113
+#define EAX_MAX_REVERB_TYPES	113
 
-static AL_effect_t AL_reverb_types[AL_MAX_REVERB_TYPES] = {
+static EAX_effect_t EAX_reverb_types[EAX_MAX_REVERB_TYPES] = {
  { "generic", EFX_REVERB_PRESET_GENERIC },
  { "padded-cell", EFX_REVERB_PRESET_PADDEDCELL },
  { "room", EFX_REVERB_PRESET_ROOM },
@@ -185,11 +185,11 @@ print_info(FILE *stream)
 
 int write_reverb()
 {
-   for (int i=0; i<AL_MAX_REVERB_TYPES; ++i)
+   for (int i=0; i<EAX_MAX_REVERB_TYPES; ++i)
    {
       char fname[256];
 
-      AL_effect_t *type = &AL_reverb_types[i];
+      EAX_effect_t *type = &EAX_reverb_types[i];
 
       snprintf(fname, 255, "%s.aaxs", type->name);
       printf("Generating: %s\n", fname);

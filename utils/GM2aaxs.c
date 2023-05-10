@@ -171,8 +171,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"usec\">%.3f</param>\n", lfo_depth*1e3f);
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.3f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
@@ -196,8 +196,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"usec\">%.3f</param>\n", lfo_depth*1e3f);
-         fprintf(stream, "    <param n=\"3\" type=\"usec\">%.3f</param>\n", lfo_offset*1e3f);
+         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");

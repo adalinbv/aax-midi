@@ -355,7 +355,7 @@ int write_delay()
 
          float gain = (fb < 0 ? -1.0f : 1.0f)*dl/127.0f;
          float feedback = abs(fb)/64.0f;
-         float lfo_offset = dtc*1e3f;
+         float lfo_offset = dtc;
 
          float lfo_offset_l = lfo_offset * (dtrl/100.0f);
          float lfo_offset_r = lfo_offset * (dtrr/100.0f);
@@ -381,13 +381,13 @@ int write_delay()
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
          if (pan)
          {
-            fprintf(stream, "    <param n=\"2\" type=\"usec\">%.1f</param>\n", lfo_offset_r);
-            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset_l);
+            fprintf(stream, "    <param n=\"2\" type=\"msec\">%.1f</param>\n", lfo_offset_r);
+            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset_l);
          }
          else
          {
             fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset);
          }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
@@ -410,13 +410,13 @@ int write_delay()
          fprintf(stream, "    <param n=\"1\">0.0</param>\n");
          if (pan)
          {
-            fprintf(stream, "    <param n=\"2\" type=\"usec\">%.1f</param>\n", lfo_offset_r);
-            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset_l);
+            fprintf(stream, "    <param n=\"2\" type=\"msec\">%.1f</param>\n", lfo_offset_r);
+            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset_l);
          }
          else
          {
             fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-            fprintf(stream, "    <param n=\"3\" type=\"usec\">%.1f</param>\n", lfo_offset);
+            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset);
          }
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || fc < 20000.0f) {
@@ -470,6 +470,7 @@ int write_reverb()
          float fc = 500.0f+_log2lin(val*_lin2log(22000.0f-500.0f));
          if (fc >= 20000.0f) fc = 0.0f;
 
+//       float delay_depth = dpd*1e-3f;
          float delay_depth = GSMIDI_reverb_character[rc];
          float decay_level = rl/127.0f;
          float decay_time = 1.66f*rt/127.0f;
