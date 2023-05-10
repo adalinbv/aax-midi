@@ -303,6 +303,26 @@ static XGMIDI_effect_t XGMIDI_reverb_types[XGMIDI_MAX_REVERB_TYPES] = {
  { "basement",  {  3,  6,  3,  0, 34, 26, 29, 59, 15, 40, 32,  4, 64,  8, 64,  0 } }
 };
 
+
+/* CHORUS
+ *  p   description        range                  value
+ *  --  -----------        ---------              ------
+ *   1  LFO Frequency      0.00 – 39.7Hz          0-127 #1
+ *   2  LFO PM Depth       0 – 127                0-127
+ *   3  Feedback Level     -63 – +63              1-127
+ *   4  Delay Offset       0 – 127                0-127 #2
+ *   5
+ *   6  EQ Low Frequency   50Hz – 2.0kHz          8-40 #3
+ *   7  EQ Low Gain        -12 – +12dB           52-76
+ *   8  EQ High Frequency  500Hz – 16.0kHz       28-58 #3
+ *   9  EQ High Gain       -12 – +12dB           52-76
+ *  10  Dry/Wet            D63>W – D=W – D<W63    1-127
+ *  11
+ *  12
+ *  13
+ *  14
+ *  15  Input Mode mono/stereo 0-1
+ */
 #define XGMIDI_MAX_CHORUS_TYPES         16
 static XGMIDI_effect_t XGMIDI_chorus_types[XGMIDI_MAX_CHORUS_TYPES] = {
 //      param:    1    2    3    4  5   6   7   8   9   10  11  12  13 14 15 16
@@ -546,7 +566,7 @@ int write_chorus()
 //       float lfo_offset = 0.0f; // XGMIDI_delay_offset_table_ms[dt]*1e3f;
          float lfo_depth = pd/127.0f;
          float gain = dw/126.0f;
-         float feedback = fb/126.0f;
+         float feedback = (fb-64)/64.0f;
 
          float low_gain = _db2lin(-12.0f + 24.0f*(lg-52.0f)/24.0f);
          float mid_gain = _db2lin(-12.0f + 24.0f*(mg-52.0f)/24.0f);
@@ -720,11 +740,11 @@ int write_phasing()
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = dt/127.0f;
          float lfo_depth = (ld - dt)/127.0f;
-         float gain = dw/126.0f;
+         float gain = (dw-64)/63.0f;
 
-         float low_gain = lg/64.0f;
+         float low_gain = _db2lin(lg - 64.0f);
          float mid_gain = 1.0f;
-         float high_gain = hg/64.0f;
+         float high_gain = _db2lin(hg - 64.0f);
          float low_cutoff = XGMIDI_EQ_frequency_table_Hz[lf];
          float high_cutoff = XGMIDI_EQ_frequency_table_Hz[hf];
          float feedback = 0.5f*fb/126.0f;
