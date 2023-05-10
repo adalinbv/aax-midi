@@ -179,14 +179,14 @@ int write_chorus()
          int cl = type->param[0];	// Level 0-64-127: default 64
          int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int fb = type->param[2];	// Feedback Level
-//       int ct = type->param[3];	// Delay Time: 0.1ms-1.0s, def. 340ms.
-         int cr = type->param[4];	// Rate: 0-127
+//       int ct = type->param[3];	// Pre Delay Time: 0-100ms
+         int cr = type->param[4];	// Rate: 0-127: 0.05 - 10.0
          int cd = type->param[5];	// Depth: 0-127
 //       int crev = type->param[6];	// Chorus to Reverb: 0-127
 //       int ddly = type->param[7];	// Chorus to Delay: 1-27
 
-         float gain = cl/128.0f;
-         float rate = 10.0f*cr/127.0f;
+         float gain = 0.98f*cl/127.0f;
+         float rate = 0.05f + 9.95f*cr/127.0f;
 
          float lfo_depth, lfo_offset;
          if (rate > 0.0f)
@@ -199,11 +199,11 @@ int write_chorus()
             lfo_depth = 0.0f;
             lfo_offset = cd/127.0f;
          }
+         float feedback = 0.98f*fb/127.0f;
 
          float val = (7-cfc)/7.0f;
          float fc = _log2lin(val*_lin2log(22000.0f));
          if (fc >= 20000.0f) fc = 0.0f;
-         float feedback = fb/127.0f;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
@@ -215,9 +215,7 @@ int write_chorus()
 
          fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
-         else fprintf(stream, "delay");
+         fprintf(stream, "chorus");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
@@ -227,7 +225,7 @@ int write_chorus()
          fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || fc < 20000.0f) {
+         if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
              fprintf(stream, "   <slot n=\"1\">\n");
              fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
              fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
@@ -240,9 +238,7 @@ int write_chorus()
 
          fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
-         else fprintf(stream, "delay");
+         fprintf(stream, "chorus");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          fprintf(stream, ">\n");
@@ -252,7 +248,7 @@ int write_chorus()
          fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
          fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || fc < 20000.0f) {
+         if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
              fprintf(stream, "   <slot n=\"1\">\n");
              fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
              fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);

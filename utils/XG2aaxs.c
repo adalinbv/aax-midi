@@ -586,7 +586,7 @@ int write_chorus()
 
          fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
-         fprintf(stream, "phasing");
+         fprintf(stream, "chorus");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          if (stereo) fprintf(stream, " stereo=\"true\"");
@@ -644,7 +644,7 @@ int write_chorus()
 
          fprintf(stream, " <mixer mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
-         fprintf(stream, "phasing");
+         fprintf(stream, "chorus");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
          if (stereo) fprintf(stream, " stereo=\"true\"");
