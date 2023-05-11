@@ -191,13 +191,13 @@ int write_chorus()
          float lfo_depth, lfo_offset;
          if (rate > 0.0f)
          {
-            lfo_depth = cd/127.0f;
-            lfo_offset = 0.0f;
+            lfo_depth = 20.0f*cd/127.0f;
+            lfo_offset = 10.0f;
          }
          else
          {
             lfo_depth = 0.0f;
-            lfo_offset = cd/127.0f;
+            lfo_offset = 10.0f+20.0f*cd/127.0f;
          }
          float feedback = 0.98f*fb/127.0f;
 
@@ -222,8 +222,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
+         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
              fprintf(stream, "   <slot n=\"1\">\n");
@@ -245,8 +245,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
+         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
              fprintf(stream, "   <slot n=\"1\">\n");

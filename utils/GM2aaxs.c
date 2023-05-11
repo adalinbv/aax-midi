@@ -139,12 +139,12 @@ int write_chorus()
          if (rate > 0.0f)
          {
             lfo_depth = (cd+1)/3.2f; // ms
-            lfo_offset = 0.0f;
+            lfo_offset = 10.0f;
          }
          else
          {
             lfo_depth = 0.0f;
-            lfo_offset = (cd+1)/3.2f;
+            lfo_offset = 10.0f+(cd+1)/3.2f;
          }
 
          float val = (7-cfc)/7.0f;
