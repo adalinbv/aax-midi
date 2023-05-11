@@ -564,7 +564,7 @@ int write_chorus()
 
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
 //       float lfo_offset = 0.0f; // XGMIDI_delay_offset_table_ms[dt]*1e3f;
-         float lfo_depth = pd/127.0f;
+         float lfo_depth = 5e-3f + 25e-3f*pd/127.0f; // 5ms to 30ms
          float gain = dw/126.0f;
          float feedback = (fb-64)/64.0f;
 
