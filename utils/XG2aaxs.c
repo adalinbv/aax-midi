@@ -22,7 +22,6 @@ static float XGMIDI_LFO_frequency_table_Hz[128] = {	// Hz
  30.2f, 31.6f, 32.9f, 34.3f, 37.f, 39.7f
 };
 
-#if 0
 static float XGMIDI_delay_offset_table_ms[128] = {	// ms
  0.f, 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f,
  1.3f, 1.4f, 1.5f, 1.6f, 1.7f, 1.8f, 1.9f, 2.f, 2.1f, 2.2f, 2.3f, 2.4f, 2.5f,
@@ -36,7 +35,6 @@ static float XGMIDI_delay_offset_table_ms[128] = {	// ms
  29.6f, 31.2f, 32.8f, 34.3f, 35.9f, 37.f, 39.f, 40.6f, 42.2f, 43.7f, 45.3f,
  46.9f, 48.4f, 50.f
 };
-#endif
 
 static float XGMIDI_delay_time_table_200ms[128] = {	// ms
  0.1f, 1.7f, 3.2f, 4.8f, 6.4f, 8.0f, 9.5f, 11.1f, 12.7f, 14.3f, 15.8f, 17.4f,
@@ -547,7 +545,7 @@ int write_chorus()
          int f = type->param[0];	// LFO Frequency 0.0 ~ 39.7Hz (0-127) #1
          int pd = type->param[1];	// LFO Depth 0 ~ 127 (0-127)
          int fb = type->param[2];	// Feedback Level -63 ~ +63 (1-127)
-//       int dt = type->param[3];	// Delay Offset 0 ~ 127 (0-127) #2
+         int dt = type->param[3];	// Delay Offset 0 ~ 127 (0-127) #2
 
          int lf = type->param[5];	// EQ Low Frequency 32Hz ~ 2.0kHz #3
          int lg = type->param[6];	// EQ Low Gain -12 ~ +12dB (52-76)
@@ -559,12 +557,12 @@ int write_chorus()
          int mg = type->param[11];	// EQ Mid Gain -12 ~ +12dB (52-76)
          int mw = type->param[12];	// EQ Mid Width 1.0 ~ 12.0
 //       int ad = type->param[13];	// LFO AM Depth 0 ~ 127
-					// FO Phase Difference (flanger)
+					// LFO Phase Difference (flanger)
          char stereo = type->param[14]; // mono/stereo
 
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
-//       float lfo_offset = 0.0f; // XGMIDI_delay_offset_table_ms[dt]*1e3f;
-         float lfo_depth = 5e-3f + 25e-3f*pd/127.0f; // 5ms to 30ms
+         float lfo_offset = XGMIDI_delay_offset_table_ms[dt];
+         float lfo_depth = 30*pd/127.0f; // 5ms to 30ms
          float gain = dw/126.0f;
          float feedback = (fb-64)/64.0f;
 
@@ -594,16 +592,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
-         if (rate || stereo)
-         {
-            fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
-            fprintf(stream, "    <param n=\"3\">0.0</param>\n");
-         }
-         else
-         {
-            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-            fprintf(stream, "    <param n=\"3\">%.1f</param>\n", lfo_depth);
-         }
+         fprintf(stream, "    <param n=\"2\" type=\"ms\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"ms\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
@@ -652,16 +642,8 @@ int write_chorus()
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
          fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
-         if (rate || stereo)
-         {
-            fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
-            fprintf(stream, "    <param n=\"3\">0.0</param>\n");
-         }
-         else
-         {
-            fprintf(stream, "    <param n=\"2\">0.0</param>\n"); 
-            fprintf(stream, "    <param n=\"3\">%.1f</param>\n", lfo_depth);
-         }
+         fprintf(stream, "    <param n=\"2\" type=\"ms\">%.3f</param>\n", lfo_depth);
+         fprintf(stream, "    <param n=\"3\" type=\"ms\">%.3f</param>\n", lfo_offset);
          fprintf(stream, "   </slot>\n");
          if (feedback > 0.0f) {
              fprintf(stream, "   <slot n=\"1\">\n");
