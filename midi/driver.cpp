@@ -109,12 +109,12 @@ MIDIDriver::start()
     chorus.set(AAX_PLAYING);
     AeonWave::add(chorus);
 
-    delay_state = AAX_REVERB_2ND_ORDER;
+    delay_state = AAX_EFFECT_2ND_ORDER;
     delay.set(AAX_INITIALIZED);
     delay.set(AAX_PLAYING);
     AeonWave::add(delay);
 
-    reverb_state = AAX_REVERB_2ND_ORDER;
+    reverb_state = AAX_EFFECT_2ND_ORDER;
     set_reverb_type(4);
     reverb.set(AAX_INITIALIZED);
     reverb.set(AAX_PLAYING);

@@ -146,7 +146,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                         // mode == 0: volume bend only
                         // mode == 1: pitch bend only
                         // mode == 2: volume and pitch bend
-                        int pressure_mode = buffer.get(AAX_PRESSURE_MODE);
+                        int pressure_mode = buffer.get(AAX_MIDI_PRESSURE_FACTOR);
                         if (pressure_mode == 0 || pressure_mode == 2) {
                            pressure_volume_bend = true;
                         }
@@ -154,8 +154,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                            pressure_pitch_bend = true;
                         }
 
-                        // AAX_AFTERTOUCH_SENSITIVITY == AAX_VELOCITY_FACTOR
-                        pressure_sensitivity = 0.01f*buffer.get(AAX_VELOCITY_FACTOR);
+                        pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
                     }
                     else {
                         throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
