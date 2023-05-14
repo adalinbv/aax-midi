@@ -433,7 +433,7 @@ typedef struct {
 /*
  * Roland E-16 manual:
  * w = with panning using 2 voices (some old manuals calling this 'wide')
- * o = with key off. You can really hear the 'note off' as a disc88reet event.
+ * o = with key off. You can really hear the 'note off' as a discreet event.
  * d = dark
  * v = velocity mix
  *
@@ -2261,7 +2261,6 @@ int main(int argc, char **argv)
       env = getCommandLineOption(argc, argv, "--mt32");
       if (env) mode |= MT32;
    }
-printf("mode: %x\n", mode);
 
    if (pname) pname++;
    printf("<?xml version=\"1.0\"?>\n\n");
