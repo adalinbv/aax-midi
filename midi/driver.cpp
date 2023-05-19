@@ -104,7 +104,6 @@ MIDIDriver::start()
 {
 
     chorus_state = AAX_SINE_WAVE;
-    set_chorus_type(2);
     chorus.set(AAX_INITIALIZED);
     chorus.set(AAX_PLAYING);
     AeonWave::add(chorus);
@@ -115,7 +114,6 @@ MIDIDriver::start()
     AeonWave::add(delay);
 
     reverb_state = AAX_EFFECT_2ND_ORDER;
-    set_reverb_type(4);
     reverb.set(AAX_INITIALIZED);
     reverb.set(AAX_PLAYING);
     AeonWave::add(reverb);
@@ -207,19 +205,19 @@ MIDIDriver::set_chorus_type(uint8_t type)
     {
     case 0:
         midi.set_chorus("GM2/chorus1");
-        INFO("Switching to type 1 chorus");
+        INFO("Switching to Chorus1");
         break;
     case 1:
         midi.set_chorus("GM2/chorus2");
-        INFO("Switching to type 2 chorus");
+        INFO("Switching to Chorus2");
         break;
     case 2:
         midi.set_chorus("GM2/chorus3");
-        INFO("Switching to type 3 chorus");
+        INFO("Switching to Chorus3");
         break;
     case 3:
         midi.set_chorus("GM2/chorus4");
-        INFO("Switching to type 4 chorus");
+        INFO("Switching to Chorus4");
         break;
     case 4:
         midi.set_chorus("GM2/chorus_freedback");
@@ -227,7 +225,7 @@ MIDIDriver::set_chorus_type(uint8_t type)
         break;
     case 5:
         midi.set_chorus("GM2/flanger");
-        INFO("Switching to flanging");
+        INFO("Switching to flanger");
         break;
     default:
         LOG(99, "LOG: Unsupported GS chorus type: 0x%x (%d)\n",
@@ -512,27 +510,27 @@ MIDIDriver::set_reverb_type(uint8_t type)
     switch (type)
     {
     case 0:
-        midi.set_reverb("reverb/GM2/room-small");
+        midi.set_reverb("GM2/room-small");
         INFO("Switching to Small Room reveberation");
         break;
     case 1:
-        midi.set_reverb("reverb/GM2/room-medium");
+        midi.set_reverb("GM2/room-medium");
         INFO("Switching to Medium Room reveberation");
         break;
     case 2:
-        midi.set_reverb("reverb/GM2/room-large");
+        midi.set_reverb("GM2/room-large");
         INFO("Switching to Large Room reveberation");
         break;
     case 3:
-        midi.set_reverb("reverb/GM2/concerthall");
+        midi.set_reverb("GM2/concerthall");
         INFO("Switching to Concert Hall Reveberation");
         break;
     case 4:
-        midi.set_reverb("reverb/GM2/concerthall-large");
+        midi.set_reverb("GM2/concerthall-large");
         INFO("Switching to Large Concert Hall reveberation");
         break;
     case 8:
-        midi.set_reverb("reverb/GM2/plate");
+        midi.set_reverb("GM2/plate");
         INFO("Switching to Plate reveberation");
         break;
     default:
