@@ -39,7 +39,7 @@ void MIDIStream::GS_initialize()
 {
     midi.set_chorus("GS/chorus3");
     midi.set_chorus_level(64.0f/127.0f);
-    INFO("Switching to GS type 3 chorus");
+    INFO("Switching to GS Chorus3");
 
     midi.set_delay("GS/delay1");
     midi.set_delay_level(64.0f/127.0f);
@@ -250,22 +250,22 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         case GSMIDI_CHORUS1:
                             expl = "CHORUS1";
                             midi.set_chorus("GS/chorus1");
-                            INFO("Switching to GS type 1 chorus");
+                            INFO("Switching to GS Chorus1");
                             break;
                         case GSMIDI_CHORUS2:
                             expl = "CHORUS2";
                             midi.set_chorus("GS/chorus2");
-                            INFO("Switching to GS type 2 chorus");
+                            INFO("Switching to GS Chorus2");
                             break;
                         case GSMIDI_CHORUS3:
                             expl = "CHORUS3";
                             midi.set_chorus("GS/chorus3");
-                            INFO("Switching to GS type 3 chorus");
+                            INFO("Switching to GS Chorus3");
                             break;
                         case GSMIDI_CHORUS4:
                             expl = "CHORUS4";
                             midi.set_chorus("GS/chorus4");
-                            INFO("Switching to GS type 4 chorus");
+                            INFO("Switching to GS Chorus4");
                             break;
                         case GSMIDI_FEEDBACK_CHORUS:
                             expl = "FEEDBACK_CHORUS";
@@ -275,7 +275,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         case GSMIDI_FLANGER:
                             expl = "FLANGER";
                             midi.set_chorus("GS/flanger");
-                            INFO("Switching to GS flanging");
+                            INFO("Switching to GS flanger");
                             break;
                         case GSMIDI_CHORUS_DELAY1:
                             expl = "DELAY1";
