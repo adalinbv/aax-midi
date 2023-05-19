@@ -352,7 +352,7 @@ private:
     Param chorus_depth = Param(6300.0f, AAX_MICROSECONDS);
     Status chorus_state = AAX_FALSE;
     aax::Mixer chorus = aax::Mixer(*this);
-    aax::Buffer* chorus_buffer = &AeonWave::buffer("GM2/chorus0");
+    aax::Buffer* chorus_buffer = &AeonWave::buffer("GM2/chorus3");
     float chorus_to_reverb = 0.0f;
 
     Param delay_rate = 0.0f;
@@ -371,7 +371,7 @@ private:
     Param reverb_cutoff_frequency = 790.0f;
     Status reverb_state = AAX_FALSE;
     aax::Mixer reverb = aax::Mixer(*this);
-    aax::Buffer* reverb_buffer = &AeonWave::buffer("GM2/room0");
+    aax::Buffer* reverb_buffer = &AeonWave::buffer("GM2/hall2");
 
     static const std::vector<std::string> midi_channel_convention;
 };
