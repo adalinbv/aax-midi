@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2008-2018 by Erik Hofman.
- * Copyright (C) 2009-2018 by Adalin B.V.
+ * Copyright (C) 2008-2023 by Erik Hofman.
+ * Copyright (C) 2009-2023 by Adalin B.V.
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -266,7 +266,7 @@ printCopyright(int argc, char **argv)
     char *ret = getCommandLineOption(argc, argv, "-c");
     if (!ret) ret = getCommandLineOption(argc, argv, "--copyright");
     if (ret) {
-        printf("%s\n", aaxGetCopyrightString());
+        printf("%s\n", aaxGetString(AAX_COPYRIGHT_STRING));
     }
     return ret ? -1 : 0;
 }
