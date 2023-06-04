@@ -104,9 +104,9 @@ get_elem(const char *dir, std::string &file)
         path = path.substr(0, fpos+1);
     }
     path.append(file);
-    path.append(".xml");
 
-    xid = xmlOpen(path.c_str());
+    std::string fname = path + ".aaxs";
+    xid = xmlOpen(fname.c_str());
     if (xid)
     {
         xmlId *xsid = xmlNodeGet(xid, "/aeonwave/sound");
@@ -117,6 +117,22 @@ get_elem(const char *dir, std::string &file)
             xmlFree(xsid);
         }
         xmlFree(xid);
+    }
+    else
+    {
+        fname = path + ".xml";
+        xid = xmlOpen(fname.c_str());
+        if (xid)
+        {
+            xmlId *xlid = xmlNodeGet(xid, "/instrument/layer");
+            if (xlid)
+            {
+                rv = xmlNodeGetNum(xlid, "patch");
+                if (!rv) rv = 1;
+                xmlFree(xlid);
+            }
+            xmlFree(xid);
+        }
     }
 
     return rv;
@@ -599,7 +615,7 @@ int main(int argc, char **argv)
     }
     else
     {
-        printf("Wanring: could not open %s\n", filename);
+        printf("Warning: could not open %s\n", filename);
         if (xmlErrorGetNo(xid, 0) != XML_NO_ERROR)
         {
              printf("%s\n", xmlErrorGetString(xid, 0));
