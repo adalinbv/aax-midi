@@ -5,6 +5,7 @@
 #include <iterator>
 #include <algorithm>
 #include <iostream>
+#include <filesystem>
 #include <regex>
 
 #include <stdio.h>
@@ -98,14 +99,12 @@ get_elem(const char *dir, std::string &file)
     size_t fpos;
     xmlId *xid;
 
-    std::string path(dir);
-    fpos = path.find_last_of("/\\");
-    if (fpos != std::string::npos) {
-        path = path.substr(0, fpos+1);
-    }
-    path.append(file);
+    std::filesystem::path path(dir);
+    path.make_preferred();
 
-    std::string fname = path + ".aaxs";
+    std::filesystem::path fname = path;
+    fname.replace_filename(file + ".aaxs");
+    
     xid = xmlOpen(fname.c_str());
     if (xid)
     {
@@ -120,7 +119,8 @@ get_elem(const char *dir, std::string &file)
     }
     else
     {
-        fname = path + ".xml";
+        fname = path;
+        fname.replace_filename(file + ".xml");
         xid = xmlOpen(fname.c_str());
         if (xid)
         {
