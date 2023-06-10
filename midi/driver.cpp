@@ -102,6 +102,14 @@ MIDIDriver::set_path()
 void
 MIDIDriver::start()
 {
+    if (midi.get_mode() == MIDI_MODE0)
+    {
+        set_reverb_type(4);
+        set_reverb_level(0.0f);
+
+        set_chorus_type(2);
+        set_chorus_level(0.0f);
+    }
 
     chorus_state = AAX_SINE_WAVE;
     chorus.set(AAX_INITIALIZED);
