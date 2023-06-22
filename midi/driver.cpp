@@ -111,7 +111,7 @@ MIDIDriver::start()
         set_chorus_level(0.0f);
     }
 
-    chorus_state = AAX_SINE_WAVE;
+    chorus_state = AAX_SINE;
     chorus.set(AAX_INITIALIZED);
     chorus.set(AAX_PLAYING);
     AeonWave::add(chorus);
