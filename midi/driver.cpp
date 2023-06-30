@@ -922,10 +922,6 @@ MIDIDriver::add_patch(const char *file)
 const inst_t
 MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, bool all)
 {
-    if (bank_no == 0x3F80) { // XG mdoe to GM/GS mode
-        bank_no = 0;
-    }
-
     if (program_no == 0 && drum_set_no != -1) {
         program_no = drum_set_no;
     }
@@ -962,6 +958,12 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
                     return empty_map;
                 }
             }
+        }
+
+        // The drum was not found, try something different.
+        if (bank_no == 0x3F80) { // XG mdoe to GM/GS mode
+            bank_no = 0;
+            continue;
         }
 
         if (!prev_program_no && !program_no) {
