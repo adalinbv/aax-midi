@@ -71,7 +71,8 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         it = name_map.find(key_no);
         if (it == name_map.end())
         {
-            auto inst = midi.get_drum(bank_no, program_no, key_no, all);
+            uint16_t program = program_no;
+            auto inst = midi.get_drum(bank_no, program, key_no, all);
             std::string& filename = inst.first.file;
             if (!filename.empty() && filename != "")
             {
@@ -82,7 +83,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              key_no, bank_no >> 7, bank_no & 0x7F,
-                             program_no, display.c_str());
+                             program, display.c_str());
                     midi.load(filename);
                 }
 

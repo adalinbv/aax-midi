@@ -961,7 +961,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         }
 
         // The drum was not found, try something different.
-        if (bank_no == 0x3F80) { // XG mdoe to GM/GS mode
+        if (bank_no == 0x3F80) { // XG mode to GM/GS mode
             bank_no = 0;
             continue;
         }
