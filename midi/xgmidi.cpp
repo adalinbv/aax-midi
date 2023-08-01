@@ -1065,15 +1065,15 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 }
                 case XGMIDI_EG_ATTACK_TIME: // -64 - +63
                     expl = "EG_ATTACK_TIME";
-                    channel.set_attack_time(value);
+//                  channel.set_attack_time(value);
                     break;
                 case XGMIDI_EG_DECAY_TIME: // -64 - +63
                     expl = "EG_DECAY_TIME";
-                    channel.set_decay_time(value);
+//                  channel.set_decay_time(value);
                     break;
                 case XGMIDI_EG_RELEASE_TIME: // -64 - +63
                     expl = "EG_RELEASE_TIME";
-                    channel.set_release_time(value);
+//                  channel.set_release_time(value);
                     break;
                 case XGMIDI_MW_PITCH_CONTROL: // -24 - +24 semitones
                 {
