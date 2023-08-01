@@ -676,7 +676,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
             if (xmid)
             {
-                if (xmlAttributeExists(xmid, "name"))
+                if (patch_set == "default" && xmlAttributeExists(xmid, "name"))
                 {
                     char *set = xmlAttributeGetString(xmid, "name");
                     if (set && strlen(set) != 0) {
