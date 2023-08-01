@@ -113,7 +113,8 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         it = name_map.upper_bound(key);
         if (it == name_map.end())
         {
-            auto inst = midi.get_instrument(bank_no, program_no, all);
+            uint16_t program = program_no;
+            auto inst = midi.get_instrument(bank_no, program, all);
             auto patch = midi.get_patch(inst.first.file, key);
             std::string& patch_name = patch.second;
             uint8_t level = patch.first;
@@ -126,7 +127,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                                            inst.first.file : inst.first.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
-                             bank_no >> 7, bank_no & 0x7F, program_no,
+                             bank_no >> 7, bank_no & 0x7F, program,
                              display.c_str());
                     midi.load(patch_name);
                 }
