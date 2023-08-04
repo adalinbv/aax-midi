@@ -54,7 +54,7 @@ MIDIInstrument::set_stereo(bool s)
     if (stereo)
     {
         std::string name = "stereo";
-        Buffer &buffer = midi.buffer(name, 0);
+        Buffer &buffer = midi.buffer(name);
         int res = MIDIInstrument::add(buffer);
     }
 }
@@ -117,7 +117,6 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             auto inst = midi.get_instrument(bank_no, program, all);
             auto patch = midi.get_patch(inst.first.file, key);
             std::string& patch_name = patch.second;
-            uint8_t level = patch.first;
             if (!patch_name.empty())
             {
                 if (!midi.buffer_avail(patch_name) &&
@@ -139,7 +138,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 }
                 else
                 {
-                    Buffer& buffer = midi.buffer(patch_name, level);
+                    Buffer& buffer = midi.buffer(patch_name);
                     if (buffer)
                     {
                         auto ret = name_map.insert({key,buffer});

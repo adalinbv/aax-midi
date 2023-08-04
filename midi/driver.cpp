@@ -1151,18 +1151,16 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
         channels.erase(it);
     }
 
-    int level = 0;
     std::string file = "";
     if (drums && !frames.empty())
     {
         auto it = frames.find(program_no);
         if (it != frames.end()) {
-            level = it->first;
             file = it->second.file;
         }
     }
 
-    Buffer& buffer = midi.buffer(file, level);
+    Buffer& buffer = midi.buffer(file);
     if (buffer) {
         buffer.set(AAX_CAPABILITIES, int(instrument_mode));
     }

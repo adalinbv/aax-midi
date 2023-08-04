@@ -227,8 +227,7 @@ public:
     void set_reverb_level(float value);
 
     // ** buffer management ******
-    Buffer& buffer(std::string& name, int level=0) {
-        if (level) { name = name + "?patch=" + std::to_string(level); }
+    Buffer& buffer(std::string& name) {
         auto it = buffers.find(name);
         if (it == buffers.end()) {
             std::shared_ptr<Buffer> b(new Buffer(ptr,name.c_str(),false,true));

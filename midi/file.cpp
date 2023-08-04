@@ -217,7 +217,7 @@ MIDIFile::initialize(const char *grep)
         midi.set(AAX_INITIALIZED);
         if (midi.get_effects().length())
         {
-           Buffer &buffer = midi.buffer(midi.get_effects(), 0);
+           Buffer &buffer = midi.buffer(midi.get_effects());
            Sensor::add(buffer);
         }
 
