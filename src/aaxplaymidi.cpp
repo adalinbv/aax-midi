@@ -60,11 +60,13 @@ help()
     printf("\nOptions:\n");
     printf("  -i, --input <file>\t\tplay back audio from a file\n");
     printf("  -d, --device <device>\t\tplayback device (default if not specified)\n");
+    printf("  -g, --gain <value>\tplayback gain\n");
     printf("  -s, --select <name|track>\tonly play the track with this name or number\n");
     printf("  -t, --time <offs>\t\ttime offset in seconds or (hh:)mm:ss\n");
     printf("  -l, --load <instr>\t\tmidi instrument configuration overlay file\n");
     printf("  -m, --mono\t\t\tplay back in mono mode\n");
     printf("  -b, --batched\t\t\tprocess the file in batched (high-speed) mode.\n");
+    printf("      --grep <regex>\t\t\tgrep a midi file for certain instruments.\n");
     printf("  -v, --verbose <0-4>\t\tshow extra playback information\n");
     printf("  -h, --help\t\t\tprint this message and exit\n");
 
@@ -102,7 +104,7 @@ static void sleep_for(float dt)
 }
 
 void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
-          const char *track, const char *config, float time_offs,
+          const char *track, const char *config, float time_offs, float gain,
           const char *grep, bool mono, char verbose, bool batched, bool fm,
           bool csv)
 {
@@ -130,6 +132,7 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
             file.set(AAX_PLAYING);
         }
 
+        midi.set_gain(gain);
         midi.set_verbose(verbose);
         midi.set_mono(mono);
         midi.set_csv(csv);
@@ -270,6 +273,7 @@ int main(int argc, char **argv)
     bool csv = false;
     char verbose = 0;
     bool fm = false;
+    float gain = 1.0f;
     char *arg;
 
     arg = getenv("AAX_BATCHED_MODE");
@@ -281,6 +285,8 @@ int main(int argc, char **argv)
         char *outfile = getOutputFile(argc, argv, NULL);
         const char *track, *grep, *config;
 
+        gain = getGain(argc, argv);
+
         track = getCommandLineOption(argc, argv, "-s");
         if (!track) {
             track = getCommandLineOption(argc, argv, "--select");
@@ -291,10 +297,7 @@ int main(int argc, char **argv)
            config = getCommandLineOption(argc, argv, "--load");
         }
 
-        grep = getCommandLineOption(argc, argv, "-g");
-        if (!grep) {
-            grep = getCommandLineOption(argc, argv, "--grep");
-        }
+        grep = getCommandLineOption(argc, argv, "--grep");
 
         arg = getCommandLineOption(argc, argv, "-v");
         if (!arg) arg = getCommandLineOption(argc, argv, "--verbose");
@@ -320,7 +323,7 @@ int main(int argc, char **argv)
             csv = true;
         }
 
-        std::thread midiThread(play, devname, render_mode, infile, outfile, track, config, time_offs, grep, mono, verbose, batched, fm, csv);
+        std::thread midiThread(play, devname, render_mode, infile, outfile, track, config, time_offs, gain, grep, mono, verbose, batched, fm, csv);
         midiThread.join();
 
     } catch (const std::exception& e) {

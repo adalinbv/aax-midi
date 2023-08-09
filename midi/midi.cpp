@@ -70,6 +70,12 @@ MIDI::wait(float t)
     return midi->wait(t);
 }
 
+void
+MIDI::set_gain(float gain)
+{
+    midi->set_gain(gain);
+}
+
 bool
 MIDI::set(enum aaxSetupType t, const char* s)
 {

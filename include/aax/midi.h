@@ -348,6 +348,8 @@ public:
 
     Buffer get_buffer();
 
+    void set_gain(float gain = 1.0f);
+
     void set_mono(bool m);
 
     void set_verbose(char v);

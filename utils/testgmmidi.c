@@ -71,7 +71,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: instrument file %s does not exist\n", file);
+                                   printf("Warning: instrument file %s does not exist\n\t%s\n", file, filename);
                                 }
                                 continue;
                             }
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".xml");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: patch file %s does not exist\n", file);
+                                   printf("Warning: patch file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
 
@@ -94,7 +94,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: key-on event file %s does not exist\n", file);
+                                   printf("Warning: key-on event file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
 
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: key-off event file %s does not exist\n", file);
+                                   printf("Warning: key-off event file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
                         }
@@ -126,7 +126,7 @@ int main(int argc, char **argv)
                                 snprintf(aaxs, 6, "%s", ".aaxs");
 
                                 if (access(dir, R_OK) == -1 ) {
-                                   printf("Warning: drum file %s does not exist\n", file);
+                                   printf("Warning: drum file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
                         }

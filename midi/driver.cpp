@@ -126,7 +126,7 @@ MIDIDriver::start()
     reverb.set(AAX_PLAYING);
     AeonWave::add(reverb);
 
-    midi.set_gain(1.0f);
+//  midi.set_gain(1.0f);
     midi.set(AAX_PLAYING);
 }
 
@@ -180,21 +180,20 @@ MIDIDriver::finished(uint8_t n)
     return it->second->finished();
 }
 
-void
-MIDIDriver::set_gain(float g)
-{
-    aax::dsp dsp = AeonWave::get(AAX_VOLUME_FILTER);
-    dsp.set(AAX_GAIN, g);
-//  dsp.set(AAX_AGC_RESPONSE_RATE, 1.5f);
-    AeonWave::set(dsp);
-}
-
 bool
 MIDIDriver::is_drums(uint8_t n)
 {
     auto it = channels.find(n);
     if (it == channels.end()) return false;
     return it->second->is_drums();
+}
+
+void
+MIDIDriver::set_gain(float g)
+{
+    aax::dsp dsp = get(AAX_VOLUME_FILTER);
+    dsp.set(AAX_GAIN, g);
+    set(dsp);
 }
 
 void
