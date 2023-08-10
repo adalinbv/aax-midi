@@ -81,6 +81,8 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
     reverb.tie(reverb_decay_depth, AAX_REVERB_EFFECT, AAX_DECAY_DEPTH);
     reverb.tie(reverb_cutoff_frequency, AAX_REVERB_EFFECT, AAX_CUTOFF_FREQUENCY);
     reverb.tie(reverb_state, AAX_REVERB_EFFECT);
+
+    gain = get_gain();
 }
 
 void
@@ -126,7 +128,7 @@ MIDIDriver::start()
     reverb.set(AAX_PLAYING);
     AeonWave::add(reverb);
 
-    midi.set_gain(100.0f*get_gain()/127.0f);
+    midi.set_gain(100.0f*gain/127.0f);
     midi.set(AAX_PLAYING);
 }
 

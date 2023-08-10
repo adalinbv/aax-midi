@@ -326,6 +326,7 @@ private:
     std::string drum = "gmdrums.xml";
     std::string path;
 
+    float gain = 1.0f;
     float tuning = 1.0f;
 
     unsigned int refresh_rate = 0;

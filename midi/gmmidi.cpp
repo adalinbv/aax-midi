@@ -171,8 +171,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 CSV(channel_no, ", %d", value);
                 v += float(value << 7);
                 v /= (127.0f*127.0f);
-// TODO: some midi files set this to zero before playing?
-//              midi.set_gain(_ln(v));
+                midi.set_gain(_ln(v));
                 break;
             }
             case MIDI_MASTER_BALANCE:
