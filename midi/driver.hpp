@@ -130,6 +130,8 @@ public:
     bool finished(uint8_t n);
 
     void set_gain(float);
+    float get_gain();
+
     void set_balance(float);
 
     bool is_drums(uint8_t);

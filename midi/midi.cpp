@@ -73,6 +73,8 @@ MIDI::wait(float t)
 void
 MIDI::set_gain(float gain)
 {
+    // _ln
+    gain = powf(100.0f*gain/127.0f, GMATH_1_E1);
     midi->set_gain(gain);
 }
 

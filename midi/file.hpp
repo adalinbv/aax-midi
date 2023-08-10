@@ -57,6 +57,7 @@ public:
     void rewind();
 
     inline void set_gain(float gain = 1.0f) { midi.set_gain(gain); }
+    inline float get_gain() { return midi.get_gain(); }
 
     inline float get_duration_sec() { return duration_sec; }
     inline float get_pos_sec() { return pos_sec; }
