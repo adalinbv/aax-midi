@@ -160,7 +160,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
             CSV(channel_no, ", %d", value);
             switch(value)
             {
-            case MIDI_DEVICE_VOLUME:
+            case MIDI_MASTER_VOLUME:
             {
                 expl = "DEVICE_VOLUME";
                 float v;
@@ -171,16 +171,17 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 CSV(channel_no, ", %d", value);
                 v += float(value << 7);
                 v /= (127.0f*127.0f);
-                midi.set_gain(_ln(v));
+// TODO: some midi files set this to zero before playing?
+//              midi.set_gain(_ln(v));
                 break;
             }
-            case MIDI_DEVICE_BALANCE:
+            case MIDI_MASTER_BALANCE:
                 expl = "BALANCE";
                 value = pull_byte();
                 CSV(channel_no, ", %d", value);
                 midi.set_balance(float(value-64)/64.0f);
                 break;
-            case MIDI_DEVICE_FINE_TUNING:
+            case MIDI_MASTER_FINE_TUNING:
             {
                 expl = "FINE_TUNING";
                 uint16_t tuning;
@@ -200,7 +201,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 midi.set_tuning(pitch);
                 break;
             }
-            case MIDI_DEVICE_COARSE_TUNING:
+            case MIDI_MASTER_COARSE_TUNING:
             {
                 expl = "COARSE_TUNING";
                 float pitch;
