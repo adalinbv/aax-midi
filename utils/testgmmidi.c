@@ -60,6 +60,17 @@ int main(int argc, char **argv)
                     void *xiid = xmlMarkId(xbid);
                     unsigned int i;
 
+                    slen = xmlAttributeCopyString(xbid, "file", file, 64);
+                    if (slen)
+                    {
+                        char *aaxs = file+slen;
+                        snprintf(aaxs, 6, "%s", ".aaxs");
+
+                        if (access(dir, R_OK) == -1 ) {
+                           printf("Warning: instrument file %s does not exist\n\t%s\n", file, filename);
+                        }
+                    }
+
                     for (i=0; i<inum; i++)
                     {
                         if (xmlNodeGetPos(xbid, xiid, "instrument", i) != 0)
