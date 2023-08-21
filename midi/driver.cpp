@@ -958,12 +958,13 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
                         auto itrb = drums.find(req_program_no << 7);
                         if (itrb != drums.end()) {
                             auto& bank = itrb->second;
-                            bank.insert({key_no,{{"",""},{}}});
+//                          bank.insert({key_no,{{"",""},{}}});
+                            bank.insert({key_no,iti->second});
                         }
                     }
                     return iti->second;
                 } else {
-                    return empty_map;
+//                  return empty_map;
                 }
             }
         }
