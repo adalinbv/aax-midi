@@ -1011,6 +1011,9 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     }
     while (true);
 
+    DISPLAY(1, "No drum mapped to bank %i, program %im key: %i\n",
+            bank_no, program_no, key_no);
+
     auto itb = drums.find(program_no);
     auto& bank = itb->second;
     auto iti = bank.insert({key_no, std::move(empty_map)});
@@ -1041,9 +1044,15 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
                               iti->second.first.name) != selection.end())
                 {
                     return iti->second;
-                } else {
-                    return empty_map;
                 }
+
+                auto& inst = iti->second;
+                std::string& display = (midi.get_verbose() >= 99) ?
+                                           inst.first.file : inst.first.name;
+                DISPLAY(4, "No instrument mapped to bank %i, program %i\n",
+                            bank_no, program_no);
+                DISPLAY(4,  "%s will not be heard\n", display.c_str());
+                return empty_map;
             }
         }
 
@@ -1098,6 +1107,9 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
         }
     }
     while (true);
+
+    DISPLAY(4, "No instrument mapped to bank %i, program %i\n",
+            bank_no, program_no);
 
     auto itb = instruments.find(bank_no);
     auto& bank = itb->second;
