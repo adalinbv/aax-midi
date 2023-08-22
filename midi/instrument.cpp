@@ -78,6 +78,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             {
                 if (!midi.buffer_avail(filename))
                 {
+                    uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
                                            inst.first.file : inst.first.name;
 
@@ -122,6 +123,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 if (!midi.buffer_avail(patch_name) &&
                     !midi.is_loaded(patch_name))
                 {
+                    uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
                                            inst.first.file : inst.first.name;
 

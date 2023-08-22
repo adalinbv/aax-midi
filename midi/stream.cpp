@@ -419,6 +419,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_PROGRAM_CHANGE:
             {
                 if (!program_change_enabled) break;
+                uint16_t bank_no = channel.get_bank_no();
                 uint8_t program_no = pull_byte();
                 CSV(channel_no, "Program_c, %d, %d, PROGRAM_CHANGE\n", channel_no, program_no);
                 try {
@@ -576,6 +577,8 @@ bool MIDIStream::process_control(uint8_t track_no)
         }
         break;
 
+        channel.set_bank_no(bank_no);
+
         if (prev != drums)
         {
             channel.set_drums(drums);
@@ -611,12 +614,14 @@ bool MIDIStream::process_control(uint8_t track_no)
                 bank_no = 0; // shared with GM2 and GS
                 drums = true;
             }
-            else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
+            else if (bank_no == MIDI_XG_BANK_RYTHM) drums = true;
             else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
             break;
         default:
             break;
         }
+
+        channel.set_bank_no(bank_no);
 
         if (prev != drums)
         {

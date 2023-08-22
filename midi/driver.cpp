@@ -970,7 +970,20 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         }
 
         // The drum was not found, try something different.
-        if (bank_no == 0x3F80) { // XG mode to GM/GS mode
+        // If the MSB was set then clear it and try again.
+        if (bank_no >> 7)
+        {
+            DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/%i\n",
+                       key_no, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
+            bank_no &= 0x7F;
+            continue;
+        }
+
+        // If the LSB was set then clear it and try again.
+        if (bank_no & 0x7F)
+        {
+            DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/0\n",
+                       key_no, bank_no >> 7, bank_no & 0x7F);
             bank_no = 0;
             continue;
         }
@@ -995,13 +1008,13 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
 
         if (bank_found) {
             if (prev_program_no != program_no) {
-                DISPLAY(4, "Drum %i not found in bank %i, trying bank: %i\n",
+                DISPLAY(4, "Drum %i not found in program %i, trying: %i\n",
                         key_no, prev_program_no, program_no);
             } else {
                 DISPLAY(4, "Drum %i not found.\n", key_no);
             }
         } else if (!is_avail(missing_drum_bank, prev_program_no)) {
-            DISPLAY(4, "Drum bank %i not found, trying %i\n",
+            DISPLAY(4, "Drum program %i not found, trying %i\n",
                         prev_program_no, program_no);
             missing_drum_bank.push_back(prev_program_no);
             if (prev_program_no == req_program_no) {
@@ -1011,8 +1024,8 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     }
     while (true);
 
-    DISPLAY(1, "No drum mapped to bank %i, program %im key: %i\n",
-            bank_no, program_no, key_no);
+    DISPLAY(1, "No drum mapped to bank %i/%i, program %i, key: %i\n",
+           bank_no >> 7, bank_no & 0x7F,  program_no, key_no);
 
     auto itb = drums.find(program_no);
     auto& bank = itb->second;

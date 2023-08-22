@@ -195,7 +195,7 @@ extern "C" {
 /* XG MIDI */
 #define MIDI_GS_BANK_RYTHM					0x7d	// 125
 #define MIDI_XG_BANK_SFX					0x7e	// 126
-#define MIDI_XG_BANK_RYTHM					0x7f	// 127
+#define MIDI_XG_BANK_RYTHM					(0x7f<<7|0x7f)
 
 /* NRPN messages */
 #define MIDI_VIBRATO_RATE_RELATIVE				0x0108
