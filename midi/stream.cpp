@@ -559,7 +559,6 @@ bool MIDIStream::process_control(uint8_t track_no)
         if (!bank_select_enabled) break;
         bool prev = channel.is_drums();
         bool drums = false;
-
         switch(midi.get_mode())
         {
         case MIDI_MODE0:
@@ -575,7 +574,6 @@ bool MIDIStream::process_control(uint8_t track_no)
         default:
             break;
         }
-        break;
 
         channel.set_bank_no(bank_no);
 
@@ -591,6 +589,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     {
         expl = "BANK_SELECT LSB";
         if (!bank_select_lsb_enabled) break;
+        uint16_t bank_no = channel.get_bank_no();
         bool prev = channel.is_drums();
         bool drums = prev;
 
@@ -614,7 +613,7 @@ bool MIDIStream::process_control(uint8_t track_no)
                 bank_no = 0; // shared with GM2 and GS
                 drums = true;
             }
-            else if (bank_no == MIDI_XG_BANK_RYTHM) drums = true;
+            else if (bank_no == (MIDI_XG_BANK_RYTHM << 7)) drums = true;
             else if (bank_no == (MIDI_XG_BANK_SFX << 7)) drums = true;
             break;
         default:
