@@ -1024,9 +1024,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     }
     while (true);
 
-    DISPLAY(1, "No drum mapped to bank %i/%i, program %i, key: %i\n",
-           bank_no >> 7, bank_no & 0x7F,  program_no, key_no);
-
+    // default drums
     auto itb = drums.find(program_no);
     auto& bank = itb->second;
     auto iti = bank.insert({key_no, std::move(empty_map)});
