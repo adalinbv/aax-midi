@@ -1141,6 +1141,12 @@ MIDIDriver::get_patch(std::string& name, uint8_t& key)
         if (patch != it->second.end()) {
             return patch->second;
         }
+
+        // above the largest upper key, use the last key.
+        auto last = it->second.rbegin();
+        if (last != it->second.rend()) {
+            return last->second;
+        }
     }
 
     key = 255;
