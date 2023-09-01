@@ -40,8 +40,8 @@ float
 MIDIStream::key2pitch(MIDIInstrument& channel, uint16_t key)
 {
     auto& buffer = channel.get_buffer(key);
-    float frequency = buffer.get(AAX_UPDATE_RATE);
-    float fraction = 1e-6f*buffer.get(AAX_REFRESH_RATE);
+    float frequency = buffer.get(AAX_BASE_FREQUENCY);
+    float fraction = buffer.getf(AAX_PITCH_FRACTION);
     float f = note2freq(key);
     f = (f - frequency)*fraction + frequency;
     return f/frequency;

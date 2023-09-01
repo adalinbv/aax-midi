@@ -158,7 +158,7 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
             set_mode(1);
 
             double dt = 0;
-            double refrate = midi.get(AAX_FRAME_TIMING);
+            double refrate = midi.getf(AAX_FRAME_TIMING)*1e6f;
 
             int key, paused = AAX_FALSE;
             auto now = std::chrono::high_resolution_clock::now();

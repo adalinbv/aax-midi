@@ -309,7 +309,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 key_on.add( midi.buffer(patch_name) );
 
                 buffer_frequency = midi.buffer(patch_name).get(AAX_BASE_FREQUENCY);
-                buffer_fraction = 1e-6f*midi.buffer(patch_name).get(AAX_PITCH_FRACTION);
+                buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
                 key_on.tie(key_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
                 pan.wide = inst.second.wide;
@@ -374,7 +374,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             key_off.add( midi.buffer(patch_name) );
 
             buffer_frequency = midi.buffer(patch_name).get(AAX_BASE_FREQUENCY);
-            buffer_fraction = 1e-6f*midi.buffer(patch_name).get(AAX_PITCH_FRACTION);
+            buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
             key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
             pan.wide = inst.second.wide;

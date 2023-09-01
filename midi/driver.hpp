@@ -142,8 +142,8 @@ public:
 
     inline std::string& get_effects() { return effects; }
 
-    inline unsigned int get_refresh_rate() { return refresh_rate; }
-    inline unsigned int get_polyphony() { return polyphony; }
+    inline int get_refresh_rate() { return refresh_rate; }
+    inline int get_polyphony() { return polyphony; }
 
     inline void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
     inline float get_tuning() { return tuning; }
@@ -329,8 +329,8 @@ private:
     float gain = 1.0f;
     float tuning = 1.0f;
 
-    unsigned int refresh_rate = 0;
-    unsigned int polyphony = UINT_MAX;
+    int refresh_rate = 0;
+    int polyphony = UINT_MAX;
 
     int16_t drum_set_no = -1;
     uint16_t PPQN = 24;

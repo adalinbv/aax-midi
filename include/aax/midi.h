@@ -335,10 +335,12 @@ public:
     bool wait(float t);
     
     bool set(enum aaxSetupType t, const char* s);
-    bool set(enum aaxSetupType t, unsigned int s);
+    bool set(enum aaxSetupType t, float s);
+    bool set(enum aaxSetupType t, int s);
     bool set(enum aaxState s);
 
-    unsigned int get(enum aaxSetupType t);
+    int get(enum aaxSetupType t);
+    float getf(enum aaxSetupType t);
 
     float get_pos_sec();
     int32_t get_uspp();
