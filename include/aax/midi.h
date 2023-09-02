@@ -277,10 +277,10 @@ int aaxMIDIProcess(aaxMIDI*, uint64_t time_parts, uint32_t* next);
 int aaxMIDIWait(aaxMIDI*, float t);
 
 int aaxMIDISetSetupString(aaxMIDI*, enum aaxSetupType t, const char* s);
-int aaxMIDISetSetup(aaxMIDI*, enum aaxSetupType t, unsigned int s);
+int aaxMIDISetSetup(aaxMIDI*, enum aaxSetupType t, int64_t s);
 int aaxMIDISetState(aaxMIDI*, enum aaxState s);
 
-unsigned int aaxMIDIGetSetup(aaxMIDI*, enum aaxSetupType t);
+int64_t aaxMIDIGetSetup(aaxMIDI*, enum aaxSetupType t);
 
 float aaxMIDIGetPosSec(aaxMIDI*);
 int32_t get_uspp(aaxMIDI*);
@@ -335,11 +335,11 @@ public:
     bool wait(float t);
     
     bool set(enum aaxSetupType t, const char* s);
-    bool set(enum aaxSetupType t, float s);
-    bool set(enum aaxSetupType t, int s);
+    bool set(enum aaxSetupType t, int64_t s);
+//  bool set(enum aaxSetupType t, float s);
     bool set(enum aaxState s);
 
-    int get(enum aaxSetupType t);
+    int64_t get(enum aaxSetupType t);
     float getf(enum aaxSetupType t);
 
     float get_pos_sec();

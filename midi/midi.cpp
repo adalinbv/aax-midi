@@ -84,14 +84,16 @@ MIDI::set(enum aaxSetupType t, const char* s)
     return midi->set(t, s);
 }
 
+#if 0
 bool
 MIDI::set(enum aaxSetupType t, float s)
 {
     return midi->set(t, int(s));
 }
+#endif
 
 bool
-MIDI::set(enum aaxSetupType t, int s)
+MIDI::set(enum aaxSetupType t, int64_t s)
 {
     return midi->set(t, s);
 }
@@ -102,7 +104,7 @@ MIDI::set(enum aaxState s)
     return midi->set(s);
 }
 
-int
+int64_t
 MIDI::get(enum aaxSetupType t)
 {
     return midi->get(t);
@@ -225,7 +227,7 @@ aaxMIDISetSetupString(aaxMIDI *handle, enum aaxSetupType t, const char* s)
 }
 
 int
-aaxMIDISetSetup(aaxMIDI *handle, enum aaxSetupType t, int s)
+aaxMIDISetSetup(aaxMIDI *handle, enum aaxSetupType t, int64_t s)
 {
     return reinterpret_cast<MIDI*>(handle)->set(t, s);
 }
@@ -236,7 +238,7 @@ aaxMIDISetState(aaxMIDI *handle, enum aaxState s)
     return reinterpret_cast<MIDI*>(handle)->set(s);
 }
 
-unsigned int
+int64_t
 aaxMIDIGetSetup(aaxMIDI *handle, enum aaxSetupType t)
 {
     return reinterpret_cast<MIDI*>(handle)->get(t);

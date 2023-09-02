@@ -224,15 +224,15 @@ MIDIFile::initialize(const char *grep)
         if (midi.get_verbose())
         {
 
-            MESSAGE(1, "Frequency : %i Hz\n", midi.get(AAX_FREQUENCY));
-            MESSAGE(1, "Upd. rate : %i Hz\n", midi.get(AAX_REFRESH_RATE));
+            MESSAGE(1, "Frequency : %li Hz\n", midi.get(AAX_FREQUENCY));
+            MESSAGE(1, "Upd. rate : %li Hz\n", midi.get(AAX_REFRESH_RATE));
             MESSAGE(1, "Init time : %.1f ms\n", eps*1000.0f);
 
             unsigned int polyphony = midi.get(AAX_MONO_EMITTERS);
             if (polyphony == UINT_MAX) {
                 MESSAGE(1, "Polyphony : unlimited\n");
             } else {
-                MESSAGE(1, "Polyphony : %u\n", midi.get(AAX_MONO_EMITTERS));
+                MESSAGE(1, "Polyphony : %lu\n", midi.get(AAX_MONO_EMITTERS));
             }
 
             enum aaxRenderMode render_mode = aaxRenderMode(midi.render_mode());
