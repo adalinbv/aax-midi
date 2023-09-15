@@ -42,7 +42,7 @@ MIDIStream::key2pitch(MIDIInstrument& channel, uint16_t key)
     auto& buffer = channel.get_buffer(key);
     float frequency = buffer.get(AAX_BASE_FREQUENCY);
     float fraction = buffer.getf(AAX_PITCH_FRACTION);
-    float f = note2freq(key);
+    float f = midi.note2freq(key);
     f = (f - frequency)*fraction + frequency;
     return f/frequency;
 }
@@ -667,7 +667,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         // When Expression is at 100% then the volume represents the true
         // setting of Volume Controller. Lower values of Expression begin to
         // subtract from the volume. When Expression is 0% then volume is off.
-        channel.set_expression(_ln(float(value)/127.0f));
+        channel.set_expression(midi.ln(float(value)/127.0f));
         break;
     }
     case MIDI_MODULATION_DEPTH:
@@ -694,7 +694,7 @@ bool MIDIStream::process_control(uint8_t track_no)
             MESSAGE(4, "Set part %i volume to %.0f%%: %s\n", track_no,
                         float(value)*100.0f/127.0f, name.c_str());
         }
-        channel.set_gain(_ln(float(value)/127.0f));
+        channel.set_gain(midi.ln(float(value)/127.0f));
         break;
     case MIDI_ALL_NOTES_OFF:
         expl = "ALL_NOTES_OFF";

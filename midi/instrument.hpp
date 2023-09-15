@@ -89,11 +89,6 @@ public:
     }
 
 private:
-    float _ln(float v) { return powf(v, GMATH_1_E1); }
-    inline float note2freq(uint32_t d) {
-        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
-    }
-
     std::map<uint8_t,Buffer&> name_map;
     std::string track_name;
 

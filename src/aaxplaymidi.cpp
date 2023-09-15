@@ -132,7 +132,7 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
             file.set(AAX_PLAYING);
         }
 
-        midi.set_gain(gain);
+        midi.set_volume(gain);
         midi.set_verbose(verbose);
         midi.set_mono(mono);
         midi.set_csv(csv);

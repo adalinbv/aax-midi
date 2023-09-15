@@ -82,7 +82,7 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
     reverb.tie(reverb_cutoff_frequency, AAX_REVERB_EFFECT, AAX_CUTOFF_FREQUENCY);
     reverb.tie(reverb_state, AAX_REVERB_EFFECT);
 
-    gain = get_gain();
+    volume = get_volume();
 }
 
 void
@@ -128,7 +128,7 @@ MIDIDriver::start()
     reverb.set(AAX_PLAYING);
     AeonWave::add(reverb);
 
-    midi.set_gain(100.0f*gain/127.0f);
+    midi.set_volume(100.0f/127.0f);
     midi.set(AAX_PLAYING);
 }
 
@@ -191,15 +191,17 @@ MIDIDriver::is_drums(uint8_t n)
 }
 
 void
-MIDIDriver::set_gain(float g)
+MIDIDriver::set_volume(float g)
 {
+    g = volume * ln(g);
+
     aax::dsp dsp = get(AAX_VOLUME_FILTER);
     dsp.set(AAX_GAIN, g);
     set(dsp);
 }
 
 float
-MIDIDriver::get_gain()
+MIDIDriver::get_volume()
 {   
     aax::dsp dsp = get(AAX_VOLUME_FILTER);
     return dsp.get(AAX_GAIN);

@@ -37,8 +37,8 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
      channel_no(channel), bank_no(bank),
      program_no(program)
 {
-    set_gain(_ln(100.0f/127.0f));
-    set_expression(_ln(127.0f/127.0f));
+    set_gain(midi.ln(100.0f/127.0f));
+    set_expression(midi.ln(127.0f/127.0f));
     set_pan(0.0f/64.f);
     set_drums(channel == MIDI_DRUMS_CHANNEL ? true : drums);
     if (is_drums() && buffer) {
@@ -318,7 +318,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
 
             // note2pitch
-            float key_frequency = note2freq(key_no);
+            float key_frequency =  midi.note2freq(key_no);
             float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
             key_freq += buffer_frequency;
 
@@ -383,7 +383,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
         }
 
         // note2pitch
-        float key_frequency = note2freq(key_no);
+        float key_frequency =  midi.note2freq(key_no);
         float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
         key_freq += buffer_frequency;
 

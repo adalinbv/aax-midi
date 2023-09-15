@@ -129,8 +129,8 @@ public:
     void finish(uint8_t n);
     bool finished(uint8_t n);
 
-    void set_gain(float);
-    float get_gain();
+    void set_volume(float);
+    float get_volume();
 
     void set_balance(float);
 
@@ -272,6 +272,16 @@ public:
     int midi_mode = (capabilities & AAX_RENDER_MASK);
     int simd64 = (capabilities & AAX_SIMD256);
     int simd = (capabilities & AAX_SIMD);
+
+    float lin2log(float v) { return log10f(v); }
+    float log2lin(float v) { return powf(10.0f,v); }
+    float lin2db(float v) { return 20.0f*log10f(v); }
+    float db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
+    float ln(float v) { return powf(v, GMATH_1_E1); }
+    inline float note2freq(uint32_t d) {
+        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
+    }
+
 private:
     void set_path();
 
@@ -326,7 +336,7 @@ private:
     std::string drum = "gmdrums.xml";
     std::string path;
 
-    float gain = 1.0f;
+    float volume = 1.0f;
     float tuning = 1.0f;
 
     int refresh_rate = 0;

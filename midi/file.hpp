@@ -56,8 +56,8 @@ public:
     inline void stop() { midi.stop(); }
     void rewind();
 
-    inline void set_gain(float gain = 1.0f) { midi.set_gain(gain); }
-    inline float get_gain() { return midi.get_gain(); }
+    inline void set_volume(float g = 1.0f) { midi.set_volume(g); }
+    inline float get_volume() { return midi.get_volume(); }
 
     inline float get_duration_sec() { return duration_sec; }
     inline float get_pos_sec() { return pos_sec; }

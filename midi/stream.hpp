@@ -67,16 +67,6 @@ public:
 
     MIDIDriver& midi;
 private:
-    float _lin2log(float v) { return log10f(v); }
-    float _log2lin(float v) { return powf(10.0f,v); }
-    float _lin2db(float v) { return 20.0f*log10f(v); }
-    float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
-    float _ln(float v) { return powf(v, GMATH_1_E1); }
-
-    inline float note2freq(uint32_t d) {
-        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
-    }
-
     float key2pitch(MIDIInstrument& channel, uint16_t key);
     int16_t get_key(MIDIInstrument& channel, int16_t key);
     float get_pitch(MIDIInstrument& channel);

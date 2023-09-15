@@ -350,7 +350,7 @@ public:
 
     Buffer get_buffer();
 
-    void set_gain(float gain = 1.0f);
+    void set_volume(float g = 1.0f);
 
     void set_mono(bool m);
 
