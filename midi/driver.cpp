@@ -104,14 +104,11 @@ MIDIDriver::set_path()
 void
 MIDIDriver::start()
 {
-    if (midi.get_mode() == MIDI_MODE0)
-    {
-        set_reverb_type(4);
-        set_reverb_level(0.0f);
+    set_gm2_reverb_type(GM2_REVERB_CONCERTHALL_LARGE);
+    set_reverb_level(0.0f);
 
-        set_chorus_type(2);
-        set_chorus_level(0.0f);
-    }
+    set_chorus_type(GM2_CHORUS3);
+    set_chorus_level(0.0f);
 
     chorus_state = AAX_SINE;
     chorus.set(AAX_INITIALIZED);
@@ -217,33 +214,27 @@ MIDIDriver::set_balance(float b)
 }
 
 void
-MIDIDriver::set_chorus_type(uint8_t type)
+MIDIDriver::set_gm2_chorus_type(uint16_t type)
 {
     switch(type)
     {
-    case 0:
-        midi.set_chorus("GM2/chorus1");
-        INFO("Switching to Chorus1");
+    case GM2_CHORUS1:
+        midi.set_chorus("GM2/chorus1", type, GM2);
         break;
-    case 1:
-        midi.set_chorus("GM2/chorus2");
-        INFO("Switching to Chorus2");
+    case GM2_CHORUS2:
+        midi.set_chorus("GM2/chorus2", type, GM2);
         break;
-    case 2:
-        midi.set_chorus("GM2/chorus3");
-        INFO("Switching to Chorus3");
+    case GM2_CHORUS3:
+        midi.set_chorus("GM2/chorus3", type, GM2);
         break;
-    case 3:
-        midi.set_chorus("GM2/chorus4");
-        INFO("Switching to Chorus4");
+    case GM2_CHORUS4:
+        midi.set_chorus("GM2/chorus4", type, GM2);
         break;
-    case 4:
-        midi.set_chorus("GM2/chorus_freedback");
-        INFO("Switching to feedback chorus");
+    case GM2_CHORUS_FEEDBACK:
+        midi.set_chorus("GM2/chorus_freedback", type, GM2);
         break;
-    case 5:
-        midi.set_chorus("GM2/flanger");
-        INFO("Switching to flanger");
+    case GM2_FLANGER:
+        midi.set_chorus("GM2/flanger", type, GM2);
         break;
     default:
         LOG(99, "LOG: Unsupported GS chorus type: 0x%x (%d)\n",
@@ -252,15 +243,25 @@ MIDIDriver::set_chorus_type(uint8_t type)
     }
 }
 
-void
-MIDIDriver::set_chorus(const char *t)
+bool
+MIDIDriver::set_chorus(const char *t, uint16_t type, uint8_t vendor)
 {
+    if (type != -1)
+    {
+        uint32_t vendor_type = uint32_t(vendor) << 16 | type;
+        if (vendor_type != chorus_type) {
+            MESSAGE(1, "Switching to %s\n", t);
+        }
+        chorus_type = vendor_type;
+    }
+
     chorus_buffer = &AeonWave::buffer(t);
     for (auto& it : channels) {
         if (it.second->get_chorus_level() > 0.0f) {
             it.second->set_chorus(*chorus_buffer);
         }
     }
+    return true;
 }
 
 void
@@ -383,10 +384,19 @@ MIDIDriver::set_chorus_cutoff_frequency(float val)
 }
 
 
-void
-MIDIDriver::set_delay(const char *t)
+bool
+MIDIDriver::set_delay(const char *t, uint16_t type, uint8_t vendor)
 {
 #if AAX_PATCH_LEVEL >= 230425
+    if (type != -1)
+    {
+        uint32_t vendor_type = uint32_t(vendor) << 16 | type;
+        if (vendor_type != delay_type) {
+            MESSAGE(1, "Switching to %s\n", t);
+        }
+        delay_type = vendor_type;
+    }
+
     delay_buffer = &AeonWave::buffer(t);
     delay.add(*delay_buffer);
     for(auto& it : channels) {
@@ -395,6 +405,7 @@ MIDIDriver::set_delay(const char *t)
         }
     }
 #endif
+    return true;
 }
 
 void
@@ -509,9 +520,18 @@ MIDIDriver::set_delay_cutoff_frequency(float fc)
 #endif
 }
 
-void
-MIDIDriver::set_reverb(const char *t)
+bool
+MIDIDriver::set_reverb(const char *t, uint16_t type, uint8_t vendor)
 {
+    if (type != -1)
+    {
+        uint32_t vendor_type = uint32_t(vendor) << 16 | type;
+        if (vendor_type != reverb_type) {
+            MESSAGE(1, "Switching to %s reveberation\n", t);
+        }
+        reverb_type = vendor_type;
+    }
+
     reverb_buffer = &AeonWave::buffer(t);
     reverb.add(*reverb_buffer);
     for(auto& it : channels) {
@@ -519,37 +539,31 @@ MIDIDriver::set_reverb(const char *t)
             it.second->set_reverb(*reverb_buffer);
         }
     }
+    return true;
 }
 
 void
-MIDIDriver::set_reverb_type(uint8_t type)
+MIDIDriver::set_gm2_reverb_type(uint16_t type)
 {
-    reverb_type = type;
     switch (type)
     {
-    case 0:
-        midi.set_reverb("GM2/room-small");
-        INFO("Switching to Small Room reveberation");
+    case GM2_REVERB_ROOM_SMALL:
+        midi.set_reverb("GM2/room-small", type, GM2);
         break;
-    case 1:
-        midi.set_reverb("GM2/room-medium");
-        INFO("Switching to Medium Room reveberation");
+    case GM2_REVERB_ROOM_MEDIUM:
+        midi.set_reverb("GM2/room-medium", type, GM2);
         break;
-    case 2:
-        midi.set_reverb("GM2/room-large");
-        INFO("Switching to Large Room reveberation");
+    case GM2_REVERB_ROOM_LARGE:
+        midi.set_reverb("GM2/room-large", type, GM2);
         break;
-    case 3:
-        midi.set_reverb("GM2/concerthall");
-        INFO("Switching to Concert Hall Reveberation");
+    case GM2_REVERB_CONCERTHALL:
+        midi.set_reverb("GM2/concerthall", type, GM2);
         break;
-    case 4:
-        midi.set_reverb("GM2/concerthall-large");
-        INFO("Switching to Large Concert Hall reveberation");
+    case GM2_REVERB_CONCERTHALL_LARGE:
+        midi.set_reverb("GM2/concerthall-large", type, GM2);
         break;
-    case 8:
-        midi.set_reverb("GM2/plate");
-        INFO("Switching to Plate reveberation");
+    case GM2_REVERB_PLATE:
+        midi.set_reverb("GM2/plate", type, GM2);
         break;
     default:
         LOG(99, "LOG: Unsupported reverb type: 0x%x (%d)\n",

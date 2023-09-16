@@ -73,7 +73,12 @@ enum {
     MIDI_GENERAL_STANDARD,
     MIDI_EXTENDED_GENERAL_MIDI,
 
-    MIDI_MODE_MAX
+    MIDI_MODE_MAX,
+
+    GM = MIDI_GENERAL_MIDI1,
+    GM2 = MIDI_GENERAL_MIDI2,
+    GS = MIDI_GENERAL_STANDARD,
+    XG = MIDI_EXTENDED_GENERAL_MIDI
 };
 
 enum {
@@ -121,6 +126,20 @@ enum {
 
 #define GMMIDI_GM_RESET						0x01
 #define GMMIDI_GM2_RESET					0x03
+
+#define GM2_CHORUS1						0x00
+#define GM2_CHORUS2						0x01
+#define GM2_CHORUS3						0x02
+#define GM2_CHORUS4						0x03
+#define GM2_CHORUS_FEEDBACK					0x04
+#define GM2_FLANGER						0x05
+
+#define GM2_REVERB_ROOM_SMALL					0x00
+#define GM2_REVERB_ROOM_MEDIUM					0x01
+#define GM2_REVERB_ROOM_LARGE					0x02
+#define GM2_REVERB_CONCERTHALL					0x03
+#define GM2_REVERB_CONCERTHALL_LARGE				0x04
+#define GM2_REVERB_PLATE					0x08
 
 /**** GSMIDI ****/
 #define GSMIDI_SYSTEM						0x10

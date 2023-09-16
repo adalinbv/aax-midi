@@ -194,8 +194,7 @@ public:
     inline uint16_t get_ppqn() { return PPQN; }
 
     /* chorus */
-    void set_chorus(const char *t);
-    void set_chorus_type(uint8_t value);
+    bool set_chorus(const char *t, uint16_t type = -1, uint8_t vendor = 0);
     void set_chorus_delay(float delay);
     void set_chorus_depth(float depth);
     void set_chorus_feedback(float feedback);
@@ -205,9 +204,13 @@ public:
     void set_chorus_cutoff_frequency(float fc);
     void set_chorus_level(float value);
 
+    inline void set_chorus_type(uint16_t value) { chorus_type = value; }
+    inline uint32_t get_chorus_type() { return chorus_type; }
+
+    void set_gm2_chorus_type(uint16_t value);
+
     /* delay */
-    void set_delay(const char *t);
-    void set_delay_type(uint8_t value);
+    bool set_delay(const char *t, uint16_t type = -1, uint8_t vendor = 0);
     void set_delay_delay(float delay);
     void set_delay_depth(float depth);
     void set_delay_feedback(float feedback);
@@ -217,9 +220,11 @@ public:
     void set_delay_cutoff_frequency(float fc);
     void set_delay_level(float value);
 
+    inline void set_delay_type(uint16_t value) { delay_type = value; }
+    inline uint16_t get_delay_type() { return delay_type; }
+
     /* reverb */
-    void set_reverb(const char *t);
-    void set_reverb_type(uint8_t value);
+    bool set_reverb(const char *t, uint16_t type = -1, uint8_t vendor = 0);
     void set_reverb_cutoff_frequency(float value);
     void set_reverb_decay_depth(float value);
     void set_reverb_time_rt60(float value);
@@ -227,6 +232,11 @@ public:
     void set_reverb_decay_level(float value) { reverb_decay_level = value; }
     void set_reverb_level(uint16_t part_no, float value);
     void set_reverb_level(float value);
+
+    inline void set_reverb_type(uint16_t type) { reverb_type = type; }
+    inline uint16_t get_reverb_type() { return reverb_type; }
+
+    void set_gm2_reverb_type(uint16_t value);
 
     // ** buffer management ******
     Buffer& buffer(std::string& name) {
@@ -357,7 +367,7 @@ private:
     bool mono = false;
     bool csv = false;
 
-    uint8_t chorus_type = 2;
+    uint32_t chorus_type = (GM2<<16)|GM2_CHORUS3;
     Param chorus_rate = 0.4f;
     Param chorus_level = 0.5f;
     Param chorus_feedback = 0.06f;
@@ -367,6 +377,7 @@ private:
     aax::Buffer* chorus_buffer = &AeonWave::buffer("GM2/chorus3");
     float chorus_to_reverb = 0.0f;
 
+    uint32_t delay_type = (GS<<16)|GSMIDI_DELAY1;
     Param delay_rate = 0.0f;
     Param delay_level = 0.5f;
     Param delay_feedback = 0.25f;
@@ -376,7 +387,7 @@ private:
     aax::Buffer* delay_buffer = &AeonWave::buffer("GM2/delay0");
     float delay_to_reverb = 0.0f;
 
-    uint8_t reverb_type = 4;
+    uint32_t reverb_type = (GM2<<16)|GM2_REVERB_CONCERTHALL_LARGE;
     float reverb_time = 0.0f;
     Param reverb_decay_level = 0.66f;
     Param reverb_decay_depth = 0.3f;

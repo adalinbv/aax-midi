@@ -152,13 +152,11 @@ void MIDIStream::XG_initialize()
     {
         midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
 
-        midi.set_reverb("XG/hall1");
+        midi.set_reverb("XG/hall1", XGMIDI_REVERB_HALL1, XG);
         midi.set_reverb_level(it.first, val);
-        INFO("Switching to XG Hall1 Reveberation");
 
-        midi.set_chorus("XG/chorus1");
+        midi.set_chorus("XG/chorus1", XGMIDI_CHORUS1, XG);
         midi.set_chorus_level(it.first, 0.0f);
-        INFO("Switching to XG Chorus1");
 
         it.second->set_expression(midi.ln(127.0f/127.0f));
         it.second->set_gain(midi.ln(100.0f/127.0f));
@@ -264,80 +262,56 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     uint16_t type = value << 8;
                     byte = pull_byte();
                     CSV(part_no, ", %d", byte);
-                    type |= byte;
+                    type |=rv =  byte;
                     switch (type)
                     {
                     case XGMIDI_REVERB_HALL1:
                         expl = "REVERB_HALL1";
-                        midi.set_reverb("XG/hall1");
-                        INFO("Switching to XG Hall1 Reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/hall1", type, XG);
                         break;
                     case XGMIDI_REVERB_HALL2:
                         expl = "REVERB_HALL2";
-                        midi.set_reverb("XG/hall2");
-                        INFO("Switching to XG Hall2 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/hall2", type, XG);
                         break;
                     case XGMIDI_REVERB_ROOM1:
                         expl = "REVERB_ROOM1";
-                        midi.set_reverb("XG/room1");
-                        INFO("Switching to XG Room1 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/room1", type, XG);
                         break;
                     case XGMIDI_REVERB_ROOM2:
                         expl = "REVERB_ROOM2";
-                        midi.set_reverb("XG/room2");
-                        INFO("Switching to XG Room2 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/room2", type, XG);
                         break;
                     case XGMIDI_REVERB_ROOM3:
                         expl = "REVERB_ROOM3";
-                        midi.set_reverb("XG/room3");
-                        INFO("Switching to XG Room3 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/room3", type, XG);
                         break;
                     case XGMIDI_REVERB_STAGE1:
                         expl = "REVERB_STAGE1";
-                        midi.set_reverb("XG/stage1");
-                        INFO("Switching to XG Stage1 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/stage1", type, XG);
                        break;
                     case XGMIDI_REVERB_STAGE2:
                         expl = "REVERB_STAGE2";
-                        midi.set_reverb("XG/stage2");
-                        INFO("Switching to XG Stage2 reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/stage2", type, XG);
                        break;
                     case XGMIDI_REVERB_PLATE:
                         expl = "REVERB_PLATE";
-                        midi.set_reverb("XG/plate");
-                        INFO("Switching to XG Plate reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/plate", type, XG);
                         break;
                     case XGMIDI_REVERB_WHITE_ROOM:
                         expl = "REVERB_WHITE_ROOM";
-                        midi.set_reverb("XG/whiteroom");
-                        INFO("Switching to XG White Room reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/whiteroom", type, XG);
                        break;
                     case XGMIDI_REVERB_TUNNEL:
                         expl = "REVERB_TUNNEL";
-                        midi.set_reverb("XG/tunnel");
-                        INFO("Switching to XG Tunnel reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/tunnel", type, XG);
                        break;
                     case XGMIDI_REVERB_CANYON:
                         expl = "REVERB_CANYON";
-                        midi.set_reverb("XG/canyon");
-                        INFO("Switching to XG Canyon reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/canyon", type, XG);
                        break;
                     case XGMIDI_REVERB_BASEMENT:
                         expl = "REVERB_BASEMENT";
-                        midi.set_reverb("XG/basement");
-                        INFO("Switching to XG Basement reveberation");
-                        rv = true;
+                        rv = midi.set_reverb("XG/basement", type, XG);
                        break;
                     default:
                         expl = "Unkown REVERB";
@@ -418,87 +392,59 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     {
                     case XGMIDI_CHORUS1:
                         expl = "CHORUS1";
-                        midi.set_chorus("XG/chorus1");
-                        INFO("Switching to XG Chorus1");
-                        rv = true;
+                        rv = midi.set_chorus("XG/chorus1", type, XG);
                         break;
                     case XGMIDI_CHORUS2:
                         expl = "CHORUS1";
-                        midi.set_chorus("XG/chorus2");
-                        INFO("Switching to XG Chorus2");
-                        rv = true;
+                        rv = midi.set_chorus("XG/chorus2", type, XG);
                         break;
                     case XGMIDI_CHORUS3:
                         expl = "CHORUS3";
-                        midi.set_chorus("XG/chorus3");
-                        INFO("Switching to XG Chorus3");
-                        rv = true;
+                        rv = midi.set_chorus("XG/chorus3", type, XG);
                         break;
                     case XGMIDI_CHORUS4:
                         expl = "CHORUS4";
-                        midi.set_chorus("XG/chorus4");
-                        INFO("Switching to XG Chorus4");
-                        rv = true;
+                        rv = midi.set_chorus("XG/chorus4", type, XG);
                         break;
                     case XGMIDI_CELESTE1:
                         expl = "CELESTE1";
-                        midi.set_chorus("XG/celeste1");
-                        INFO("Switching to XG Celeste1");
-                        rv = true;
+                        rv = midi.set_chorus("XG/celeste1", type, XG);
                         break;
                     case XGMIDI_CELESTE2:
                         expl = "CELESTE2";
-                        midi.set_chorus("XG/celeste2");
-                        INFO("Switching to XG Celeste2");
-                        rv = true;
+                        rv = midi.set_chorus("XG/celeste2", type, XG);
                         break;
                     case XGMIDI_CELESTE3:
                         expl = "CELESTE3";
-                        midi.set_chorus("XG/celeste3");
-                        INFO("Switching to XG Celeste3");
-                        rv = true;
+                        rv = midi.set_chorus("XG/celeste3", type, XG);
                         break;
                     case XGMIDI_CELESTE4:
                         expl = "CELESTE4";
-                        midi.set_chorus("XG/celeste4");
-                        INFO("Switching to XG Celeste4");
-                        rv = true;
+                        rv = midi.set_chorus("XG/celeste4", type, XG);
                         break;
                     case XGMIDI_FLANGING1:
                         expl = "FLANGING1";
-                        midi.set_chorus("XG/flanger1");
-                        INFO("Switching to XG Flanger1");
-                        rv = true;
+                        rv = midi.set_chorus("XG/flanger1", type, XG);
                         break;
                     case XGMIDI_FLANGING2:
                         expl = "FLANGING2";
-                        midi.set_chorus("XG/flanger2");
-                        INFO("Switching to XG Flanger2");
-                        rv = true;
+                        rv = midi.set_chorus("XG/flanger2", type, XG);
                         break;
                     case XGMIDI_FLANGING3:
                         expl = "FLANGING3";
-                        midi.set_chorus("XG/flanger3");
-                        INFO("Switching to XG Flanger3");
-                        rv = true;
+                        rv = midi.set_chorus("XG/flanger3", type, XG);
                         break;
                     case XGMIDI_SYMPHONIC:
                         expl = "SYMPHONIC";
-                        midi.set_chorus("XG/symphony");
-                        INFO("Switching to XG symphony");
-                        rv = true;
+                        rv = midi.set_chorus("XG/symphony", type, XG);
                         break;
                     case XGMIDI_PHASER1:
                         expl = "PHASER1";
-                        midi.set_chorus("XG/phaser1");
-                        INFO("Switching to XG Phaser1");
-                        rv = true;
+                        rv = midi.set_chorus("XG/phaser1", type, XG);
                         break;
                     case XGMIDI_PHASER2:
                         expl = "PHASER2";
-                        midi.set_chorus("XG/phaser2");
-                        INFO("Switching to XG Phaser2");
-                        rv = true;
+                        rv = midi.set_chorus("XG/phaser2", type, XG);
                         break;
                     default:
                         LOG(99, "LOG: Unsupported XG sysex Chorus type: 0x%02x (%d)\n",

@@ -35,8 +35,12 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
     {
     case GMMIDI_GM_RESET:
         expl = "GM RESET";
-        midi.set_reverb_type(4);
-        midi.set_chorus_type(2);
+        midi.set_reverb_type(GM2_REVERB_CONCERTHALL_LARGE);
+        midi.set_reverb_level(0.0f);
+
+        midi.set_chorus_type(GM2_CHORUS3);
+        midi.set_chorus_level(0.0f);
+
         for (auto& it : midi.get_channels())
         {
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
@@ -56,11 +60,12 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
         break;
     case GMMIDI_GM2_RESET:
         expl = "GM2 RESET";
-        midi.set_reverb("GM2/concerthall-large");
-        INFO("Switching to Large Concert Hall reveberation");
+        midi.set_gm2_reverb_type(GM2_REVERB_CONCERTHALL_LARGE);
+        midi.set_reverb_level(0.0f);
 
-        midi.set_chorus("GM2/chorus3");
-        INFO("Switching to Chorus3");
+        midi.set_chorus_type(GM2_CHORUS3);
+        midi.set_chorus_level(0.0f);
+
         for (auto& it : midi.get_channels())
         {
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);

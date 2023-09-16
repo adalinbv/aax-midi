@@ -37,17 +37,14 @@ using namespace aax;
 
 void MIDIStream::GS_initialize()
 {
-    midi.set_chorus("GS/chorus3");
+    midi.set_chorus("GS/chorus3", GSMIDI_CHORUS3, GS);
     midi.set_chorus_level(64.0f/127.0f);
-    INFO("Switching to GS Chorus3");
 
-    midi.set_delay("GS/delay1");
+    midi.set_delay("GS/delay1", GSMIDI_DELAY1, GS);
     midi.set_delay_level(64.0f/127.0f);
-    INFO("Switching to GS Delay1");
 
-    midi.set_reverb("GS/hall2");
+    midi.set_reverb("GS/hall2", GSMIDI_REVERB_HALL2, GS);
     midi.set_reverb_level(40.0f/127.0f);
-    INFO("Switching to GS Hall2 reveberation");
 
     for (auto& it : midi.get_channels())
     {
@@ -173,43 +170,35 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         {
                         case GSMIDI_REVERB_ROOM1:
                             expl = "REVERB_ROOM1";
-                            midi.set_reverb("GS/room1");
-                            INFO("Switching to GS Room1 reveberation");
+                            rv = midi.set_reverb("GS/room1", value, GS);
                             break;
                         case GSMIDI_REVERB_ROOM2:
                             expl = "REVERB_ROOM2";
-                            midi.set_reverb("GS/room2");
-                            INFO("Switching to GS Room2 reveberation");
+                            rv = midi.set_reverb("GS/room2", value, GS);
                             break;
                         case GSMIDI_REVERB_ROOM3:
                             expl = "REVERB_ROOM3";
-                            midi.set_reverb("GS/room3");
-                            INFO("Switching to GS Room3 reveberation");
+                            rv = midi.set_reverb("GS/room3", value, GS);
                             break;
                         case GSMIDI_REVERB_HALL1:
                             expl = "REVERB_HALL1";
-                            midi.set_reverb("GS/hall1");
-                            INFO("Switching to GS Hall1 Reveberation");
+                            rv = midi.set_reverb("GS/hall1", value, GS);
                             break;
                         case GSMIDI_REVERB_HALL2:
                             expl = "REVERB_HALL2";
-                            midi.set_reverb("GS/hall2");
-                            INFO("Switching to GS Hall2 reveberation");
+                            rv = midi.set_reverb("GS/hall2", value, GS);
                             break;
                         case GSMIDI_REVERB_PLATE:
                             expl = "REVERB_PLATE";
-                            midi.set_reverb("GS/plate");
-                            INFO("Switching to GS Plate reveberation");
+                            rv = midi.set_reverb("GS/plate", value, GS);
                             break;
                         case GSMIDI_REVERB_DELAY:
                             expl = "REVERB_DELAY";
-                            midi.set_reverb("GS/reverb-delay");
-                            INFO("Switching to GS Delay reveberation");
+                            rv = midi.set_reverb("GS/reverb-delay", value, GS);
                             break;
                         case GSMIDI_REVERB_PAN_DELAY:
                             expl = "REVERB_PAN_DELAY";
-                            midi.set_reverb("GS/reverb-pan-delay");
-                            INFO("Switching to GS Pan-Delay reveberation");
+                            rv = midi.set_reverb("GS/reverb-pan-delay", value, GS);
                             break;
                         default:
                             expl = "REVERB_MACRO";
@@ -249,43 +238,35 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         {
                         case GSMIDI_CHORUS1:
                             expl = "CHORUS1";
-                            midi.set_chorus("GS/chorus1");
-                            INFO("Switching to GS Chorus1");
+                            rv = midi.set_chorus("GS/chorus1", value, GS);
                             break;
                         case GSMIDI_CHORUS2:
                             expl = "CHORUS2";
-                            midi.set_chorus("GS/chorus2");
-                            INFO("Switching to GS Chorus2");
+                            rv = midi.set_chorus("GS/chorus2", value, GS);
                             break;
                         case GSMIDI_CHORUS3:
                             expl = "CHORUS3";
-                            midi.set_chorus("GS/chorus3");
-                            INFO("Switching to GS Chorus3");
+                            rv = midi.set_chorus("GS/chorus3", value, GS);
                             break;
                         case GSMIDI_CHORUS4:
                             expl = "CHORUS4";
-                            midi.set_chorus("GS/chorus4");
-                            INFO("Switching to GS Chorus4");
+                            rv = midi.set_chorus("GS/chorus4", value, GS);
                             break;
                         case GSMIDI_FEEDBACK_CHORUS:
                             expl = "FEEDBACK_CHORUS";
-                            midi.set_chorus("GS/chorus-feedback");
-                            INFO("Switching to GS feedback chorus");
+                            rv = midi.set_chorus("GS/chorus-feedback", value, GS);
                             break;
                         case GSMIDI_FLANGER:
                             expl = "FLANGER";
-                            midi.set_chorus("GS/flanger");
-                            INFO("Switching to GS flanger");
+                            rv = midi.set_chorus("GS/flanger", value, GS);
                             break;
                         case GSMIDI_CHORUS_DELAY1:
                             expl = "DELAY1";
-                            midi.set_chorus("GS/chorus-short-delay");
-                            INFO("Switching to GS short delay");
+                            rv = midi.set_chorus("GS/chorus-short-delay", value, GS);
                             break;
                         case GSMIDI_CHORUS_DELAY1_FEEDBACK:
                             expl = "DELAY1_FEEDBACK";
-                            midi.set_chorus("GS/chorus-delay-feedback");
-                            INFO("Switching to GS short delay with feedback");
+                            rv = midi.set_chorus("GS/chorus-delay-feedback", value, GS);
                             break;
                         default:
                             expl = "Unkown CHORUS_MACRO " + std::to_string(value);
@@ -341,48 +322,39 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         {
                         case GSMIDI_DELAY1:
                             expl = "DELAY1";
-                            midi.set_delay("GS/delay1");
-                            INFO("Switching to GS Delay1");
+                            rv = midi.set_delay("GS/delay1", value, GS);
                             break;
                         case GSMIDI_DELAY2:
                             expl = "DELAY2";
-                            midi.set_delay("GS/delay2");
-                            INFO("Switching to GS Delay2");
+                            rv = midi.set_delay("GS/delay2", value, GS);
                             break;
                         case GSMIDI_DELAY3:
                             expl = "DELAY3";
-                            midi.set_delay("GS/delay3");
-                            INFO("Switching to GS Delay3");
+                            rv = midi.set_delay("GS/delay3", value, GS);
                             break;
                         case GSMIDI_DELAY4:
                             expl = "DELAY4";
-                            midi.set_delay("GS/delay4");
-                            INFO("Switching to GS Delay4");
+                            rv = midi.set_delay("GS/delay4", value, GS);
                             break;
                         case GSMIDI_PAN_DELAY1:
                             expl = "PAN_DELAY1";
-                            midi.set_delay("GS/pan-delay1");
-                            INFO("Switching to GS Pan-Delay1");
+                            rv = midi.set_delay("GS/pan-delay1", value, GS);
                             break;
                         case GSMIDI_PAN_DELAY2:
                             expl = "PAN_DELAY2";
-                            midi.set_delay("GS/pan-delay2");
-                            INFO("Switching to GS Pan-Delay2");
+                            rv = midi.set_delay("GS/pan-delay2", value, GS);
                             break;
                         case GSMIDI_PAN_DELAY3:
                             expl = "PAN_DELAY3";
-                            midi.set_delay("GS/pan-delay3");
-                            INFO("Switching to GS Pan-Delay3");
+                            rv = midi.set_delay("GS/pan-delay3", value, GS);
                             break;
                         case GSMIDI_PAN_DELAY4:
                             expl = "PAN_DELAY4";
-                            midi.set_delay("GS/pan-delay4");
-                            INFO("Switching to GS Pan-Delay4");
+                            rv = midi.set_delay("GS/pan-delay4", value, GS);
                             break;
                         case GSMIDI_DELAY_TO_REVERB:
                             expl = "DELAY_TO_REVERB";
-                            midi.set_delay("GS/delay-to-reverb");
-                            INFO("Switching to GS Delay to Reverb");
+                            rv = midi.set_delay("GS/delay-to-reverb", value, GS);
                             break;
                         case GSMIDI_PAN_REPEAT:
                         default:
