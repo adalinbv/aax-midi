@@ -501,23 +501,6 @@ int write_reverb()
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"reverb\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff_freq);
-         fprintf(stream, "    <param n=\"1\">%.4f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", width);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", height);
-         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", depth);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", density);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
          fclose(stream);
       }
@@ -629,54 +612,6 @@ int write_chorus()
              fprintf(stream, "  </filter>\n");
          }
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"");
-         fprintf(stream, "chorus");
-         fprintf(stream, "\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         if (stereo) fprintf(stream, " stereo=\"true\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         if (low_gain != 1.0f || mid_gain != 1.0f || high_gain != 1.0f) {
-             fprintf(stream, "  <filter type=\"equalizer\">\n");
-             fprintf(stream, "   <slot n=\"0\">\n");
-             if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-                 fprintf(stream, "   </slot>\n");
-                 fprintf(stream, "   <slot n=\"1\">\n");
-             }
-             if (low_cutoff < mid_cutoff) {
-                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", mid_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", mid_Q);
-                 fprintf(stream, "   </slot>\n");
-                 fprintf(stream, "   <slot n=\"2\">\n");
-             }
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-             fprintf(stream, "  </filter>\n");
-         }
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
          fclose(stream);
       }
@@ -771,43 +706,6 @@ int write_phasing()
              fprintf(stream, "  </filter>\n");
          }
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"phasing\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", lfo_offset);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         if (low_gain != 1.0f || mid_gain != 1.0f || high_gain != 1.0f) {
-             fprintf(stream, "  <filter type=\"equalizer\">\n");
-             fprintf(stream, "   <slot n=\"0\">\n");
-             if (low_gain != 1.0f || mid_gain != 1.0f) {
-                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
-                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
-                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
-                 fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-                 fprintf(stream, "   </slot>\n");
-                 fprintf(stream, "   <slot n=\"1\">\n");
-             }
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
-             fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-             fprintf(stream, "  </filter>\n");
-         }
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
          fclose(stream);
       }
@@ -860,17 +758,6 @@ int write_distortion()
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
          fclose(stream);
       }
@@ -943,23 +830,6 @@ int write_equalizer()
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </filter>\n");
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <filter type=\"equalizer\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", low_cutoff);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", low_gain);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "   <slot n=\"1\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", high_cutoff);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", mid_gain);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", high_gain);
-         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </filter>\n");
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
          fclose(stream);
       }
@@ -1025,27 +895,6 @@ int write_amp_simulator()
       fprintf(stream, "   </slot>\n");
       fprintf(stream, "  </effect>\n");
       fprintf(stream, " </audioframe>\n\n");
-
-      fprintf(stream, " <mixer mode=\"append\">\n");
-      if (cutoff > 20.0f && cutoff < 20000.0f && ol > 0.0f) {
-         fprintf(stream, "  <filter type=\"frequency\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", cutoff);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", gain);
-         fprintf(stream, "    <param n=\"2\">%.1f</param>\n", 0.0f);
-         fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </filter>\n");
-      }
-      fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
-      fprintf(stream, "   <slot n=\"0\">\n");
-      fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
-      fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
-      fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mix_fact);
-      fprintf(stream, "    <param n=\"3\">%.3f</param>\n", asymmetry);
-      fprintf(stream, "   </slot>\n");
-      fprintf(stream, "  </effect>\n");
-      fprintf(stream, " </mixer>\n\n");
       fprintf(stream, "</aeonwave>\n");
       fclose(stream);
    }
