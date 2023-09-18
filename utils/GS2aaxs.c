@@ -15,9 +15,9 @@ typedef struct {
  *  --  -----------             ---------
  *  0   Chorus Level            0 ~ 64 ~ 127
  *  1   Chorus Pre-LFP          0 ~ 7(*)
- *  2   Chorus Feedback         0 ~  8 ~ 127
- *  3   Chorus Delay            0 ~ 90 ~ 127(#)
- *  4   Chorus Rate             0 ~  3 ~ 127
+ *  2   Chorus Feedback         0 ~  8 ~ 127 (0% - 98%)
+ *  3   Chorus Delay            0 ~ 90 ~ 127(#) (0 - 100ms)
+ *  4   Chorus Rate             0 ~  3 ~ 127 (0.05Hz - 10.0Hz)
  *  5   Chorus Depth            0 ~ 19 ~ 127
  *  6   Chorus to Reverb        0 ~ 127
  *  7   Chorus to Delay         0 ~ 127
@@ -110,14 +110,8 @@ static GSMIDI_effect_t GSMIDI_reverb_types[GSMIDI_MAX_REVERB_TYPES] = {
 static float GSMIDI_reverb_character[8] = {
  0.007f, 0.012f, 0.027f, 0.035f, 0.035f, 0.0095f, 0.0f, 0.0f
 };
-#define PHASING_MIN      50e-6f
-#define PHASING_MAX      10e-3f
-#define FLANGING_MIN     10e-3f
-#define FLANGING_MAX     60e-3f
-#define DELAY_MIN        60e-3f
-#define DELAY_MAX       250e-3f
+
 #define LEVEL_60DB		0.001f
-#define MAX_REVERB_EFFECTS_TIME	0.700f
 
 #define _MAX(a,b)       (((a)>(b)) ? (a) : (b))
 #define _MIN(a,b)       (((a)<(b)) ? (a) : (b))
@@ -164,108 +158,86 @@ print_info(FILE *stream)
 
 int write_chorus()
 {
-   for (int i=0; i<GSMIDI_MAX_CHORUS_TYPES; ++i)
-   {
-      char fname[256];
+    for (int i=0; i<GSMIDI_MAX_CHORUS_TYPES; ++i)
+    {
+        char fname[256];
 
-      GSMIDI_effect_t *type = &GSMIDI_chorus_types[i];
+        GSMIDI_effect_t *type = &GSMIDI_chorus_types[i];
 
-      snprintf(fname, 255, "%s.aaxs", type->name);
-      printf("Generating: %s\n", fname);
+        snprintf(fname, 255, "%s.aaxs", type->name);
+        printf("Generating: %s\n", fname);
 
-      FILE *stream = fopen(fname, "w+");
-      if (stream)
-      {
-         int cl = type->param[0];	// Level 0-64-127: default 64
-         int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
-         int fb = type->param[2];	// Feedback Level
-//       int ct = type->param[3];	// Pre Delay Time: 0-100ms
-         int cr = type->param[4];	// Rate: 0-127: 0.05 - 10.0
-         int cd = type->param[5];	// Depth: 0-127
-//       int crev = type->param[6];	// Chorus to Reverb: 0-127
-//       int ddly = type->param[7];	// Chorus to Delay: 1-27
+        FILE *stream = fopen(fname, "w+");
+        if (stream)
+        {
+            int cl = type->param[0];	// Level 0-64-127: default 64
+            int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
+            int fb = type->param[2];	// Feedback Level: default 8
+//          int ct = type->param[3];	// Pre Delay Time: 0-100ms
+            int cr = type->param[4];	// Rate: 0-127: 0.05 - 10.0
+            int cd = type->param[5];	// Depth: 0-127
+//          int crev = type->param[6];	// Chorus to Reverb: 0-127
+//          int ddly = type->param[7];	// Chorus to Delay: 1-27
 
-         float gain = 0.98f*cl/127.0f;
-         float rate = 0.05f + 9.95f*cr/127.0f;
+            float gain = 0.98f*cl/127.0f;
+            float rate = 0.05f + 9.95f*cr/127.0f;
 
-         float lfo_depth, lfo_offset;
-         if (rate > 0.0f)
-         {
-            lfo_depth = 20.0f*cd/127.0f;
-            lfo_offset = 10.0f;
-         }
-         else
-         {
-            lfo_depth = 0.0f;
-            lfo_offset = 10.0f+20.0f*cd/127.0f;
-         }
-         float feedback = 0.98f*fb/127.0f;
+            float lfo_depth, lfo_offset;
+            if (rate > 0.0f)
+            {
+                lfo_depth = 50.0f*cd/127.0f;
+                lfo_offset = 10.0f;
+            }
+            else
+            {
+                lfo_depth = 0.0f;
+                lfo_offset = 10.0f+40.0f*cd/127.0f;
+            }
+            float feedback = 0.98f*fb/127.0f;
 
-         float val = (7-cfc)/7.0f;
-         float fc = _log2lin(val*_lin2log(22000.0f));
-         if (fc >= 20000.0f) fc = 0.0f;
+            float val = (7-cfc)/7.0f;
+            float fc = _log2lin(val*_lin2log(22000.0f));
+            if (fc >= 20000.0f) fc = 0.0f;
 
-         fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+            fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
-         print_header(stream);
+            print_header(stream);
 
-         fprintf(stream, "<aeonwave>\n\n");
+            fprintf(stream, "<aeonwave>\n\n");
 
-         print_info(stream);
+            print_info(stream);
 
-         fprintf(stream, " <audioframe mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"");
-         fprintf(stream, "chorus");
-         fprintf(stream, "\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
-         fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
-             fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-         }
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </audioframe>\n\n");
+            fprintf(stream, " <audioframe mode=\"append\">\n");
+            fprintf(stream, "  <effect type=\"");
+            fprintf(stream, "chorus");
+            fprintf(stream, "\"");
+            if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
+            fprintf(stream, ">\n");
+            fprintf(stream, "   <slot n=\"0\">\n");
+            fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
+            fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
+            fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
+            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
+            fprintf(stream, "   </slot>\n");
+            if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
+                fprintf(stream, "   <slot n=\"1\">\n");
+                fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+                fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+                fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+                fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
+                fprintf(stream, "   </slot>\n");
+            }
+            fprintf(stream, "  </effect>\n");
+            fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"");
-         fprintf(stream, "chorus");
-         fprintf(stream, "\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
-         fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || (fc > 0.0 && fc < 20000.0f)) {
-             fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-         }
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
-         fprintf(stream, "</aeonwave>\n");
+            fprintf(stream, "</aeonwave>\n");
 
-         fclose(stream);
-      }
-      else printf(" Failed to open for writing: %s\n", strerror(errno));
-   }
+            fclose(stream);
+        }
+        else printf(" Failed to open for writing: %s\n", strerror(errno));
+    }
 
-   return 0;
+    return 0;
 }
 
 /*
@@ -282,157 +254,114 @@ int write_chorus()
 static float
 delay_time_to_offset_ms(int dt)
 {
-   float rv;
+    float rv;
 
-   if (dt < 20) {
-      rv = 1e-3f*(0.1f + (2.0f-0.1f)*(dt-1)/(20.0f-1.0f));
-   } else if (dt < 35) {
-      rv = 1e-3f*(2.0f + (5.0f-2.0f)*(dt-20)/(35.0f-20.0f));
-   } else if (dt < 45) {
-      rv = 1e-3f*(5.0f + (10.0f-5.0f)*(dt-35)/(45.0f-35.0f));
-   } else if (dt < 55) {
-      rv = 1e-3f*(10.0f + (20.0f-10.0f)*(dt-45)/(55.0f-45.0f));
-   } else if (dt < 70) {
-      rv = 1e-3f*(20.0f + (50.0f-20.0f)*(dt-55)/(70.0f-55.0f));
-   } else if (dt < 80) {
-      rv = 1e-3f*(50.0f + (100.0f-50.0f)*(dt-70)/(80.0f-70.0f));
-   } else if (dt < 90) {
-      rv = 1e-3f*(100.0f + (200.0f-100.0f)*(dt-80)/(90.0f-80.0f));
-   } else if (dt < 105) {
-      rv = 1e-3f*(200.0f + (500.0f-200.0f)*(dt-90)/(105.0f-90.0f));
-   } else {
-      rv = 1e-3f*(500.0f + (1000.0f-500.0f)*(dt-105)/(115.0f-105.0f));
-   }
+    if (dt < 20) {
+        rv = 1e-3f*(0.1f + (2.0f-0.1f)*(dt-1)/(20.0f-1.0f));
+    } else if (dt < 35) {
+        rv = 1e-3f*(2.0f + (5.0f-2.0f)*(dt-20)/(35.0f-20.0f));
+    } else if (dt < 45) {
+        rv = 1e-3f*(5.0f + (10.0f-5.0f)*(dt-35)/(45.0f-35.0f));
+    } else if (dt < 55) {
+        rv = 1e-3f*(10.0f + (20.0f-10.0f)*(dt-45)/(55.0f-45.0f));
+    } else if (dt < 70) {
+        rv = 1e-3f*(20.0f + (50.0f-20.0f)*(dt-55)/(70.0f-55.0f));
+    } else if (dt < 80) {
+        rv = 1e-3f*(50.0f + (100.0f-50.0f)*(dt-70)/(80.0f-70.0f));
+    } else if (dt < 90) {
+        rv = 1e-3f*(100.0f + (200.0f-100.0f)*(dt-80)/(90.0f-80.0f));
+    } else if (dt < 105) {
+        rv = 1e-3f*(200.0f + (500.0f-200.0f)*(dt-90)/(105.0f-90.0f));
+    } else {
+        rv = 1e-3f*(500.0f + (1000.0f-500.0f)*(dt-105)/(115.0f-105.0f));
+    }
 
-   return rv;
+    return rv;
 }
 #endif
 
 int write_delay()
 {
-   for (int i=0; i<GSMIDI_MAX_DELAY_TYPES; ++i)
-   {
-      char fname[256];
+    for (int i=0; i<GSMIDI_MAX_DELAY_TYPES; ++i)
+    {
+        char fname[256];
 
-      GSMIDI_effect_t *type = &GSMIDI_delay_types[i];
+        GSMIDI_effect_t *type = &GSMIDI_delay_types[i];
 
-      snprintf(fname, 255, "%s.aaxs", type->name);
-      printf("Generating: %s\n", fname);
+        snprintf(fname, 255, "%s.aaxs", type->name);
+        printf("Generating: %s\n", fname);
 
-      FILE *stream = fopen(fname, "w+");
-      if (stream)
-      {
-#if 0
- *  0   Delay Level             0 ~ 127
- *  1   Delay Pre-LFP           0 ~ 7
- *  2   Delay Time Center       1 ~ 115 (0.1ms ~ 1sec) (*)
- *  3   Delay Time Ratio Left   1 ~ 120 (4% ~ 500%) (#)
- *  4   Delay Time Ratio Right  1 ~ 120 (4% ~ 500%) (#)
- *  5   Delay Level Center      0 ~ 127
- *  6   Delay Level Left        0 ~ 127
- *  7   Delay Level Right       0 ~ 127
- *  8   Delay Feedback          -64 ~ 16 ~ 63 (%)
- *  9   Delay To Reverb         0 ~ 127
- *
- * #) DELAY TIME RATIO LEFT and DELAY TIME RATIO RIGHT specify the ratio in
- *    relation to DELAY TIME CENTER. The resolution is (100/24)%
-#endif
-         int dl = type->param[0];	// Delay Level 0-64-127: default 64
-         int dfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
-         int dtc = type->param[2];	// Delay Offset: 0.1ms-1.0s, def. 340ms.
-         int dtrl = type->param[3];	// Delay time ratio left (%)
-         int dtrr = type->param[4];	// Delay time ratio right (%)
-//       int dlc = type->param[5];	// Delay Level Center (ms)
-//       int dll = type->param[6];	// Delay Level Left
-//       int dlr = type->param[7];	// Delay Level Right
-         int fb = type->param[8];	// Feedback Level
-//       int drev = type->param[9];	// Delay to reverb
-         char pan = (dtrl != dtrr);
+        FILE *stream = fopen(fname, "w+");
+        if (stream)
+        {
+            int dl = type->param[0];	// Delay Level 0-64-127: default 64
+            int dfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
+            int dtc = type->param[2];	// Delay Offset: 0.1ms-1.0s, def. 340ms.
+            int dtrl = type->param[3];	// Delay time ratio left (%)
+            int dtrr = type->param[4];	// Delay time ratio right (%)
+//          int dlc = type->param[5];	// Delay Level Center (ms)
+//          int dll = type->param[6];	// Delay Level Left
+//          int dlr = type->param[7];	// Delay Level Right
+            int fb = type->param[8];	// Feedback Level
+//          int drev = type->param[9];	// Delay to reverb
+            char pan = (dtrl != dtrr);
 
-         float gain = (fb < 0 ? -1.0f : 1.0f)*dl/127.0f;
-         float feedback = abs(fb)/64.0f;
-         float lfo_offset = dtc;
+            float gain = (fb < 0 ? -1.0f : 1.0f)*dl/127.0f;
+            float feedback = 0.98f*fb/64.0f;
+            float lfo_offset = dtc;
 
-         float lfo_offset_l = lfo_offset * (dtrl/100.0f);
-         float lfo_offset_r = lfo_offset * (dtrr/100.0f);
+            float lfo_offset_l = lfo_offset * (dtrl/100.0f);
+            float lfo_offset_r = lfo_offset * (dtrr/100.0f);
 
-         float val = (7-dfc)/7.0f;
-         float fc = _log2lin(val*_lin2log(22000.0f));
-         if (fc >= 20000.0f) fc = 0.0f;
+            float val = (7-dfc)/7.0f;
+            float fc = _log2lin(val*_lin2log(22000.0f));
+            if (fc >= 20000.0f) fc = 0.0f;
 
-         fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+            fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
-         print_header(stream);
+            print_header(stream);
 
-         fprintf(stream, "<aeonwave>\n\n");
+            fprintf(stream, "<aeonwave>\n\n");
 
-         print_info(stream);
+            print_info(stream);
 
-         fprintf(stream, " <audioframe mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"delay\"");
-         if (pan) fprintf(stream, " stereo=\"true\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">0.0</param>\n");
-         if (pan)
-         {
-            fprintf(stream, "    <param n=\"2\" type=\"msec\">%.1f</param>\n", lfo_offset_r);
-            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset_l);
-         }
-         else
-         {
-            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset);
-         }
-         fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || fc < 20000.0f) {
-             fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-         }
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </audioframe>\n\n");
+            fprintf(stream, " <audioframe mode=\"append\">\n");
+            fprintf(stream, "  <effect type=\"delay\"");
+            if (pan) fprintf(stream, " stereo=\"true\"");
+            fprintf(stream, ">\n");
+            fprintf(stream, "   <slot n=\"0\">\n");
+            fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
+            fprintf(stream, "    <param n=\"1\">0.0</param>\n");
+            if (pan)
+            {
+                fprintf(stream, "    <param n=\"2\" type=\"msec\">%.1f</param>\n", lfo_offset_r);
+                fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset_l);
+            }
+            else
+            {
+                fprintf(stream, "    <param n=\"2\">0.0</param>\n");
+                fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset);
+            }
+            fprintf(stream, "   </slot>\n");
+            if (feedback > 0.0f || fc < 20000.0f) {
+                fprintf(stream, "   <slot n=\"1\">\n");
+                fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+                fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+                fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+                fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
+                fprintf(stream, "   </slot>\n");
+            }
+            fprintf(stream, "  </effect>\n");
+            fprintf(stream, " </audioframe>\n\n");
 
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"delay\"");
-         if (pan) fprintf(stream, " stereo=\"true\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">0.0</param>\n");
-         if (pan)
-         {
-            fprintf(stream, "    <param n=\"2\" type=\"msec\">%.1f</param>\n", lfo_offset_r);
-            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset_l);
-         }
-         else
-         {
-            fprintf(stream, "    <param n=\"2\">0.0</param>\n");
-            fprintf(stream, "    <param n=\"3\" type=\"msec\">%.1f</param>\n", lfo_offset);
-         }
-         fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || fc < 20000.0f) {
-             fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-         }
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
-         fprintf(stream, "</aeonwave>\n");
+            fprintf(stream, "</aeonwave>\n");
 
-         fclose(stream);
-      }
-      else printf(" Failed to open for writing: %s\n", strerror(errno));
-   }
+            fclose(stream);
+        }
+        else printf(" Failed to open for writing: %s\n", strerror(errno));
+    }
 
-   return 0;
+    return 0;
 }
 
 static float
@@ -443,79 +372,99 @@ get_decay_depth(float time, float level) {
 
 int write_reverb()
 {
-   for (int i=0; i<GSMIDI_MAX_REVERB_TYPES; ++i)
-   {
-      char fname[256];
+    for (int i=0; i<GSMIDI_MAX_REVERB_TYPES; ++i)
+    {
+        char fname[256];
 
-      GSMIDI_effect_t *type = &GSMIDI_reverb_types[i];
+        GSMIDI_effect_t *type = &GSMIDI_reverb_types[i];
 
-      snprintf(fname, 255, "%s.aaxs", type->name);
-      printf("Generating: %s\n", fname);
+        snprintf(fname, 255, "%s.aaxs", type->name);
+        printf("Generating: %s\n", fname);
 
-      FILE *stream = fopen(fname, "w+");
-      if (stream)
-      {
-         int rl = type->param[0];	// Reverb Level 0-64-127: default 64
-         int rc = type->param[1];	// Reverb Character: 0-5, 6, 7
-         int rfc = type->param[2];	// Pre LPF cutoff behavior: 0-7, def. 0
-         int rt = type->param[3];	// Reverb Time: 0-64-127
-//       int rb = type->param[4];	// Reverb Delay Feedback: 0-127
-//       int dpd = type->param[5];	// Reverb pre Delay Time: 0-127 ms
+        FILE *stream = fopen(fname, "w+");
+        if (stream)
+        {
+            int rl = type->param[0];	// Reverb Level 0-64-127: default 64
+            int rc = type->param[1];	// Reverb Character: 0-5, 6, 7
+            int rfc = type->param[2];	// Pre LPF cutoff behavior: 0-7, def. 0
+            int rt = type->param[3];	// Reverb Time: 0-64-127
+            int fb = type->param[4];	// Delay Feedback: 0-127
+//          int dpd = type->param[5];	// Pre Delay Time: 0-127 ms
 
-         float val = (7-rfc)/7.0f;
-         float fc = 500.0f+_log2lin(val*_lin2log(22000.0f-500.0f));
-         if (fc >= 20000.0f) fc = 0.0f;
+            float val = (7-rfc)/7.0f;
+            float fc = 500.0f+_log2lin(val*_lin2log(22000.0f-500.0f));
+            if (fc >= 20000.0f) fc = 0.0f;
 
-//       float delay_depth = dpd*1e-3f;
-         float delay_depth = GSMIDI_reverb_character[rc];
-         float decay_level = rl/127.0f;
-         float decay_time = 1.66f*rt/127.0f;
-         float decay_depth = get_decay_depth(decay_time, decay_level);
+//          float delay_depth = dpd*1e-3f;
+            // rc values 0-5 are reverb, 6 and 7 are delay
+            float delay_depth = GSMIDI_reverb_character[rc];
+            float decay_level = rl/127.0f;
+            float decay_time = 1.66f*rt/127.0f;
+            float decay_depth = get_decay_depth(decay_time, decay_level);
 
-         fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
+            float feedback = 0.98f*fb/127.0f;
+            char pan = (rc == 7);
 
-         print_header(stream);
+            fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
-         fprintf(stream, "<aeonwave>\n\n");
+            print_header(stream);
 
-         print_info(stream);
+            fprintf(stream, "<aeonwave>\n\n");
 
-         fprintf(stream, " <audioframe mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"reverb\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </audioframe>\n\n");
+            print_info(stream);
 
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"reveb\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
-         fprintf(stream, "</aeonwave>\n");
+            fprintf(stream, " <audioframe mode=\"append\">\n");
+            if (rc <= 5) {
+                fprintf(stream, "  <effect type=\"reverb\">\n");
+                fprintf(stream, "   <slot n=\"0\">\n");
+                fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+                fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
+                fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
+                fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
+                fprintf(stream, "   </slot>\n");
+                fprintf(stream, "  </effect>\n");
+            } else {
+                fprintf(stream, "  <effect type=\"delay\"");
+                if (pan) fprintf(stream, " stereo=\"true\"");
+                fprintf(stream, ">\n");
+                fprintf(stream, "   <slot n=\"0\">\n");
+                fprintf(stream, "    <param n=\"0\">%.3f</param>\n", decay_level);
+                fprintf(stream, "    <param n=\"1\">0.0</param>\n");
+                if (pan) {
+                    fprintf(stream, "    <param n=\"2\" type=\"sec\">%.3f</param>\n", decay_depth);
+                    fprintf(stream, "    <param n=\"3\">0.0</param>\n");
+                } else {
+                    fprintf(stream, "    <param n=\"2\">0.0</param>\n");
+                    fprintf(stream, "    <param n=\"3\" type=\"sec\">%.3f</param>\n", decay_depth);
+                }
+                fprintf(stream, "   </slot>\n");
+                if (feedback > 0.0f || fc < 20000.0f) {
+                    fprintf(stream, "   <slot n=\"1\">\n");
+                    fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+                    fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
+                    fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
+                    fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
+                    fprintf(stream, "   </slot>\n");
+                }
+                fprintf(stream, "  </effect>\n");
+            }
+            fprintf(stream, " </audioframe>\n\n");
 
-         fclose(stream);
-      }
-      else printf(" Failed to open for writing: %s\n", strerror(errno));
-   }
+            fprintf(stream, "</aeonwave>\n");
 
-   return 0;
+            fclose(stream);
+        }
+        else printf(" Failed to open for writing: %s\n", strerror(errno));
+    }
+
+    return 0;
 }
 
 int main()
 {
-   write_chorus();
-   write_delay();
-   write_reverb();
+    write_chorus();
+    write_delay();
+    write_reverb();
 
-   return 0;
+    return 0;
 }
