@@ -371,14 +371,6 @@ static XGMIDI_effect_t XGMIDI_amp_simulator_types[1] = {
  { "amp-simulator", { 39, 1, 48, 55,  0,  0,  0, 0, 0, 127, 112, 0, 0, 0,  0,  0 } }
 };
 
-#define PHASING_MIN      50e-6f
-#define PHASING_MAX      10e-3f
-#define CHORUS_MIN       10e-3f
-#define CHORUS_MAX       60e-3f
-#define FLANGING_MIN     10e-3f
-#define FLANGING_MAX     60e-3f
-#define DELAY_MIN        60e-3f
-#define DELAY_MAX       250e-3f
 #define LEVEL_60DB		0.001f
 #define MAX_REVERB_EFFECTS_TIME	0.700f
 
@@ -474,7 +466,7 @@ int write_reverb()
          float delay_depth = XGMIDI_delay_time_table_200ms[id]*1e-3f;
 
          float decay_time = XGMIDI_reverb_time_sec[rt];
-         float decay_level = dw/63.0f;
+         float decay_level = 0.98f*dw/63.0f;
          float decay_depth = get_decay_depth(decay_time, decay_level);
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
@@ -546,8 +538,8 @@ int write_chorus()
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = XGMIDI_delay_offset_table_ms[dt];
          float lfo_depth = XGMIDI_delay_offset_table_ms[pd]; // 30*pd/127.0f; // 5ms to 30ms
-         float gain = dw/127.0f;
-         float feedback = (fb-64)/64.0f;
+         float gain = 0.98f*dw/63.0f;
+         float feedback = fb ? (fb-64)/64.0f : 0.0f;
 
          float low_gain = _db2lin(lg-64.0f);
          float mid_gain = _db2lin(mg-64.0f);
@@ -653,7 +645,7 @@ int write_phasing()
          float rate = XGMIDI_LFO_frequency_table_Hz[f];
          float lfo_offset = dt/127.0f;
          float lfo_depth = (ld - dt)/127.0f;
-         float gain = (dw-64)/63.0f;
+         float gain = 0.98f*dw/63.0f;
 
          float low_gain = _db2lin(lg - 64.0f);
          float mid_gain = 1.0f;
@@ -736,8 +728,9 @@ int write_distortion()
 
          float distortion_fact = 2.0f*dr/127.0f;
          float clipping_fact = cc/127.0f;
-         float mix_fact = 0.5f*(ol/127.0f * dw/127.0f);
+         float mix_fact = 0.5f*(ol/127.0f * 0.98f*abs(dw)/127.0f);
          float asymmetry = 1.0f - clipping_fact;
+         char inv = (dw > 64);
 
          distortion_fact =  distortion_fact* distortion_fact;
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
@@ -749,7 +742,9 @@ int write_distortion()
          print_info(stream);
 
          fprintf(stream, " <audioframe mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"distortion\" src=\"envelope\">\n");
+         fprintf(stream, "  <effect type=\"distortion\" src=\"");
+         if (inv) fprintf(stream, "inverse-");
+         fprintf(stream, "envelope\">\n");
          fprintf(stream, "   <slot n=\"0\">\n");
          fprintf(stream, "    <param n=\"0\">%.3f</param>\n", distortion_fact);
          fprintf(stream, "    <param n=\"1\">%.3f</param>\n", clipping_fact);
@@ -858,11 +853,13 @@ int write_amp_simulator()
       int dw = type->param[9];		// Dry/Wet D63>W ~ D=W ~ D<W63 (1-127)
       int cc = type->param[10];		// Edge(Clip Curve) 0 ~ 127 (0-127)
 
+      /* distortion */
       float distortion_fact = 2.0f*dr/127.0f;
-      float clipping_fact = cc/127.0f;
-      float mix_fact = 0.5f*dw/127.0f;
+      float clipping_fact = 0.25f + 0.5f*cc/127.0f; // cc=0 = mild, cc=127 = sharp
+      float mix_fact = 0.98f*dw/127.0f;
       float asymmetry = 1.0f - clipping_fact;
 
+      /* equalizer */
       float cutoff = XGMIDI_EQ_frequency_table_Hz[fc];
       float gain = ol/127.0f;
 
