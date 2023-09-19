@@ -33,8 +33,8 @@ typedef struct {
     // The ratio of high-frequency decay time relative to the time set by
     // Decay Time. The Decay HF Ratio value 1.0 is neutral:
     // the decay time is equal for all frequencies.
-    float flDecayHFRatio; // 0.1 ~ 20.0, default 0.83 (linear)
-    float flDecayLFRatio; // 0.1 ~ 20.0, default 1.0 (linear)
+    float flDecayHFRatio; // 0.1 ~ 2.0, default 0.83 (linear)
+    float flDecayLFRatio; // 0.1 ~ 2.0, default 1.0 (linear)
 
     // Controls the overall amount of initial reflections relative to the Gain
     // property. Max. of 3.16 (+10 dB) to a minimum of 0.0 (-100 dB)
@@ -54,7 +54,7 @@ typedef struct {
     float flLateReverbDelay; // 0.0 ~ 0.1, default 0.011 (seconds)
     float flLateReverbPan[3];
 
-    float flEchoTime; // 0.075 ~ 0.5, default 0.25 (seconds);
+    float flEchoTime; // 0.075 ~ 0.25, default 0.25 (seconds);
     float flEchoDepth; // 0.0 ~ 1.0, default 0.0 (linear)
 
     float flModulationTime; // 0.04 ~ 4.0, default 0.25 (seconds)
