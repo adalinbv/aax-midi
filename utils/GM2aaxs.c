@@ -129,6 +129,7 @@ int write_chorus()
          int cl = type->param[0];	// Level 0-64-127: default 64
          int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int fb = type->param[2];	// Feedback Level
+//       int dt = type->param[3];	// Delay
          int cr = type->param[4];	// Rate: 0-127
          int cd = type->param[5];	// Depth: 0-127
 
@@ -139,12 +140,12 @@ int write_chorus()
          if (rate > 0.0f)
          {
             lfo_depth = (cd+1)/3.2f; // ms
-            lfo_offset = 10.0f;
+            lfo_offset = 0.1f;
          }
          else
          {
             lfo_depth = 0.0f;
-            lfo_offset = 10.0f+(cd+1)/3.2f;
+            lfo_offset = (cd+1)/3.2f;
          }
 
          float val = (7-cfc)/7.0f;
@@ -184,31 +185,6 @@ int write_chorus()
          }
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
-         else fprintf(stream, "delay");
-         fprintf(stream, "\"");
-         if (rate > 0.0f) fprintf(stream, " src=\"sine\"");
-         fprintf(stream, ">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.2f</param>\n", gain);
-         fprintf(stream, "    <param n=\"1\">%.1f</param>\n", rate);
-         fprintf(stream, "    <param n=\"2\" type=\"msec\">%.3f</param>\n", lfo_depth);
-         fprintf(stream, "    <param n=\"3\" type=\"msec\">%.3f</param>\n", lfo_offset);
-         fprintf(stream, "   </slot>\n");
-         if (feedback > 0.0f || fc < 20000.0f) {
-             fprintf(stream, "   <slot n=\"1\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-             fprintf(stream, "    <param n=\"1\">%.1f</param>\n", 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", feedback);
-             fprintf(stream, "    <param n=\"3\">%.1f</param>\n", 1.0f);
-             fprintf(stream, "   </slot>\n");
-         }
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
 
          fclose(stream);
@@ -271,17 +247,6 @@ int write_reverb()
          fprintf(stream, "   </slot>\n");
          fprintf(stream, "  </effect>\n");
          fprintf(stream, " </audioframe>\n\n");
-
-         fprintf(stream, " <mixer mode=\"append\">\n");
-         fprintf(stream, "  <effect type=\"reveb\">\n");
-         fprintf(stream, "   <slot n=\"0\">\n");
-         fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-         fprintf(stream, "    <param n=\"1\">%.3f</param>\n", delay_depth);
-         fprintf(stream, "    <param n=\"2\">%.3f</param>\n", decay_level);
-         fprintf(stream, "    <param n=\"3\">%.3f</param>\n", decay_depth);
-         fprintf(stream, "   </slot>\n");
-         fprintf(stream, "  </effect>\n");
-         fprintf(stream, " </mixer>\n\n");
          fprintf(stream, "</aeonwave>\n");
 
          fclose(stream);
