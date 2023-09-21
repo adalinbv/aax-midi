@@ -10,6 +10,8 @@ typedef struct {
     int param[16];
 } GSMIDI_effect_t;
 
+#define CHORUS_MIN	0.1
+
 /* CHORUS
  *  p   description             range
  *  --  -----------             ---------
@@ -185,13 +187,13 @@ int write_chorus()
             float lfo_depth, lfo_offset;
             if (rate > 0.0f)
             {
-                lfo_depth = 50.0f*cd/127.0f;
-                lfo_offset = 10.0f;
+                lfo_depth = cd;
+                lfo_offset = CHORUS_MIN;
             }
             else
             {
                 lfo_depth = 0.0f;
-                lfo_offset = 10.0f+40.0f*cd/127.0f;
+                lfo_offset = CHORUS_MIN + cd;
             }
             float feedback = 0.98f*fb/127.0f;
 
