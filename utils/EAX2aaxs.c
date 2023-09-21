@@ -12,6 +12,7 @@ typedef struct {
     EFXEAXREVERBPROPERTIES param;
 } EAX_effect_t;
 
+#define CHORUS_MAX		80e-3
 #define EAX_MAX_REVERB_TYPES	113
 
 static EAX_effect_t EAX_reverb_types[EAX_MAX_REVERB_TYPES] = {
@@ -228,7 +229,7 @@ int write_reverb()
       FILE *stream = fopen(fname, "w+");
       if (stream)
       {
-#if 1
+#if 0
  fprintf(stream, "<!--\n");
  fprintf(stream, "  Density: %f\n", type->param.flDensity);
  fprintf(stream, "  Diffusion: %f\n", type->param.flDiffusion);
@@ -255,7 +256,7 @@ int write_reverb()
 #endif
          /* echo */
          float echo_time = type->param.flEchoTime;
-         float echo_depth = type->param.flEchoDepth;
+         float echo_depth = _MIN(type->param.flEchoDepth, 0.9f);
 
          /* echo modulation */
          float mod_time = type->param.flModulationTime;
@@ -297,7 +298,11 @@ int write_reverb()
          fprintf(stream, ">\n");
          if (echo_depth > 0.0f)
          {
-             fprintf(stream, "  <effect type=\"delay\"");
+             if (echo_time < CHORUS_MAX) {
+                 fprintf(stream, "  <effect type=\"chorus\"");
+             } else {
+                 fprintf(stream, "  <effect type=\"delay\"");
+             }
              if (mod_depth > 0.0f) {
                  fprintf(stream, " src=\"sine\"");
              }
@@ -310,6 +315,8 @@ int write_reverb()
              fprintf(stream, "   </slot>\n");
              fprintf(stream, "  </effect>\n");
          }
+
+         fprintf(stream, "  <effect type=\"reverb\"");
          if (type->param.flModulationDepth > 0.0f) {
              fprintf(stream, "src=\"sine\"");
          }
