@@ -545,6 +545,7 @@ MIDIDriver::set_reverb(const char *t, uint16_t type, uint8_t vendor)
 void
 MIDIDriver::set_gm2_reverb_type(uint16_t type)
 {
+    reverb_type = (GM2<<16)|type;
     switch (type)
     {
     case GM2_REVERB_ROOM_SMALL:
