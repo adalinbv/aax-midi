@@ -347,7 +347,7 @@ int write_reverb()
              if (echo_depth > 0.01f) {
                  fprintf(stream, "   <slot n=\"1\">\n");
                  fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
-                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", 0.0f);
+                 fprintf(stream, "    <param n=\"1\">%.1f</param>\n", fc);
                  fprintf(stream, "    <param n=\"2\">%.3f</param>\n", 0.5f*echo_depth);
                  fprintf(stream, "    <param n=\"3\">0.0</param>\n");
                  fprintf(stream, "   </slot>\n");
