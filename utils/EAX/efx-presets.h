@@ -14,7 +14,7 @@ typedef struct {
     // default to 1.0, which provides the highest density. Reducing diffusion
     // gives the reverberation a more "grainy" character that is especially
     // noticeable with percussive sound sources. With a diffusion value of 0.0,
-    // the later reverberation sounds like a succession of distinct echoes.
+    // the late reverberation sounds like a succession of distinct echoes.
     float flDiffusion; // 0.0 ~ 1.0, default 1.0 (linear)
 
     // Master volume control for the reflected sound.
@@ -36,7 +36,7 @@ typedef struct {
     float flDecayHFRatio; // 0.1 ~ 2.0, default 0.83 (linear)
     float flDecayLFRatio; // 0.1 ~ 2.0, default 1.0 (linear)
 
-    // Controls the overall amount of initial reflections relative to the Gain
+    // Controls the overall amount of early reflections relative to the Gain
     // property. Max. of 3.16 (+10 dB) to a minimum of 0.0 (-100 dB)
     float flReflectionsGain; // 0.0 ~ 3.16, default 0.05 (linear)
 
@@ -45,7 +45,7 @@ typedef struct {
     float flReflectionsDelay; // 0.0 ~ 0.3, default 0.007 (seconds)
     float flReflectionsPan[3];
 
-    // Controls the overall amount of later reverberation relative to the
+    // Controls the overall amount of late reverberation relative to the
     // Gain property. Ranges from a maximum of 10.0 (+20 dB) to a
     // minimum of 0.0 (-100 dB) (no late reverberation at all)
     float flLateReverbGain; // 0.0 ~ 10.0, default 1.26 (linear)
@@ -88,7 +88,7 @@ typedef struct {
     // allowing you to increase the value of Decay Time without the risk of
     // getting an unnaturally long decay time at high frequencies. If this flag
     // is set to AL_FALSE, high-frequency decay time isn’t automatically limited
-    int   iDecayHFLimit; // AL_FLASE, AL_TRUE, default: AL_TRUE
+    int iDecayHFLimit; // AL_FLASE, AL_TRUE, default: AL_TRUE
 
 } EFXEAXREVERBPROPERTIES, *LPEFXEAXREVERBPROPERTIES;
 #endif

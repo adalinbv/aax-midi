@@ -143,16 +143,29 @@ float _lin2db(float v) { return 20.0f*log10f(v); }
 float _db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
 
 static float
-get_decay_depth(float time, float level) {
-    if (level < LEVEL_60DB) level = LEVEL_60DB;
-    return 5.0f*time*powf(LEVEL_60DB, level);
+get_decay_depth(float time, float *level) {
+    float rv;
+
+    if (*level < LEVEL_60DB) *level = LEVEL_60DB;
+
+    do {
+        rv = time*powf(LEVEL_60DB, *level);
+        if (rv > 1.0f) *level *= 1.1f;
+    } while (rv > 1.0f);
+
+    while (rv < 0.1f) {
+        *level *= 0.9f;
+        rv = time*powf(LEVEL_60DB, *level);
+    }
+
+    return rv;
 }
 
 void
 print_header(FILE *stream)
 {
     time_t seconds=time(NULL);
-    struct tm* current_time=localtime(&seconds); 
+    struct tm* current_time=localtime(&seconds);
     int year = current_time->tm_year + 1900;
 
     fprintf(stream, "\n<!--\n");
@@ -184,7 +197,7 @@ print_info(FILE *stream)
 
 /*
  * https://usermanual.wiki/Pdf/Effects20Extension20Guide.90272296/view#66
- * AL_EFFECT_EAXREVERB 
+ * AL_EFFECT_EAXREVERB
  *  1. Parameter Name		Units		Range		Default
  *  2. Reverb Density				[  0.0,  1.0]	1.0
  *  3. Reverb Diffusion				[  0.0,  1.0]	1.0
@@ -231,36 +244,36 @@ int write_reverb()
       {
 #if 0
  fprintf(stream, "<!--\n");
- fprintf(stream, "  Density: %f\n", type->param.flDensity);
- fprintf(stream, "  Diffusion: %f\n", type->param.flDiffusion);
- fprintf(stream, "  Gain: %f\n", type->param.flGain);
- fprintf(stream, "  GainHF: %f\n", type->param.flGainHF);
- fprintf(stream, "  GainLF: %f\n", type->param.flGainLF);
- fprintf(stream, "  DecayTime: %f\n", type->param.flDecayTime);
- fprintf(stream, "  DecayHFRatio: %f\n", type->param.flDecayHFRatio);
- fprintf(stream, "  DecayLFRatio: %f\n", type->param.flDecayLFRatio);
- fprintf(stream, "  ReflectionsGain: %f\n", type->param.flReflectionsGain);
- fprintf(stream, "  ReflectionsDelay: %f\n", type->param.flReflectionsDelay);
- fprintf(stream, "  LateReverbGain: %f\n", type->param.flLateReverbGain);
- fprintf(stream, "  LateReverbDelay: %f\n", type->param.flLateReverbDelay);
- fprintf(stream, "  EchoTime: %f\n", type->param.flEchoTime);
- fprintf(stream, "  EchoDepth: %f\n", type->param.flEchoDepth);
- fprintf(stream, "  ModulationTime: %f\n", type->param.flModulationTime);
- fprintf(stream, "  ModulationDepth: %f\n", type->param.flModulationDepth);
- fprintf(stream, "  AirAbsorptionGainHF: %f\n", type->param.flAirAbsorptionGainHF);
- fprintf(stream, "  HFReference: %f\n", type->param.flHFReference);
- fprintf(stream, "  LFReference: %f\n", type->param.flLFReference);
- fprintf(stream, "  RoomRolloffFactor: %f\n", type->param.flRoomRolloffFactor);
- fprintf(stream, "  DecayHFLimit: %i\n", type->param.iDecayHFLimit);
+ fprintf(stream, "  Gain: %.5f\n", type->param.flGain);
+// fprintf(stream, "  RoomRolloffFactor: %.5f\n", type->param.flRoomRolloffFactor);
+ fprintf(stream, "  GainLF: %.3f\n", type->param.flGainLF);
+ fprintf(stream, "  GainHF: %.3f\n", type->param.flGainHF);
+ fprintf(stream, "\n  ReflectionsDelay: %.3f\n", type->param.flReflectionsDelay);
+ fprintf(stream, "  ReflectionsGain: %.3f\n", type->param.flReflectionsGain);
+ fprintf(stream, "  DecayTime: %.3f\n", type->param.flDecayTime);
+ fprintf(stream, "\n  Diffusion: %.3f\n", type->param.flDiffusion);
+ fprintf(stream, "  DecayLFRatio: %.3f\n", type->param.flDecayLFRatio);
+ fprintf(stream, "  DecayHFRatio: %.3f\n", type->param.flDecayHFRatio);
+ fprintf(stream, "  LFReference: %.1f\n", type->param.flLFReference);
+ fprintf(stream, "  HFReference: %.1f\n", type->param.flHFReference);
+ fprintf(stream, "\n  Density: %.3f\n", type->param.flDensity);
+ fprintf(stream, "  LateReverbGain: %.5f\n", type->param.flLateReverbGain);
+ fprintf(stream, "  LateReverbDelay: %.5f\n", type->param.flLateReverbDelay);
+ fprintf(stream, "\n  EchoTime: %.3f\n", type->param.flEchoTime);
+ fprintf(stream, "  EchoDepth: %.3f\n", type->param.flEchoDepth);
+ fprintf(stream, "\n  ModulationTime: %.3f\n", type->param.flModulationTime);
+ fprintf(stream, "  ModulationDepth: %.3f\n", type->param.flModulationDepth);
+// fprintf(stream, "\n  AirAbsorptionGainHF: %f\n", type->param.flAirAbsorptionGainHF);
+// fprintf(stream, "  DecayHFLimit: %i\n", type->param.iDecayHFLimit);
  fprintf(stream, "-->\n");
 #endif
-         /* echo */
-         float echo_time = type->param.flEchoTime;
-         float echo_depth = _MIN(type->param.flEchoDepth, 0.9f);
 
-         /* echo modulation */
-         float mod_time = type->param.flModulationTime;
-         float mod_depth = type->param.flModulationDepth;
+         /*
+          * EAX reverb defines:
+          * 1. early reflections
+          * 2. late reverb
+          * 3. echo - simulated with delay-line
+          */
 
          /*
           * cutoff frequency:
@@ -268,23 +281,41 @@ int write_reverb()
           * as the properties of the room doesn't change between them.
           */
          float density = type->param.flDensity;
-         float fc = type->param.flLFReference + density*(type->param.flHFReference-type->param.flLFReference);
+         float gain_lf = type->param.flGainLF;
+         float gain_hf = type->param.flGainHF;
+         float fc_low = type->param.flLFReference;
+         float fc_high = type->param.flHFReference;
+         float frequency_range = fc_high - fc_low;
+         float fc = fc_low + density*gain_hf*frequency_range/gain_lf;
          if (fc >= 16000.0f) fc = 0.0f; // allpass
 
+         float lf_ratio = type->param.flDecayLFRatio;
+         float hf_ratio = type->param.flDecayHFRatio;
+         float gain = 0.5f*lf_ratio + 0.5f*hf_ratio;
+
          /* early reflections */
-         float diffusion = type->param.flDiffusion;
+         float reflections_gain = type->param.flReflectionsGain;
          float reflections_delay = type->param.flReflectionsDelay;
-         float delay_depth = reflections_delay*diffusion;
+         float delay_depth = reflections_delay;
+
+         gain *= reflections_gain;
 
          /* decay level - late reflections */
-         float gain_hf = type->param.flGainHF;
-         float gain_lf = type->param.flGainLF;
-         float gain = _MIN(0.5f*(gain_lf+gain_hf), 1.0f);
-         float decay_level = _MIN(gain, 1.0f);
+         float decay_level = type->param.flLateReverbGain;
 
          /* decay depth - late reflections */
+         float diffusion = type->param.flDiffusion;
          float decay_time = type->param.flDecayTime;
-         float decay_depth = get_decay_depth(decay_time, decay_level);
+         float decay_depth = get_decay_depth(decay_time, &decay_level);
+
+         /* echo */
+         float echo_time = type->param.flEchoTime;
+         float echo_depth = type->param.flEchoDepth;
+         float echo_level = decay_level;
+
+         /* modulation */
+         float mod_time = type->param.flModulationTime;
+         float mod_depth = type->param.flModulationDepth;
 
          fprintf(stream, "<?xml version=\"1.0\"?>\n\n");
 
@@ -296,7 +327,7 @@ int write_reverb()
 
          fprintf(stream, " <audioframe mode\"append\"");
          fprintf(stream, ">\n");
-         if (echo_depth > 0.0f)
+         if (echo_level > 0.0f)
          {
              if (echo_time < CHORUS_MAX) {
                  fprintf(stream, "  <effect type=\"chorus\"");
@@ -308,11 +339,19 @@ int write_reverb()
              }
              fprintf(stream, ">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
-             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", echo_depth);
+             fprintf(stream, "    <param n=\"0\">%.1f</param>\n", echo_level);
              fprintf(stream, "    <param n=\"1\">%.3f</param>\n", (mod_depth > 0.0f) ? 1.0f/mod_time : 0.0f);
              fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mod_depth);
              fprintf(stream, "    <param n=\"3\" type=\"sec\">%.3f</param>\n", echo_time);
              fprintf(stream, "   </slot>\n");
+             if (echo_depth > 0.01f) {
+                 fprintf(stream, "   <slot n=\"1\">\n");
+                 fprintf(stream, "    <param n=\"0\">%.1f</param>\n", fc);
+                 fprintf(stream, "    <param n=\"1\">%.3f</param>\n", 0.0f);
+                 fprintf(stream, "    <param n=\"2\">%.3f</param>\n", 0.5f*echo_depth);
+                 fprintf(stream, "    <param n=\"3\">0.0</param>\n");
+                 fprintf(stream, "   </slot>\n");
+             }
              fprintf(stream, "  </effect>\n");
          }
 
