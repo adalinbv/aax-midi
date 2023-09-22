@@ -187,13 +187,13 @@ int write_chorus()
             float lfo_depth, lfo_offset;
             if (rate > 0.0f)
             {
-                lfo_depth = cd;
+                lfo_depth = 0.3f*cd;
                 lfo_offset = CHORUS_MIN;
             }
             else
             {
                 lfo_depth = 0.0f;
-                lfo_offset = CHORUS_MIN + cd;
+                lfo_offset = CHORUS_MIN + 0.3f*cd;
             }
             float feedback = 0.98f*fb/127.0f;
 
