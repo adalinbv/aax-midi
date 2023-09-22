@@ -335,13 +335,13 @@ int write_reverb()
                  fprintf(stream, "  <effect type=\"delay\"");
              }
              if (mod_depth > 0.0f) {
-                 fprintf(stream, " src=\"sine\"");
+                 fprintf(stream, " src=\"sine\" stereo=\"true\"");
              }
              fprintf(stream, ">\n");
              fprintf(stream, "   <slot n=\"0\">\n");
              fprintf(stream, "    <param n=\"0\">%.1f</param>\n", echo_level);
              fprintf(stream, "    <param n=\"1\">%.3f</param>\n", (mod_depth > 0.0f) ? 1.0f/mod_time : 0.0f);
-             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", mod_depth);
+             fprintf(stream, "    <param n=\"2\">%.3f</param>\n", 0.1f*mod_depth);
              fprintf(stream, "    <param n=\"3\" type=\"sec\">%.3f</param>\n", echo_time);
              fprintf(stream, "   </slot>\n");
              if (echo_depth > 0.01f) {
