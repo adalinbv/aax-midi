@@ -10,6 +10,8 @@ typedef struct {
     int param[16];
 } GM2MIDI_effect_t;
 
+#define CHORUS_MIN	0.0
+
 /* CHORUS
  *  p   description             range
  *  --  -----------             ---------
@@ -60,14 +62,7 @@ static GM2MIDI_effect_t GM2MIDI_reverb_types[GM2MIDI_MAX_REVERB_TYPES] = {
 static float GM2MIDI_reverb_character[8] = {
  0.007f, 0.012f, 0.027f, 0.035f, 0.035f, 0.0095f, 0.0f, 0.0f
 };
-#define PHASING_MIN      50e-6f
-#define PHASING_MAX      10e-3f
-#define FLANGING_MIN     10e-3f
-#define FLANGING_MAX     60e-3f
-#define DELAY_MIN        60e-3f
-#define DELAY_MAX       250e-3f
 #define LEVEL_60DB		0.001f
-#define MAX_REVERB_EFFECTS_TIME	0.700f
 
 #define _MAX(a,b)       (((a)>(b)) ? (a) : (b))
 #define _MIN(a,b)       (((a)<(b)) ? (a) : (b))
@@ -129,7 +124,7 @@ int write_chorus()
          int cl = type->param[0];	// Level 0-64-127: default 64
          int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
          int fb = type->param[2];	// Feedback Level
-//       int dt = type->param[3];	// Delay
+         int dt = type->param[3];	// Delay
          int cr = type->param[4];	// Rate: 0-127
          int cd = type->param[5];	// Depth: 0-127
 
@@ -140,12 +135,12 @@ int write_chorus()
          if (rate > 0.0f)
          {
             lfo_depth = (cd+1)/3.2f; // ms
-            lfo_offset = 0.1f;
+            lfo_offset = 20e-3f*dt;
          }
          else
          {
             lfo_depth = 0.0f;
-            lfo_offset = (cd+1)/3.2f;
+            lfo_offset = CHORUS_MIN + (cd+1)/3.2f;
          }
 
          float val = (7-cfc)/7.0f;
@@ -163,8 +158,7 @@ int write_chorus()
 
          fprintf(stream, " <audioframe mode=\"append\">\n");
          fprintf(stream, "  <effect type=\"");
-         if (lfo_depth < 10) fprintf(stream, "phasing");
-         else if (lfo_depth < 60) fprintf(stream, "chorus");
+         if (lfo_depth < 80.0f) fprintf(stream, "chorus");
          else fprintf(stream, "delay");
          fprintf(stream, "\"");
          if (rate > 0.0f) fprintf(stream, " src=\"sine\"");

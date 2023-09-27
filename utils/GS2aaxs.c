@@ -10,7 +10,7 @@ typedef struct {
     int param[16];
 } GSMIDI_effect_t;
 
-#define CHORUS_MIN	0.1
+#define CHORUS_MIN	0.0
 
 /* CHORUS
  *  p   description             range
@@ -175,7 +175,7 @@ int write_chorus()
             int cl = type->param[0];	// Level 0-64-127: default 64
             int cfc = type->param[1];	// Pre LPF cutoff behavior: 0-7, def. 0
             int fb = type->param[2];	// Feedback Level: default 8
-//          int ct = type->param[3];	// Pre Delay Time: 0-100ms
+            int ct = type->param[3];	// Pre Delay Time: 0-100ms
             int cr = type->param[4];	// Rate: 0-127: 0.05 - 10.0
             int cd = type->param[5];	// Depth: 0-127
 //          int crev = type->param[6];	// Chorus to Reverb: 0-127
@@ -188,7 +188,7 @@ int write_chorus()
             if (rate > 0.0f)
             {
                 lfo_depth = 0.3f*cd;
-                lfo_offset = CHORUS_MIN;
+                lfo_offset = (fb > 32) ? 20e-3f*ct : 100e-3f*ct;
             }
             else
             {
