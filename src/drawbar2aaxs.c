@@ -74,15 +74,56 @@ static const char* format_float6(float f)
     return buf;
 }
 
-void print_aaxs(const char* outfile, struct params param)
+void print_layer(FILE* output, struct params *param, int layer)
 {
     float pitch[9] = { 0.5f, 0.75f, 1.0f, 2.0f, 3.0f, 4.0f, 5.0f, 6.0f, 8.0f };
+    float total;
+    int i, num;
+
+    fprintf(output, "  <layer n=\"%i\">\n", layer);
+    fprintf(output, "   <waveform src=\"white-noise\" ratio=\"0.1\"/>\n");
+
+    num = 0;
+    total = 0.0f;
+    for (i=0; i<9; ++i) {
+        if (param->db[i] > 0.f) ++num;
+        total += _db2lin(-3.0f*(8.0f-param->db[i]));
+    }
+    total *= 0.5f;
+
+    if (num)
+    {
+        for (i=0; i<9; ++i)
+        {
+            float v = _db2lin(-3.0f*(8.0f-param->db[i]))/total;
+            if (param->db[i] > 0.f)
+            {
+                if (layer == 1 && (i == 3 || i == 4)) {
+                    v *= 2.0f;
+                }
+
+                if (!i) {
+                    fprintf(output, "   <waveform src=\"sine\" ratio=\"%s\"", format_float6(v));
+                } else {
+                    fprintf(output, "   <waveform src=\"sine\" processing=\"add\" ratio=\"%s\"", format_float6(v));
+                }
+                if (pitch[i] != 1.0f) {
+                    fprintf(output, " pitch=\"%s\"", format_float6(pitch[i]));
+                }
+                fprintf(output, "/>\n");
+            }
+        }
+    }
+    fprintf(output, "  </layer>\n");
+}
+
+void print_aaxs(const char* outfile, struct params param)
+{
     FILE *output;
     struct tm* tm_info;
     time_t timer;
     char year[5];
-    float total;
-    int i, num;
+    int i;
 
     time(&timer);
     tm_info = localtime(&timer);
@@ -156,40 +197,23 @@ void print_aaxs(const char* outfile, struct params param)
     } else {
         fprintf(output, " <sound gain=\"1.0\" frequency=\"55\">\n");
     }
-    fprintf(output, "  <waveform src=\"white-noise\" ratio=\"0.1\"/>\n");
 
-    num = 0;
-    total = 0.0f;
-    for (i=0; i<9; ++i) {
-        if (param.db[i] > 0.f) ++num;
-        total += _db2lin(-3.0f*(8.0f-param.db[i]));
+    print_layer(output, &param, 0);
+    if (param.percussion) {
+        print_layer(output, &param, 1);
     }
-    total *= 0.5f;
 
-    if (num)
-    {
-        for (i=0; i<9; ++i)
-        {
-            float v = _db2lin(-3.0f*(8.0f-param.db[i]))/total;
-            if (param.db[i] > 0.f)
-            {
-                if (!i) {
-                    fprintf(output, "  <waveform src=\"sine\" ratio=\"%s\"", format_float6(v));
-                } else {
-                    fprintf(output, "  <waveform src=\"sine\" processing=\"add\" ratio=\"%s\"", format_float6(v));
-                }
-                if (pitch[i] != 1.0f) {
-                    fprintf(output, " pitch=\"%s\"", format_float6(pitch[i]));
-                }
-                fprintf(output, "/>\n");
-            }
-        }
-    }
     fprintf(output, " </sound>\n\n");
 
     fprintf(output, " <emitter looping=\"true\">\n");
     if (param.percussion)
     {
+        fprintf(output, "  <filter type=\"dynamic-layer\" src=\"inverse-timed\">\n");
+        fprintf(output, "    <param n=\"0\">0.2</param>\n");
+        fprintf(output, "    <param n=\"1\">0.3</param>\n");
+        fprintf(output, "    <param n=\"2\">1.0</param>\n");
+        fprintf(output, "    <param n=\"3\">0.0</param>\n");
+        fprintf(output, "  </filter>\n");
         fprintf(output, "  <filter type=\"frequency\" src=\"timed\">\n");
         fprintf(output, "   <slot n=\"0\">\n");
         fprintf(output, "    <param n=\"0\" pitch=\"%g\">%4.1f</param>\n", 1.2f*param.harmonic, 55.0f*param.harmonic/1.2f);
