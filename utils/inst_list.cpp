@@ -17,6 +17,7 @@
 #include <xml.h>
 
 #include "driver.h"
+#include "common.h"
 #include "canonical_names.hpp"
 
 void help(const char *path)
@@ -39,10 +40,12 @@ void help(const char *path)
 using name_t = struct {
     std::string name;
     std::string file;
-    bool stereo;
-    int wide;
+    std::string key_on;
+    std::string key_off;
     float spread;
     bool patch;
+    bool stereo;
+    int wide;
 };
                       // inst_pos, name
 using entry_t = std::map<unsigned,name_t>;
@@ -181,32 +184,56 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
                 entry_t entry;
                 for (i=0; i<inum; ++i)
                 {
-                    bool patch = false;
                     if (xmlNodeGetPos(xbid, xiid, tag, i) != 0)
                     {
                         unsigned int pos = xmlAttributeGetInt(xiid, "n");
 
-                        if (!xmlAttributeCopyString(xiid, "file", file, 64))
-                        {
-                            xmlAttributeCopyString(xiid, "patch", file, 64);
-                            patch = true;
-                        }
-
                         slen = xmlAttributeCopyString(xiid, "name", name, 64);
                         if (slen)
                         {
+                            std::string key_on, key_off;
+                            bool patch, stereo;
                             float spread;
-                            bool stereo;
                             int wide;
 
-                            wide = xmlAttributeGetInt(xiid, "wide");
-                            if (!wide) wide = xmlAttributeGetBool(xiid, "wide");
+                            patch = false;
+                            if (!xmlAttributeCopyString(xiid, "file", file, 64))
+                            {
+                                if (xmlAttributeCopyString(xiid, "patch", file, 64)) {
+                                    patch = true;
+                                }
+                            }
+
+                            if (xmlAttributeExists(xiid, "key-on")) {
+                                key_on = xmlAttributeGetString(xiid, "key-on");
+                            }
+                            if (xmlAttributeExists(xiid, "key-off")) {
+                                key_off = xmlAttributeGetString(xiid, "key-off");
+                            }
+
+
+                            spread = xmlAttributeGetDouble(xiid, "spread");
 
                             stereo = xmlAttributeGetBool(xiid, "stereo");
                             if (stereo && wide == -1) wide = 0;
 
-                            spread = xmlAttributeGetDouble(xiid, "spread");
-                            entry[pos] = {name,file,stereo,wide,spread,patch};
+                            if (xmlAttributeCompareString(xiid, "wide","true")){
+                                wide = xmlAttributeGetInt(xiid, "wide");
+                            } else {
+                                wide = -1;
+                            }
+                            if (!wide) wide = xmlAttributeGetBool(xiid, "wide");
+
+                            entry[pos] = {
+                                name,
+                                file,
+                                key_on,
+                                key_off,
+                                spread,
+                                patch,
+                                stereo,
+                                wide
+                            };
                             rv++;
                         }
                     }
@@ -273,12 +300,15 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 
             std::string name = canonical_name(it_name.name);
             std::string& filename = it_name.file;
+            std::string &key_on = it_name.key_on;
+            std::string &key_off = it_name.key_off;
             bool stereo = it_name.stereo;
             float spread = it_name.spread;
             int wide = it_name.wide;
             bool patch = it_name.patch;
 
-            bool found2 = false;
+            bool found2 = check_file(it_entry.second.file.c_str(), patch ? ".xml" : ".aaxs");
+#if 0
             for (auto &it_bank2 : bank2)
             {
                 entry_t &entry2 = it_bank2.second.second;
@@ -301,18 +331,21 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                 }
                 if (found2) break;
             }
+#endif
 
             printf("   <%s%s n=\"%i\" name=\"%s\"",
                         found2 ? "" : "unsupported-", inst, it_entry.first+inst_offs,
                         name.c_str());
             if (patch) printf(" patch=\"%s\"", filename.c_str());
             else printf(" file=\"%s\"", filename.c_str());
+            if (!key_on.empty())  printf(" key-on=\"%s\"", key_on.c_str());
+            if (!key_off.empty()) printf(" key-off=\"%s\"", key_off.c_str());
             if (stereo) printf(" stereo=\"true\"");
             if (wide) {
                if (wide == -1) printf(" wide=\"true\"");
                else printf(" wide=\"%i\"", wide);
             }
-            if (spread) printf(" spread=\"%2.1f\"", spread);
+	    if (spread) printf(" spread=\"%3.2g\"", spread);
             printf("/>\n");
         }
 
@@ -613,8 +646,7 @@ int main(int argc, char **argv)
             }
             break;
         case XML:
-            num = fill_bank(bank, xid, "instrument", 1);
-            num = fill_bank(bank, xid, "unsupported-instrument", 0);
+            num = fill_bank(bank, xid, "*", 1);
             if (num)
             {
                if (xid2) num = fill_bank(bank2, xid2, "instrument", 1);

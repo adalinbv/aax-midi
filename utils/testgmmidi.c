@@ -1,11 +1,11 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <fcntl.h>
-#include <unistd.h>
 #include <stdlib.h>
 
 #include <xml.h>
+
+#include "common.h"
 
 void help(const char *path)
 {
@@ -63,10 +63,7 @@ int main(int argc, char **argv)
                     slen = xmlAttributeCopyString(xbid, "file", file, 64);
                     if (slen)
                     {
-                        char *aaxs = file+slen;
-                        snprintf(aaxs, 6, "%s", ".aaxs");
-
-                        if (access(dir, R_OK) == -1 ) {
+                        if (!check_file(file, ".aaxs")) {
                            printf("Warning: instrument file %s does not exist\n\t%s\n", file, filename);
                         }
                     }
@@ -78,10 +75,7 @@ int main(int argc, char **argv)
                             slen = xmlAttributeCopyString(xiid, "file", file, 64);
                             if (slen)
                             {
-                                char *aaxs = file+slen;
-                                snprintf(aaxs, 6, "%s", ".aaxs");
-
-                                if (access(dir, R_OK) == -1 ) {
+                                if (!check_file(file, ".aaxs")) {
                                    printf("Warning: instrument file %s does not exist\n\t%s\n", file, filename);
                                 }
                                 continue;
@@ -90,10 +84,7 @@ int main(int argc, char **argv)
                             slen = xmlAttributeCopyString(xiid, "patch", file, 64);
                             if (slen)
                             {
-                                char *aaxs = file+slen;
-                                snprintf(aaxs, 6, "%s", ".xml");
-
-                                if (access(dir, R_OK) == -1 ) {
+                                if (!check_file(file, ".xml")) {
                                    printf("Warning: patch file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
@@ -101,10 +92,7 @@ int main(int argc, char **argv)
                             slen = xmlAttributeCopyString(xiid, "key-on", file, 64);
                             if (slen)
                             {
-                                char *aaxs = file+slen;
-                                snprintf(aaxs, 6, "%s", ".aaxs");
-
-                                if (access(dir, R_OK) == -1 ) {
+                                if (!check_file(file, ".aaxs")) {
                                    printf("Warning: key-on event file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
@@ -112,10 +100,7 @@ int main(int argc, char **argv)
                             slen = xmlAttributeCopyString(xiid, "key-off", file, 64);
                             if (slen)
                             {
-                                char *aaxs = file+slen;
-                                snprintf(aaxs, 6, "%s", ".aaxs");
-
-                                if (access(dir, R_OK) == -1 ) {
+                                if (!check_file(file, ".aaxs")) {
                                    printf("Warning: key-off event file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
@@ -133,10 +118,7 @@ int main(int argc, char **argv)
                             slen = xmlAttributeCopyString(xiid, "file", file, 64);
                             if (slen)
                             {
-                                char *aaxs = file+slen;
-                                snprintf(aaxs, 6, "%s", ".aaxs");
-
-                                if (access(dir, R_OK) == -1 ) {
+                                if (!check_file(file, ".aaxs")) {
                                    printf("Warning: drum file %s does not exist\n\t%s\n", file, filename);
                                 }
                             }
