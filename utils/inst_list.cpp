@@ -44,8 +44,9 @@ using name_t = struct {
     float spread;
     bool patch;
 };
-//using name_t = std::pair<std::string,std::string>;
+                      // inst_pos, name
 using entry_t = std::map<unsigned,name_t>;
+                      // bank_pos(msb,lsb)   bank_name, entry
 using bank_t = std::map<unsigned,std::pair<std::string,entry_t>>;
 
 const char *sections[] = {
@@ -89,6 +90,14 @@ const char *xml_header =
 " * - stereo=\"true\"\n"
 " *   Sets wide to true if wide was not already set and add effects to make\n"
 " *   3d sounds sound spatial.\n"
+" *\n"
+" * - key-on=\"<instrument>\"\n"
+" *   Add a pitched, non-looping sound effect when the key is pressed.\n"
+" *   If a non-pitched sound is required then add a pitch-fraction of 0.0\n"
+" *\n"
+" * - key-off=\"<instrument>\"\n"
+" *   Add a pitched, non-looping sound effect when the key is released.\n"
+" *   If a non-pitched sound is required then add a pitch-fraction of 0.0\n"
 "-->\n";
 
 
@@ -139,11 +148,11 @@ get_elem(const char *dir, std::string &file)
 }
 
 int
-fill_bank(bank_t& bank, xmlId *xid, const char *tag)
+fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
 {
     int rv = 0;
 
-    bank.clear();
+    if (clear) bank.clear();
 
     xmlId *xmid;
     xmid = xmlNodeGet(xid, "/aeonwave/midi");
@@ -151,7 +160,7 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag)
     {
         unsigned int bnum = xmlNodeGetNum(xmid, "bank");
         xmlId *xbid = xmlMarkId(xmid);
-        unsigned int b, i, nl;
+        unsigned int b, i, bank_pos;
         char file[1024];
         char name[1024];
 
@@ -166,10 +175,10 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag)
                 slen = xmlAttributeCopyString(xiid, "name", name, 64);
                 if (slen) bank_name = name;
 
-                nl = xmlAttributeGetInt(xbid, "n") << 16;
-                nl += xmlAttributeGetInt(xbid, "l");
+                bank_pos = xmlAttributeGetInt(xbid, "n") << 16;
+                bank_pos += xmlAttributeGetInt(xbid, "l");
 
-                entry_t e;
+                entry_t entry;
                 for (i=0; i<inum; ++i)
                 {
                     bool patch = false;
@@ -197,14 +206,14 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag)
                             if (stereo && wide == -1) wide = 0;
 
                             spread = xmlAttributeGetDouble(xiid, "spread");
-                            e[pos] = {name,file,stereo,wide,spread,patch};
+                            entry[pos] = {name,file,stereo,wide,spread,patch};
                             rv++;
                         }
                     }
                 }
                 xmlFree(xiid);
 
-                bank[nl] = std::make_pair<std::string,entry_t>(std::move(bank_name),std::move(e));
+                bank[bank_pos] = std::make_pair<std::string,entry_t>(std::move(bank_name),std::move(entry));
             }
         }
         xmlFree(xbid);
@@ -213,6 +222,7 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag)
     return rv;
 }
 
+static char inst_offs = 0;
 void
 print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 {
@@ -225,17 +235,21 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
     const char *t = "";
     for (auto &b : bank)
     {
-        entry_t &e = b.second.second;
-        unsigned int nl = b.first;
+        entry_t &entry = b.second.second;
+        unsigned int bank_pos = b.first;
         const char *type = "GM";
-        int msb = nl >> 16;
-        int lsb = nl & 0xffff;
+        int bank_msb = bank_pos >> 16;
+        int bank_lsb = bank_pos & 0xffff;
         int i = 0;
 //
-        if (msb == 0x79) type = "GM2";
-        else if (msb == 127 && !lsb) type = "MT32";
-        else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
-        else if (msb) type = "GS";
+        if (bank_msb == 0x79) type = "GM2";
+        else if (bank_msb == 127 && bank_lsb == 0) type = "MT32";
+        else if ((bank_msb == 64 && bank_lsb == 0) ||
+                 (bank_lsb != 0 && bank_msb == 0))
+        {
+            type = "XG";
+        }
+        else if (bank_msb) type = "GS";
 
         if (strcmp(t, type))
         {
@@ -244,38 +258,42 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
         }
 
         bool found = false;
-        for (auto it : e)
+        for (auto it_entry : entry)
         {
+            name_t &it_name = it_entry.second;
             if (!found)
             {
-                if (lsb) printf("  <bank n=\"%i\" l=\"%i\">\n", msb, lsb);
-                else printf("  <bank n=\"%i\">\n", msb);
+                if (bank_lsb != 0 ) {
+                    printf("  <bank n=\"%i\" l=\"%i\">\n", bank_msb, bank_lsb);
+                } else {
+                    printf("  <bank n=\"%i\">\n", bank_msb);
+                }
                 found = true;
             }
 
-            std::string name = canonical_name(it.second.name);
-            std::string& filename = it.second.file;
-            bool stereo = it.second.stereo;
-            float spread = it.second.spread;
-            int wide = it.second.wide;
-            bool patch = it.second.patch;
+            std::string name = canonical_name(it_name.name);
+            std::string& filename = it_name.file;
+            bool stereo = it_name.stereo;
+            float spread = it_name.spread;
+            int wide = it_name.wide;
+            bool patch = it_name.patch;
 
             bool found2 = false;
-            for (auto &b2 : bank2)
+            for (auto &it_bank2 : bank2)
             {
-                entry_t &e2 = b2.second.second;
-                unsigned int nl2 = b2.first;
-                if (nl2 == nl)
+                entry_t &entry2 = it_bank2.second.second;
+                unsigned int bank_pos2 = it_bank2.first;
+                if (bank_pos2 == bank_pos)
                 {
-                   for (auto it2 : e2)
+                   for (auto it_entry2 : entry2)
                    {
-                      if (it2.first == it.first)
+                      if (it_entry2.first == it_entry.first)
                       {
-                          filename = it2.second.file;
-                          stereo = it.second.stereo;
-                          spread = it2.second.spread;
-                          wide = it2.second.wide;
-                          patch = it2.second.patch;
+                          filename = it_entry2.second.file;
+                          stereo = it_name.stereo;
+                          spread = it_entry2.second.spread;
+                          wide = it_entry2.second.wide;
+                          patch = it_entry2.second.patch;
                           found2 = true;
                           break;
                       }
@@ -285,7 +303,7 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
             }
 
             printf("   <%s%s n=\"%i\" name=\"%s\"",
-                        found2 ? "" : "unsupported-", inst, it.first,
+                        found2 ? "" : "unsupported-", inst, it_entry.first+inst_offs,
                         name.c_str());
             if (patch) printf(" patch=\"%s\"", filename.c_str());
             else printf(" file=\"%s\"", filename.c_str());
@@ -356,30 +374,35 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
         }
 
         int num = 0;
-        for (auto &b : bank)
+        for (auto &it_bank : bank)
         {
-            entry_t &e = b.second.second;
-            auto it = e.find(i);
-            if (it != e.end()) num++;
+            entry_t &entry = it_bank.second.second;
+            auto it = entry.find(i);
+            if (it != entry.end()) num++;
         }
 
         bool first = true;
-        for (auto &b : bank)
+        for (auto &it_bank : bank)
         {
-            unsigned int nl = b.first;
-            entry_t &e = b.second.second;
-            auto it = e.find(i);
-            if (it != e.end())
+            unsigned int bank_pos = it_bank.first;
+            entry_t &entry = it_bank.second.second;
+            auto it = entry.find(i);
+            if (it != entry.end())
             {
                 const char *type = "GM";
                 unsigned int elem;
-                int msb = nl >> 16;
-                int lsb = nl & 0xffff;
+                int bank_msb = bank_pos >> 16;
+                int bank_lsb = bank_pos & 0xffff;
 
-                if (msb == 0x79) type = "GM2";
-                else if (msb == 127 && !lsb) type = "MT32";
-                else if ((msb == 64 && !lsb) || (lsb && msb == 0)) type = "XG";
-                else if (msb) type = "GS";
+                if (bank_msb == 0x79) type = "GM2";
+                else if (bank_msb == 127 && bank_lsb == 0) {
+                    type = "MT32";
+                }
+                else if ((bank_msb == 64 && bank_lsb == 0) ||
+                         (bank_lsb != 0 && bank_msb == 0))
+                {
+                    type = "XG";
+                } else if (bank_msb != 0) type = "GS";
 
                 elem = get_elem(dir, it->second.file);
                 std::string name = canonical_name(it->second.name);
@@ -388,14 +411,14 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                 case ASCII:
                     if (first)
                     {
-                        printf("%3i  %3i %3i  %3i  %s\n", i+1, msb, lsb, elem,
-                                name.c_str());
+                        printf("%3i  %3i %3i  %3i  %s\n", i+1, 
+                                bank_msb, bank_lsb, elem, name.c_str());
                         first = false;
                     }
                     else
                     {
-                        printf("%3s  %3i %3i  %3i  %s\n", "", msb, lsb, elem,
-                                name.c_str());
+                        printf("%3s  %3i %3i  %3i  %s\n", "",
+                                bank_msb, bank_lsb, elem, name.c_str());
                     }
                     break;
                 case HTML:
@@ -407,8 +430,8 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                         first = false;
                     }
 
-                    printf("    <td class=\"%s\">%u</td>\n", type, msb);
-                    printf("    <td class=\"%s\">%u</td>\n", type, lsb);
+                    printf("    <td class=\"%s\">%u</td>\n", type, bank_msb);
+                    printf("    <td class=\"%s\">%u</td>\n", type, bank_lsb);
                     printf("    <td class=\"%s\">%u</td>\n", type, elem);
                     printf("    <td class=\"name\">%s</td>\n", name.c_str());
                     printf("    <td class=\"%s\">%s</td>\n", type, type);
@@ -443,7 +466,7 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
 
     for (auto &b : bank)
     {
-        entry_t &e = b.second.second;
+        entry_t &entry = b.second.second;
         int msb = b.first & 0xffff;
         int lsb = b.first >> 16;
 
@@ -485,38 +508,39 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
         }
 
         bool first = true;
-        for (auto& it : e)
+        for (auto& it_entry : entry)
         {
+            name_t &it_name = it_entry.second;
             unsigned int elem;
 
-            elem = get_elem(dir, it.second.file);
+            elem = get_elem(dir, it_name.file);
             switch(mode)
             {
             case ASCII:
                 if (first)
                 {
                     printf("%3i %1i  %3i  %3i  %s\n",
-                            msb, lsb, it.first, elem,
-                            it.second.name.c_str());
+                            msb, lsb, it_entry.first, elem,
+                            it_name.name.c_str());
                     first = false;
                 }
                 else {
                     printf("%5s  %3i  %3i  %s\n",
-                            "", it.first, elem,
-                            it.second.name.c_str());
+                            "", it_entry.first, elem,
+                            it_name.name.c_str());
                 }
                 break;
             case HTML:
                 printf("   <tr>\n");
                 if (first) {
                     printf("    <td class=\"arch\" rowspan=\"%lu\" style=\"vertical-align:top\">"
-                                    "%3i %1i</td>\n", e.size(), msb, lsb);
+                                    "%3i %1i</td>\n", entry.size(), msb, lsb);
                     first = false;
                 }
 
-                printf("    <td class=\"arch\">%u</td>\n", it.first);
+                printf("    <td class=\"arch\">%u</td>\n", it_entry.first);
                 printf("    <td class=\"arch\">%u</td>\n", elem);
-                printf("    <td class=\"name\">%s</td>\n", it.second.name.c_str());
+                printf("    <td class=\"name\">%s</td>\n", it_name.name.c_str());
                 printf("   </tr>\n");
                 break;
             default:
@@ -544,6 +568,9 @@ int main(int argc, char **argv)
         else if (!strcasecmp(env, "XML")) mode = XML;
     }
 
+    env = getCommandLineOption(argc, argv, "--to-midi");
+    if (env) inst_offs = 1;
+
     env = getCommandLineOption(argc, argv, "--combine");
     if (env) xid2 = xmlOpen(env);
     else xid2 = nullptr;
@@ -569,13 +596,13 @@ int main(int argc, char **argv)
         {
         case ASCII:
         case HTML:
-            num = fill_bank(bank, xid, "instrument");
+            num = fill_bank(bank, xid, "instrument", 1);
             if (num) {
                 print_instruments(bank, bank2, filename, mode, argv[0]);
             }
             else
             {
-                num = fill_bank(bank, xid, "drum");
+                num = fill_bank(bank, xid, "drum", 1);
                 if (num) {
                     print_drums(bank, bank2, filename, mode);
                 }
@@ -586,18 +613,19 @@ int main(int argc, char **argv)
             }
             break;
         case XML:
-            num = fill_bank(bank, xid, "instrument");
+            num = fill_bank(bank, xid, "instrument", 1);
+            num = fill_bank(bank, xid, "unsupported-instrument", 0);
             if (num)
             {
-               if (xid2) num = fill_bank(bank2, xid2, "instrument");
+               if (xid2) num = fill_bank(bank2, xid2, "instrument", 1);
                print_xml(bank, bank2, filename, true);
             }
             else
             {
-                num = fill_bank(bank, xid, "drum");
+                num = fill_bank(bank, xid, "drum", 1);
                 if (num)
                 {
-                    if (xid2) num = fill_bank(bank2, xid2, "drum");
+                    if (xid2) num = fill_bank(bank2, xid2, "drum", 1);
                     print_xml(bank, bank2, filename, false);
                 }
             }
