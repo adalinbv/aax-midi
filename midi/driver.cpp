@@ -199,7 +199,7 @@ MIDIDriver::set_volume(float g)
 
 float
 MIDIDriver::get_volume()
-{   
+{
     aax::dsp dsp = get(AAX_VOLUME_FILTER);
     return dsp.get(AAX_GAIN);
 }
@@ -744,9 +744,12 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         unsigned int slen, inum = xmlNodeGetNum(xbid, type);
                         xmlId *xiid = xmlMarkId(xbid);
                         uint16_t bank_no;
+                        char offset;
 
                         bank_no = xmlAttributeGetInt(xbid, "n") << 7;
                         bank_no += xmlAttributeGetInt(xbid, "l");
+
+                        offset = xmlAttributeGetInt(xbid, "offset");
 
                         if (bank_no == 0 && xmlAttributeExists(xbid, "default-drums"))
                         {
@@ -761,7 +764,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         if (slen)
                         {
                             file[slen] = 0;
-                            frames.insert({bank_no,{name,file,""}});
+                            frames.insert({bank_no,{name,file}});
                         }
 
                         auto bank = imap[bank_no];
@@ -769,22 +772,26 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
-                                uint16_t n = xmlAttributeGetInt(xiid, "n");
-                                float spread = 1.0f;
-                                bool stereo = false;
-                                int wide = 0;
+                                float spread;
+                                bool stereo;
+                                uint16_t n;
+                                int wide;
+
+                                n = xmlAttributeGetInt(xiid, "n");
+                                if (type == "instrument")
+                                {
+                                    if (!offset) n++;
+                                    else n -= (offset-1);
+                                }
 
                                 stereo = xmlAttributeGetBool(xiid, "stereo");
 
-                                if (simd64) {
-                                    wide = xmlAttributeGetInt(xiid, "wide");
-                                }
-                                if (!wide && xmlAttributeGetBool(xiid, "wide"))
-                                {
+                                wide = xmlAttributeGetInt(xiid, "wide");
+                                if (!wide && (stereo || xmlAttributeGetBool(xiid, "wide"))) {
                                     wide = -1;
                                 }
-                                if (!wide && stereo) wide = -1;
 
+                                spread = 1.0f;
                                 if (xmlAttributeExists(xiid, "spread")) {
                                    spread = xmlAttributeGetDouble(xiid, "spread");
                                 }
@@ -1062,7 +1069,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
         if (bank_found)
         {
             auto bank = itb->second;
-            auto iti = bank.find(program_no);
+            auto iti = bank.find(program_no+1);
             if (iti != bank.end())
             {
                 if (all || selection.empty() ||

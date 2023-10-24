@@ -239,7 +239,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             break;
 #endif
         case MIDI_TUNING_PROGRAM_CHANGE:
-            expl = "TUNING_PROGRAM_CHANGEr";
+            expl = "TUNING_PROGRAM_CHANGE";
             break;
         case MIDI_TUNING_BANK_SELECT:
             expl = "TUNING_BANK_SELECT";

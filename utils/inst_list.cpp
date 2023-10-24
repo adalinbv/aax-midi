@@ -67,8 +67,8 @@ enum mode_e {
 
 const char *xml_header =
 "<!--\n"
-" * Copyright (C) 2017-@YEAR@ by Erik Hofman.\n"
-" * Copyright (C) 2017-@YEAR@ by Adalin B.V.\n"
+" * Copyright (C) 2017-%s by Erik Hofman.\n"
+" * Copyright (C) 2017-%s by Adalin B.V.\n"
 " * All rights reserved.\n"
 " *\n"
 " * Reference: https://en.wikipedia.org/wiki/General_MIDI_Level_2\n"
@@ -103,6 +103,7 @@ const char *xml_header =
 " *   If a non-pitched sound is required then add a pitch-fraction of 0.0\n"
 "-->\n";
 
+char inst_set[65] = "";
 
 unsigned int
 get_elem(const char *dir, std::string &file)
@@ -116,7 +117,7 @@ get_elem(const char *dir, std::string &file)
 
     std::filesystem::path fname = path;
     fname.replace_filename(file + ".aaxs");
-    
+
     xid = xmlOpen(fname.c_str());
     if (xid)
     {
@@ -150,6 +151,7 @@ get_elem(const char *dir, std::string &file)
     return rv;
 }
 
+static char inst_offs = 0;
 int
 fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
 {
@@ -167,6 +169,7 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
         char file[1024];
         char name[1024];
 
+        xmlAttributeCopyString(xmid, "name", inst_set, 64);
         for (b=0; b<bnum; ++b)
         {
             if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
@@ -180,6 +183,10 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
 
                 bank_pos = xmlAttributeGetInt(xbid, "n") << 16;
                 bank_pos += xmlAttributeGetInt(xbid, "l");
+
+                inst_offs = xmlAttributeGetInt(xbid, "offset");
+                if (!inst_offs) inst_offs = 1;
+                else inst_offs--;
 
                 entry_t entry;
                 for (i=0; i<inum; ++i)
@@ -249,15 +256,33 @@ fill_bank(bank_t& bank, xmlId *xid, const char *tag, char clear)
     return rv;
 }
 
-static char inst_offs = 0;
+static char in_file = 0;
 void
 print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
 {
     const char *inst = it ? "instrument" : "drum";
+    std::string name = "Advanced Grooves";
+    std::string date = "@YEAR@";
+
+    if (inst_set[0]) {
+        name = inst_set;
+    }
+
+    if (!in_file)
+    {
+        std::time_t t = std::time(nullptr);
+        std::tm *const pTInfo = std::localtime(&t);
+        date = std::to_string(1900 + pTInfo->tm_year);
+    }
+
     printf("<?xml version=\"1.0\"?>\n");
-    printf("%s\n", xml_header);
-    printf("\n<aeonwave>\n");
-    printf("\n <midi name=\"Advanced Grooves\" version=\"@ULTRASYNTH_VERSION@\">\n");
+    printf(xml_header, date.c_str(), date.c_str());
+    printf("\n\n<aeonwave>\n");
+    if (!in_file) {
+        printf("\n <midi name=\"%s\">\n", name.c_str());
+    } else {
+        printf("\n <midi name=\"%s\" version=\"@ULTRASYNTH_VERSION@\">\n", name.c_str());
+    }
 
     const char *t = "";
     for (auto &b : bank)
@@ -291,9 +316,9 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
             if (!found)
             {
                 if (bank_lsb != 0 ) {
-                    printf("  <bank n=\"%i\" l=\"%i\">\n", bank_msb, bank_lsb);
+                    printf("  <bank n=\"%i\" l=\"%i\" offset=\"%i\">\n", bank_msb, bank_lsb, inst_offs);
                 } else {
-                    printf("  <bank n=\"%i\">\n", bank_msb);
+                    printf("  <bank n=\"%i\" offset=\"%i\">\n", bank_msb, inst_offs);
                 }
                 found = true;
             }
@@ -306,9 +331,8 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
             float spread = it_name.spread;
             int wide = it_name.wide;
             bool patch = it_name.patch;
+            bool found2 = false;
 
-            bool found2 = check_file(it_entry.second.file.c_str(), patch ? ".xml" : ".aaxs");
-#if 0
             for (auto &it_bank2 : bank2)
             {
                 entry_t &entry2 = it_bank2.second.second;
@@ -331,7 +355,10 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
                 }
                 if (found2) break;
             }
-#endif
+
+            if (!found2) {
+                found2 = check_file(it_entry.second.file.c_str(), patch ? ".xml" : ".aaxs");
+            }
 
             printf("   <%s%s n=\"%i\" name=\"%s\"",
                         found2 ? "" : "unsupported-", inst, it_entry.first+inst_offs,
@@ -361,9 +388,9 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
 {
     bool found = false;
 
-    for (int i=0; i<128; ++i)
+    for (int i=1; i<129; ++i)
     {
-        if ((i % 8) == 0)
+        if ((i % 8) == 1)
         {
             switch (mode)
             {
@@ -444,7 +471,7 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                 case ASCII:
                     if (first)
                     {
-                        printf("%3i  %3i %3i  %3i  %s\n", i+1, 
+                        printf("%3i  %3i %3i  %3i  %s\n", i+inst_offs,
                                 bank_msb, bank_lsb, elem, name.c_str());
                         first = false;
                     }
@@ -459,7 +486,7 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                     if (first) {
                         printf("    <td class=\"%s\" rowspan=\"%u\">%u</td>\n",
                                      ((i % 2) != 0) ? "head_src" : "head",
-                                     num, i+1);
+                                     num, i+inst_offs);
                         first = false;
                     }
 
@@ -609,6 +636,14 @@ int main(int argc, char **argv)
     else xid2 = nullptr;
 
     filename = getInputFile(argc, argv, NULL);
+    if (filename)
+    {
+        size_t slen = strlen(filename);
+        if (slen > 3 && !strcmp(filename+slen-3, ".in")) {
+            in_file = 1;
+        }
+    }
+
     xid = xmlOpen(filename);
     if (xid)
     {
