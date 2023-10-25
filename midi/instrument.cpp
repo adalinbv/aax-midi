@@ -128,7 +128,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                                            inst.first.file : inst.first.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
-                             bank_no >> 7, bank_no & 0x7F, program,
+                             bank_no >> 7, bank_no & 0x7F, program+1,
                              display.c_str());
                     midi.load(patch_name);
                 }
