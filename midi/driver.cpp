@@ -1351,6 +1351,26 @@ MIDIDriver::get_channel_name(uint16_t part_no)
     return rv;
 }
 
+bool
+MIDIDriver::elapsed_time(double dt)
+{
+    bool rv = true;
+
+    if (timer_started)
+    {
+        std::chrono::time_point<std::chrono::system_clock> end_time;
+        end_time = std::chrono::system_clock::now();
+
+        std::chrono::duration<double> elapsed_seconds = end_time - start_time;
+        if (elapsed_seconds.count() > dt) {
+            timer_started = false;
+        } else {
+            rv = false;
+       }
+    }
+    return rv;
+}
+
 const std::vector<std::string>
 MIDIDriver::midi_channel_convention = {
     "Piano Solo (Left & Right Hand)",

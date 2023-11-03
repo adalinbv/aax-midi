@@ -174,6 +174,7 @@ MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
     if (size > 6)
     {
         midi.set_lyrics(true);
+        midi.reset_timer();
 
         text.insert(0, padding, ' ');
 

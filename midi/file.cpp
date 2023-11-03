@@ -330,7 +330,7 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
         next = 100;
     }
 
-    if (midi.get_verbose() && !midi.get_lyrics())
+    if (midi.get_verbose() && (!midi.get_lyrics() || midi.elapsed_time(5.0)))
     {
         int hour, minutes, seconds;
 
@@ -342,9 +342,9 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
         minutes = seconds/60;
         seconds -= minutes*60;
         if (hour) {
-            MESSAGE(1, "pos: %02i:%02i:%02i hours\r", hour, minutes, seconds);
+            MESSAGE(1, "pos: %02i:%02i:%02i hours%16s\r", hour, minutes, seconds, "");
         } else {
-            MESSAGE(1, "pos: %02i:%02i minutes\r", minutes, seconds);
+            MESSAGE(1, "pos: %02i:%02i minutes%16s\r", minutes, seconds, "");
         }
         if (!rv) MESSAGE(1, "\n\n");
         fflush(stdout);

@@ -27,6 +27,7 @@
 #include <climits>
 
 #include <map>
+#include <chrono>
 
 #include <midi/shared.hpp>
 
@@ -292,6 +293,12 @@ public:
         return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
     }
 
+    inline void reset_timer() {
+        start_time = std::chrono::system_clock::now();
+        timer_started = true;
+    }
+    bool elapsed_time(double dt);
+
 private:
     void set_path();
 
@@ -397,6 +404,9 @@ private:
     aax::Buffer* reverb_buffer = &AeonWave::buffer("GM2/hall2");
 
     static const std::vector<std::string> midi_channel_convention;
+
+    bool timer_started = false;
+    std::chrono::time_point<std::chrono::system_clock> start_time;
 };
 
 } // namespace aax
