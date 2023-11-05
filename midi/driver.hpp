@@ -182,6 +182,8 @@ public:
 
     inline void set_lyrics(bool v) { lyrics = v; }
     inline bool get_lyrics() { return lyrics; }
+    inline void set_display(bool v) { display = v; }
+    inline bool get_display() { return display; }
 
     inline void set_format(uint16_t fmt) { format = fmt; }
     inline uint16_t get_format() { return format; }
@@ -370,6 +372,7 @@ private:
     bool initialize = false;
     char verbose = 0;
     bool lyrics = false;
+    bool display = false;
     bool grep_mode = false;
     bool mono = false;
     bool csv = false;

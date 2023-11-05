@@ -173,7 +173,7 @@ MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
 {
     if (size > 6)
     {
-        midi.set_lyrics(true);
+        midi.set_display(true);
         midi.reset_timer();
 
         text.insert(0, padding, ' ');
@@ -198,7 +198,7 @@ MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
     else
     {
          MESSAGE(1, "Display: %-16s   %-16s\r", "", "");
-        midi.set_lyrics(false);
+        midi.set_display(false);
     }
 }
 
