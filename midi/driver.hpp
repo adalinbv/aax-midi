@@ -70,7 +70,8 @@ class MIDIInstrument;
 class MIDIDriver : public AeonWave
 {
 private:
-    using _patch_map_t = std::map<uint8_t,std::pair<uint8_t,std::string>>;
+    using _patch_entry_t = std::pair<uint8_t,struct patch_t>;
+    using _patch_map_t = std::map<uint8_t,_patch_entry_t>;
     using _channel_map_t = std::map<uint16_t,std::shared_ptr<MIDIInstrument>>;
 
 public:
@@ -160,8 +161,8 @@ public:
     std::map<uint16_t,patch_t>& get_frames() { return frames; }
     std::map<std::string,_patch_map_t>& get_patches() { return patches; }
 
-    std::pair<uint8_t,std::string> get_patch(std::string& name, uint8_t& key);
-    std::pair<uint8_t,std::string> get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
+    const _patch_entry_t get_patch(std::string& name, uint8_t& key);
+    const _patch_entry_t get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
         auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
         return get_patch(inst.first.file, key);
     }
@@ -316,7 +317,7 @@ private:
         return rv;
     }
 
-    void add_patch(const char *patch);
+    void add_patch(const char *patch, char *name, size_t nlen);
 
     std::string patch_set = "default";
     std::string patch_version = "1.0.0";

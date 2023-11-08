@@ -117,7 +117,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             uint16_t program = program_no;
             auto inst = midi.get_instrument(bank_no, program, all);
             auto patch = midi.get_patch(inst.first.file, key);
-            std::string& patch_name = patch.second;
+            std::string& patch_name = patch.second.file;
             if (!patch_name.empty())
             {
                 if (!midi.buffer_avail(patch_name) &&
@@ -125,7 +125,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.first.file : inst.first.name;
+                                           inst.first.file : patch.second.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                              bank_no >> 7, bank_no & 0x7F, program+1,

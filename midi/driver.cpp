@@ -768,7 +768,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         }
 
                         auto bank = imap[bank_no];
-                        for (unsigned int i=0; i<inum; i++)
+                        for (uint8_t i=0; i<inum; i++)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
@@ -819,7 +819,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     bank.insert({n,{{name,file,key_on,key_off},{wide,spread,stereo}}});
 
                                     _patch_map_t p;
-                                    p.insert({0,{i,file}});
+                                    p.insert({0,{i,{name,file}}});
 
                                     patches.insert({file,p});
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
@@ -831,9 +831,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
+					add_patch(file, name, 64);
                                         bank.insert({n,{{name,file,""},{wide,spread,stereo}}});
-
-                                        add_patch(file);
                                     }
                                 }
                             }
@@ -902,7 +901,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 // patches are xml configuration files which define two or more
 // instrument definitions spread across midi note ranges.
 void
-MIDIDriver::add_patch(const char *file)
+MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
 {
     const char *path = midi.info(AAX_SHARED_DATA_DIR);
 
@@ -920,20 +919,23 @@ MIDIDriver::add_patch(const char *file)
             unsigned int pnum = xmlNodeGetNum(xlid, "patch");
             xmlId *xpid = xmlMarkId(xlid);
             _patch_map_t p;
-            for (unsigned int i=0; i<pnum; i++)
+            for (uint8_t i=0; i<pnum; i++)
             {
                 if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
                 {
                     unsigned int slen;
                     char file[64] = "";
 
+		    if (xmlAttributeExists(xpid, "name")) {
+     		        xmlAttributeCopyString(xpid, "name", name, nlen);
+		    }
                     slen = xmlAttributeCopyString(xpid, "file", file, 64);
                     if (slen)
                     {
                         uint8_t max = xmlAttributeGetInt(xpid, "max");
                         file[slen] = 0;
 
-                        p.insert({max,{i,file}});
+                        p.insert({max,{i,{name,file}}});
                     }
                 }
             }
@@ -1152,7 +1154,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
     return iti.first->second;
 }
 
-std::pair<uint8_t,std::string>
+const MIDIDriver::_patch_entry_t
 MIDIDriver::get_patch(std::string& name, uint8_t& key)
 {
     auto patches = get_patches();
@@ -1172,7 +1174,7 @@ MIDIDriver::get_patch(std::string& name, uint8_t& key)
     }
 
     key = 255;
-    return {0,name};
+    return {0,{name,name}};
 }
 
 void
