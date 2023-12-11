@@ -33,7 +33,7 @@ using namespace aax;
 
 MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
                  uint8_t channel, uint16_t bank, uint8_t program, bool drums)
-   : Instrument(ptr, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
+   : Instrument(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
      channel_no(channel), bank_no(bank),
      program_no(program)
 {
@@ -290,7 +290,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
-        Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+        Instrument::play(key_no, velocity/127.0f, pitch);
         if (is_drums()) return;
 
         bool all = midi.no_active_tracks() > 0;
@@ -331,8 +331,8 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
                 key_freq += buffer_frequency;
 
-                float p = (lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
-                p = floorf(-2.0f*(p-0.5f)*PAN_LEVELS)/PAN_LEVELS;
+                float p = (math::lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+                p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
                 if (p != pan_prev)
                 {
                     pan.set(p, true);
@@ -396,8 +396,8 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
             key_freq += buffer_frequency;
 
-            float p = (lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
-            p = floorf(-2.0f*(p-0.5f)*PAN_LEVELS)/PAN_LEVELS;
+            float p = (math::lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+            p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
             if (p != pan_prev)
             {
                 pan.set(p, true);
