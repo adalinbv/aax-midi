@@ -290,7 +290,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
-        Instrument::play(key_no, velocity/127.0f, pitch);
+        Instrument::play(key_no, velocity/127.0f, it->second, pitch);
         if (is_drums()) return;
 
         bool all = midi.no_active_tracks() > 0;
