@@ -42,7 +42,7 @@ private:
     MIDIInstrument& operator=(const MIDIInstrument&) = delete;
 
 public:
-    MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
+    MIDIInstrument(MIDIDriver& ptr, Buffer& buffer,
                    uint8_t channel, uint16_t bank, uint8_t program,
                    bool is_drums);
 

@@ -696,7 +696,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                     polyphony =  xmlAttributeGetInt(xaid, "polyphony");
                     if (polyphony < 32) polyphony = 32;
                 }
-                xmid = xmlNodeGet(xaid, "midi");
+                xmid = xmlNodeGet(xaid, "set"); // was: midi
             }
 
             if (xmid)
@@ -735,11 +735,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                     effects = xmlAttributeGetString(xmid, "file");
                 }
 
-                unsigned int bnum = xmlNodeGetNum(xmid, "bank");
+                unsigned int bnum = xmlNodeGetNum(xmid, "layer"); // was: bank
                 xmlId *xbid = xmlMarkId(xmid);
                 for (unsigned int b=0; b<bnum; b++)
                 {
-                    if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
+                    if (xmlNodeGetPos(xmid, xbid, "layer", b) != 0)
                     {
                         unsigned int slen, inum = xmlNodeGetNum(xbid, type);
                         xmlId *xiid = xmlMarkId(xbid);
@@ -826,7 +826,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 }
                                 else
                                 {
-                                    slen = xmlAttributeCopyString(xiid, "patch",
+                                    slen = xmlAttributeCopyString(xiid, "include",
                                                                   file, 64);
                                     if (slen)
                                     {
@@ -876,7 +876,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 iname.append(drum);
             }
             filename = iname.c_str();
-            type = "drum";
+            type = "patch"; // was: "drum";
             imap = drums;
         }
         else {
@@ -913,7 +913,7 @@ MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
     xmlId *xid = xmlOpen(xmlfile.c_str());
     if (xid)
     {
-        xmlId *xlid = xmlNodeGet(xid, "instrument/layer");
+        xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
         if (xlid)
         {
             unsigned int pnum = xmlNodeGetNum(xlid, "patch");
