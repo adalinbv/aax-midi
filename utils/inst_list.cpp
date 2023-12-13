@@ -407,7 +407,7 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                     printf("<html>\n");
                     printf(" <head>\n");
                     printf("  <link rel=\"stylesheet\" type=\"text/css\" "
-                                   "href=\"adalin.css\" title=\"style\"/>\n");
+                                   "href=\"/adalin.css\" title=\"style\"/>\n");
                     printf(" </head>\n");
                     printf(" <body>\n");
                     printf("  <table class=\"downloads\">\n");
@@ -420,7 +420,7 @@ print_instruments(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode
                 printf("   </tr>\n");
 
                 printf("   <tr>\n");
-                printf("    <td class=\"head\">PC</td>\n");
+                printf("    <td class=\"head\" width=\"20px\">PC</td>\n");
                 printf("    <td class=\"head\">msb</td>\n");
                 printf("    <td class=\"head\">lsb</td>\n");
                 printf("    <td class=\"head\">elem</td>\n");
@@ -544,7 +544,7 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
                 printf("<html>\n");
                 printf(" <head>\n");
                 printf("  <link rel=\"stylesheet\" type=\"text/css\" "
-                               "href=\"adalin.css\" title=\"style\"/>\n");
+                               "href=\"/adalin.css\" title=\"style\"/>\n");
                 printf(" </head>\n");
                 printf(" <body>\n");
                 printf("  <table class=\"downloads\">\n");
@@ -558,7 +558,7 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
 
             printf("   <tr>\n");
             printf("    <td class=\"head\">bank</td>\n");
-            printf("    <td class=\"head\">PC</td>\n");
+            printf("    <td class=\"head\" width=\"20px\">PC</td>\n");
             printf("    <td class=\"head\">elem</td>\n");
             printf("    <td class=\"head\">drum name</td>\n");
             printf("   </tr>\n");
