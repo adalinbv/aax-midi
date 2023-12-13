@@ -20,8 +20,7 @@
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
 
-#ifndef __AAX_MIDISTREAM
-#define __AAX_MIDISTREAM
+#pragma once
 
 #include <map>
 
@@ -175,5 +174,3 @@ private:
 
 } // namespace aax
 
-
-#endif // __AAX_MIDISTREAM

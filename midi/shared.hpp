@@ -20,8 +20,7 @@
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
 
-#ifndef __AAX_MIDISHARED
-#define __AAX_MIDISHARED
+#pragma once
 
 #include <aax/midi.h>
 
@@ -694,4 +693,3 @@ enum {
 
 } // namespace aax
 
-#endif // __AAX_MIDISHARED

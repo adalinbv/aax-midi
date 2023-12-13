@@ -376,18 +376,15 @@ MIDIDriver::set_chorus_cutoff_frequency(float val)
     if (val < 22000.0f) {
         MESSAGE(4, "Set chorus cutoff frequency to %.2fHz\n", val);
     }
-#if AAX_PATCH_LEVEL >= 230425
     for (auto& it : chorus_channels) {
         it.second->set_chorus_cutoff(val);
     }
-#endif
 }
 
 
 bool
 MIDIDriver::set_delay(const char *t, uint16_t type, uint8_t vendor)
 {
-#if AAX_PATCH_LEVEL >= 230425
     if (type != -1)
     {
         uint32_t vendor_type = uint32_t(vendor) << 16 | type;
@@ -404,7 +401,6 @@ MIDIDriver::set_delay(const char *t, uint16_t type, uint8_t vendor)
             it.second->set_delay(*delay_buffer);
         }
     }
-#endif
     return true;
 }
 
@@ -427,7 +423,6 @@ MIDIDriver::set_delay_level(float val)
 void
 MIDIDriver::set_delay_level(uint16_t part_no, float val)
 {
-#if AAX_PATCH_LEVEL >= 230425
     auto& part = midi.channel(part_no);
 #if 0
     if (val > 0.0f)
@@ -467,7 +462,6 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
     aax::Buffer& disabled = AeonWave::buffer("GM2/delay0");
     part.set_delay(val > 0.0f ? *delay_buffer : disabled);
     part.set_delay_level(val);
-#endif
 }
 
 void
@@ -476,11 +470,9 @@ MIDIDriver::set_delay_depth(float ms) {
     if (ms > 0.0f) {
         MESSAGE(4, "Set delays depth to %.0f%%\n", delay_depth*100.0f);
     }
-#if AAX_PATCH_LEVEL >= 230425
     for(auto& it : delay_channels) {
         it.second->set_delay_depth(delay_depth);
     }
-#endif
 }
 
 void
@@ -488,11 +480,9 @@ MIDIDriver::set_delay_rate(float rate) {
     if (rate > 0.0f) {
         MESSAGE(4, "Set delay rate to %.2fHz\n", rate);
     }
-#if AAX_PATCH_LEVEL >= 230425
     for(auto& it : delay_channels) {
         it.second->set_delay_rate(rate);
     }
-#endif
 }
 
 void
@@ -500,11 +490,9 @@ MIDIDriver::set_delay_feedback(float feedback) {
     if (feedback > 0.0f) {
         MESSAGE(4, "Set delay feedback to %.0f%%\n", feedback);
     }
-#if AAX_PATCH_LEVEL >= 230425
     for(auto& it : delay_channels) {
         it.second->set_delay_feedback(feedback);
     }
-#endif
 }
 
 void
@@ -513,11 +501,9 @@ MIDIDriver::set_delay_cutoff_frequency(float fc)
     if (fc < 22000.0f) {
         MESSAGE(4, "Set delay cutoff frequency to %.2fHz\n", fc);
     }
-#if AAX_PATCH_LEVEL >= 230425
     for(auto& it : delay_channels) {
         it.second->set_chorus_cutoff(fc);
     }
-#endif
 }
 
 bool
@@ -818,7 +804,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     file[slen] = 0;
                                     bank.insert({n,{{name,file,key_on,key_off},{wide,spread,stereo}}});
 
-                                    _patch_map_t p;
+                                    patch_map_t p;
                                     p.insert({0,{i,{name,file}}});
 
                                     patches.insert({file,p});
@@ -918,7 +904,7 @@ MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
         {
             unsigned int pnum = xmlNodeGetNum(xlid, "patch");
             xmlId *xpid = xmlMarkId(xlid);
-            _patch_map_t p;
+            patch_map_t p;
             for (uint8_t i=0; i<pnum; i++)
             {
                 if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
@@ -1154,7 +1140,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
     return iti.first->second;
 }
 
-const MIDIDriver::_patch_entry_t
+const MIDIDriver::patch_entry_t
 MIDIDriver::get_patch(std::string& name, uint8_t& key)
 {
     auto patches = get_patches();

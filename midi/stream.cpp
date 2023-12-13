@@ -227,7 +227,6 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             expl = "CHANNEL_COARSE_TUNING";
             // This is handled by MIDI_NOTE_ON and MIDI_NOTE_OFF
             break;
-#if AAX_PATCH_LEVEL > 210112
         case MIDI_NULL_FUNCTION_NUMBER:
             expl = "NULL_FUNCTION_NUMBER";
             // disable the data entry, data increment, and data decrement
@@ -237,7 +236,6 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         case MIDI_MPE_CONFIGURATION_MESSAGE:
             expl = "MPE_CONFIGURATION_MESSAGE";
             break;
-#endif
         case MIDI_TUNING_PROGRAM_CHANGE:
             expl = "TUNING_PROGRAM_CHANGE";
             break;
@@ -729,9 +727,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         break;
     case MIDI_LEGATO_SWITCH:
         expl = "LEGATO_SWITCH";
-#if (AAX_PATCH_LEVEL > 210516)
         channel.set_legato(value >= 0x40);
-#endif
         break;
     case MIDI_DAMPER_PEDAL_SWITCH:
         expl = "DAMPER_PEDAL_SWITCH";
@@ -789,9 +785,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         expl = "PORTAMENTO_TIME MSB";
         float v = value/127.0f;
         float time = 0.0625f + 15.0f*v*(v*v*v - v*v + v);
-#if AAX_PATCH_LEVEL > 210112
         channel.set_pitch_transition_time(time);
-#endif
         break;
     }
     case MIDI_PORTAMENTO_TIME|MIDI_FINE:
@@ -802,9 +796,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     }
     case MIDI_PORTAMENTO_SWITCH:
         expl = "PORTAMENTO_SWITCH";
-#if AAX_PATCH_LEVEL > 210112
         channel.set_pitch_slide_state(value >= 0x40);
-#endif
         break;
     case MIDI_RELEASE_TIME:
         expl = "RELEASE_TIME";
@@ -826,7 +818,6 @@ bool MIDIStream::process_control(uint8_t track_no)
         expl = "PHASER_EFFECT_DEPTH";
         channel.set_phaser_depth(float(value)/64.0f);
         break;
-#if AAX_PATCH_LEVEL > 210112
     case MIDI_MODULATION_VELOCITY:
         expl = "MODULATION_VELOCITY";
         LOG(99, "LOG: Modulation Velocity control change not supported.\n");
@@ -835,7 +826,6 @@ bool MIDIStream::process_control(uint8_t track_no)
         expl = "SOFT_RELEASE";
         LOG(99, "LOG: Soft Release control change not supported.\n");
         break;
-#endif
     case MIDI_HOLD2:
         expl = "HOLD2";
         // lengthens the release time of the playing notes

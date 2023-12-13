@@ -20,8 +20,7 @@
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
 
-#ifndef __AAX_MIDI_DRIVER
-#define __AAX_MIDI_DRIVER
+#pragma once
 
 #include <sys/stat.h>
 #include <climits>
@@ -56,13 +55,17 @@ struct wide_t
 
 struct patch_t
 {
-   std::string name;
-   std::string file;
-   std::string key_on;
-   std::string key_off;
+    std::string name;
+    std::string file;
+    std::string key_on;
+    std::string key_off;
+    uint32_t min = 0;
+    uint32_t max = 128;
 };
 
+using buffer_t = std::pair<size_t,std::shared_ptr<Buffer>>;
 using inst_t = std::pair<struct patch_t, struct wide_t>;
+using inst_map_t = std::map<uint16_t, inst_t>;
 
 class MIDIInstrument;
 
@@ -70,9 +73,9 @@ class MIDIInstrument;
 class MIDIDriver : public AeonWave
 {
 private:
-    using _patch_entry_t = std::pair<uint8_t,struct patch_t>;
-    using _patch_map_t = std::map<uint8_t,_patch_entry_t>;
-    using _channel_map_t = std::map<uint16_t,std::shared_ptr<MIDIInstrument>>;
+    using patch_entry_t = std::pair<uint8_t, struct patch_t>;
+    using patch_map_t = std::map<uint8_t, patch_entry_t>;
+    using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
 
 public:
     MIDIDriver(const char* n, const char *tnames = nullptr,
@@ -94,33 +97,33 @@ public:
 
     MIDIInstrument& channel(uint16_t channel_no);
 
-    inline _channel_map_t& get_channels() {
+    channel_map_t& get_channels() {
         return channels;
     }
 
-    inline void set_drum_file(std::string p) { drum = p; }
-    inline void set_instrument_file(std::string p) { instr = p; }
-    inline void set_file_path(std::string p) {
+    void set_drum_file(std::string p) { drum = p; }
+    void set_instrument_file(std::string p) { instr = p; }
+    void set_file_path(std::string p) {
         set(AAX_SHARED_DATA_DIR, p.c_str()); path = p;
     }
 
-    inline const std::string& get_patch_set() { return patch_set; }
-    inline const std::string& get_patch_version() { return patch_version; }
-    inline std::vector<std::string>& get_selections() { return selection; }
+    const std::string& get_patch_set() { return patch_set; }
+    const std::string& get_patch_version() { return patch_version; }
+    std::vector<std::string>& get_selections() { return selection; }
 
-    inline void set_track_active(uint16_t t) {
+    void set_track_active(uint16_t t) {
         active_track.push_back(t);
     }
-    inline uint16_t no_active_tracks() { return active_track.size(); }
-    inline bool is_track_active(uint16_t t) {
+    uint16_t no_active_tracks() { return active_track.size(); }
+    bool is_track_active(uint16_t t) {
         return active_track.empty() ? true : is_avail(active_track, t);
     }
 
     void read_instruments(std::string gmidi=std::string(), std::string gmdrums=std::string());
 
     void grep(std::string& filename, const char *grep);
-    inline void load(std::string& name) { loaded.push_back(name); }
-    inline bool is_loaded(std::string& name) {
+    void load(std::string& name) { loaded.push_back(name); }
+    bool is_loaded(std::string& name) {
         return (std::find(loaded.begin(), loaded.end(), name) != loaded.end());
     }
 
@@ -138,64 +141,64 @@ public:
 
     bool is_drums(uint8_t);
 
-    inline void set_capabilities(enum aaxCapabilities m) {
+    void set_capabilities(enum aaxCapabilities m) {
         instrument_mode = m; set(AAX_CAPABILITIES, m); set_path();
     }
 
-    inline std::string& get_effects() { return effects; }
+    std::string& get_effects() { return effects; }
 
-    inline int get_refresh_rate() { return refresh_rate; }
-    inline int get_polyphony() { return polyphony; }
+    int get_refresh_rate() { return refresh_rate; }
+    int get_polyphony() { return polyphony; }
 
-    inline void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
-    inline float get_tuning() { return tuning; }
+    void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
+    float get_tuning() { return tuning; }
 
-    inline void set_mode(uint8_t m) { if (m > mode) mode = m; }
-    inline uint8_t get_mode() { return mode; }
+    void set_mode(uint8_t m) { if (m > mode) mode = m; }
+    uint8_t get_mode() { return mode; }
 
-    inline void set_grep(bool g) { grep_mode = g; }
-    inline bool get_grep() { return grep_mode; }
+    void set_grep(bool g) { grep_mode = g; }
+    bool get_grep() { return grep_mode; }
 
     const inst_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
     std::map<uint16_t,patch_t>& get_frames() { return frames; }
-    std::map<std::string,_patch_map_t>& get_patches() { return patches; }
+    std::map<std::string,patch_map_t>& get_patches() { return patches; }
 
-    const _patch_entry_t get_patch(std::string& name, uint8_t& key);
-    const _patch_entry_t get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
+    const patch_entry_t get_patch(std::string& name, uint8_t& key);
+    const patch_entry_t get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
         auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
         return get_patch(inst.first.file, key);
     }
 
-    inline void set_initialize(bool i) { initialize = i; };
-    inline bool get_initialize() { return initialize; }
+    void set_initialize(bool i) { initialize = i; };
+    bool get_initialize() { return initialize; }
 
-    inline void set_mono(bool m) { mono = m; }
-    inline bool get_mono() { return mono; }
+    void set_mono(bool m) { mono = m; }
+    bool get_mono() { return mono; }
 
-    inline void set_verbose(char v) { verbose = v; }
-    inline char get_verbose() { return csv ? 0 : verbose; }
+    void set_verbose(char v) { verbose = v; }
+    char get_verbose() { return csv ? 0 : verbose; }
 
-    inline void set_csv(char v) { csv = v; }
-    inline char get_csv(signed char t = -1) {
+    void set_csv(char v) { csv = v; }
+    char get_csv(signed char t = -1) {
         return (t == -1) ? csv : (csv && is_track_active(t));
     }
 
-    inline void set_lyrics(bool v) { lyrics = v; }
-    inline bool get_lyrics() { return lyrics; }
-    inline void set_display(bool v) { display = v; }
-    inline bool get_display() { return display; }
+    void set_lyrics(bool v) { lyrics = v; }
+    bool get_lyrics() { return lyrics; }
+    void set_display(bool v) { display = v; }
+    bool get_display() { return display; }
 
-    inline void set_format(uint16_t fmt) { format = fmt; }
-    inline uint16_t get_format() { return format; }
+    void set_format(uint16_t fmt) { format = fmt; }
+    uint16_t get_format() { return format; }
 
-    inline void set_tempo(uint32_t t) { tempo = t; uSPP = t/PPQN; }
+    void set_tempo(uint32_t t) { tempo = t; uSPP = t/PPQN; }
 
-    inline void set_uspp(uint32_t uspp) { uSPP = uspp; }
-    inline int32_t get_uspp() { return uSPP; }
+    void set_uspp(uint32_t uspp) { uSPP = uspp; }
+    int32_t get_uspp() { return uSPP; }
 
-    inline void set_ppqn(uint16_t ppqn) { PPQN = ppqn; }
-    inline uint16_t get_ppqn() { return PPQN; }
+    void set_ppqn(uint16_t ppqn) { PPQN = ppqn; }
+    uint16_t get_ppqn() { return PPQN; }
 
     /* chorus */
     bool set_chorus(const char *t, uint16_t type = -1, uint8_t vendor = 0);
@@ -208,8 +211,8 @@ public:
     void set_chorus_cutoff_frequency(float fc);
     void set_chorus_level(float value);
 
-    inline void set_chorus_type(uint16_t value) { chorus_type = value; }
-    inline uint32_t get_chorus_type() { return chorus_type; }
+    void set_chorus_type(uint16_t value) { chorus_type = value; }
+    uint32_t get_chorus_type() { return chorus_type; }
 
     void set_gm2_chorus_type(uint16_t value);
 
@@ -224,8 +227,8 @@ public:
     void set_delay_cutoff_frequency(float fc);
     void set_delay_level(float value);
 
-    inline void set_delay_type(uint16_t value) { delay_type = value; }
-    inline uint16_t get_delay_type() { return delay_type; }
+    void set_delay_type(uint16_t value) { delay_type = value; }
+    uint16_t get_delay_type() { return delay_type; }
 
     /* reverb */
     bool set_reverb(const char *t, uint16_t type = -1, uint8_t vendor = 0);
@@ -237,8 +240,8 @@ public:
     void set_reverb_level(uint16_t part_no, float value);
     void set_reverb_level(float value);
 
-    inline void set_reverb_type(uint16_t type) { reverb_type = type; }
-    inline uint16_t get_reverb_type() { return reverb_type; }
+    void set_reverb_type(uint16_t type) { reverb_type = type; }
+    uint16_t get_reverb_type() { return reverb_type; }
 
     void set_gm2_reverb_type(uint16_t value);
 
@@ -292,11 +295,11 @@ public:
     float lin2db(float v) { return 20.0f*log10f(v); }
     float db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
     float ln(float v) { return powf(v, GMATH_1_E1); }
-    inline float note2freq(uint32_t d) {
+    float note2freq(uint32_t d) {
         return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
     }
 
-    inline void reset_timer() {
+    void reset_timer() {
         start_time = std::chrono::system_clock::now();
         timer_started = true;
     }
@@ -324,26 +327,26 @@ private:
 
     std::string effects;
     std::string track_name;
-    _channel_map_t channels;
-    _channel_map_t chorus_channels;
-    _channel_map_t delay_channels;
-    _channel_map_t reverb_channels;
+    channel_map_t channels;
+    channel_map_t chorus_channels;
+    channel_map_t delay_channels;
+    channel_map_t reverb_channels;
 
     // banks name and audio-frame filter and effects file
-    std::map<uint16_t,patch_t> frames;
+    std::map<uint16_t, patch_t> frames;
 
-    std::map<uint16_t,std::map<uint16_t,inst_t>> drums;
-    std::map<uint16_t,std::map<uint16_t,inst_t>> instruments;
-    std::map<std::string,_patch_map_t> patches;
+    std::map<uint16_t, inst_map_t> drums;
+    std::map<uint16_t, inst_map_t> instruments;
+    std::map<std::string, patch_map_t> patches;
 
     std::vector<uint16_t> missing_drum_bank;
     std::vector<uint16_t> missing_instrument_bank;
 
-    inline bool is_avail(std::vector<uint16_t>& vec, uint16_t item) {
+    bool is_avail(std::vector<uint16_t>& vec, uint16_t item) {
         return (std::find(vec.begin(), vec.end(), item) != vec.end());
     }
 
-    std::unordered_map<std::string,std::pair<size_t,std::shared_ptr<Buffer>>> buffers;
+    std::map<std::string, buffer_t> buffers;
 
     Buffer nullBuffer;
 
@@ -415,5 +418,3 @@ private:
 
 } // namespace aax
 
-
-#endif

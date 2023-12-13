@@ -1043,9 +1043,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         break;
     case GSMIDI_PART_PORTAMENTO_SWITCH:
         expl = "PORTAMENTO_SWITCH";
-#if AAX_PATCH_LEVEL > 210112
         channel.set_pitch_slide_state(value >= 0x40);
-#endif
         break;
     case GSMIDI_PART_SOSTENUTO_SWITCH:
         expl = "SOSTENUTO_SWITCH";
