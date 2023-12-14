@@ -40,32 +40,34 @@ enum {
     MIDI_MONOPHONIC
 };
 
-struct wide_t
+struct set_t
 {
-    wide_t() = default;
-    wide_t(int w, float s) : wide(w), spread(s) {};
-    wide_t(int w, float s, bool st) : wide(w), spread(s), stereo(st) {};
-
-    ~wide_t() = default;
+    set_t() = default;
+    ~set_t() = default;
 
     int wide = 0;
     float spread = 1.0f;
     bool stereo = false;
+
+    int min_key = 0;
+    int max_key = 128;
 };
 
-struct patch_t
+struct info_t
 {
+    info_t() = default;
+    ~info_t() = default;
+
     std::string name;
     std::string file;
     std::string key_on;
     std::string key_off;
-    uint32_t min = 0;
-    uint32_t max = 128;
 };
 
-using buffer_t = std::pair<size_t,std::shared_ptr<Buffer>>;
-using inst_t = std::pair<struct patch_t, struct wide_t>;
-using inst_map_t = std::map<uint16_t, inst_t>;
+using buffer_t = std::pair<int, std::shared_ptr<Buffer>>;
+using inst_t = std::pair<struct info_t, struct set_t>;
+using inst_map_t = std::map<int, inst_t>;
+
 
 class MIDIInstrument;
 
@@ -73,7 +75,7 @@ class MIDIInstrument;
 class MIDIDriver : public AeonWave
 {
 private:
-    using patch_entry_t = std::pair<uint8_t, struct patch_t>;
+    using patch_entry_t = std::pair<int, struct info_t>;
     using patch_map_t = std::map<uint8_t, patch_entry_t>;
     using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
 
@@ -161,7 +163,7 @@ public:
 
     const inst_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
-    std::map<uint16_t,patch_t>& get_frames() { return frames; }
+    std::map<uint16_t,info_t>& get_frames() { return frames; }
     std::map<std::string,patch_map_t>& get_patches() { return patches; }
 
     const patch_entry_t get_patch(std::string& name, uint8_t& key);
@@ -333,7 +335,7 @@ private:
     channel_map_t reverb_channels;
 
     // banks name and audio-frame filter and effects file
-    std::map<uint16_t, patch_t> frames;
+    std::map<uint16_t, info_t> frames;
 
     std::map<uint16_t, inst_map_t> drums;
     std::map<uint16_t, inst_map_t> instruments;

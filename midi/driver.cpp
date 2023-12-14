@@ -727,8 +727,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 {
                     if (xmlNodeGetPos(xmid, xbid, "layer", b) != 0)
                     {
-                        unsigned int slen, inum = xmlNodeGetNum(xbid, type);
                         xmlId *xiid = xmlMarkId(xbid);
+                        unsigned int slen, inum;
                         uint16_t bank_no;
                         char offset;
 
@@ -753,21 +753,33 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                             frames.insert({bank_no,{name,file}});
                         }
 
+                        // type is 'instrument' or ´patch' for drums/ensembles
+                        inum = xmlNodeGetNum(xbid, type);
                         auto bank = imap[bank_no];
-                        for (uint8_t i=0; i<inum; i++)
+                        for (int i=0; i<inum; i++)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
+                                int n, min, max, wide;
                                 float spread;
                                 bool stereo;
-                                uint16_t n;
-                                int wide;
 
+                                min = 0;
+                                max = 128;
+                                if (xmlAttributeExists(xiid, "min")) {
+                                    min = xmlAttributeGetInt(xiid, "min");
+                                }
+                                if (xmlAttributeExists(xiid, "max")) {
+                                    max = xmlAttributeGetInt(xiid, "max");
+                                }
                                 n = xmlAttributeGetInt(xiid, "n");
                                 if (type == "instrument")
                                 {
                                     if (!offset) n++;
                                     else n -= (offset-1);
+                                }
+                                else if (!min && !max) {
+                                    min = max = n;
                                 }
 
                                 stereo = xmlAttributeGetBool(xiid, "stereo");
@@ -802,7 +814,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{{name,file,key_on,key_off},{wide,spread,stereo}}});
+                                    bank.insert({n,{{name,file,key_on,key_off},
+                                                   {wide,spread,stereo,min,max}}
+                                                });
 
                                     patch_map_t p;
                                     p.insert({0,{i,{name,file}}});
