@@ -761,8 +761,17 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
                                 int n, min, max, wide;
-                                float spread;
+                                float spread, pitch, gain;
                                 bool stereo;
+
+                                gain = 1.0f;
+                                pitch = 1.0f;
+                                if (xmlAttributeExists(xiid, "gain")) {
+                                    gain = xmlAttributeGetInt(xiid, "gain");
+                                }
+                                if (xmlAttributeExists(xiid, "pitch")) {
+                                    pitch = xmlAttributeGetInt(xiid, "pitch");
+                                }
 
                                 min = 0;
                                 max = 128;
@@ -823,7 +832,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     patches.insert({file,p});
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
-                                else
+                                else // ensembles
                                 {
                                     slen = xmlAttributeCopyString(xiid, "include",
                                                                   file, 64);
