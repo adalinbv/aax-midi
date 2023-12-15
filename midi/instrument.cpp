@@ -73,14 +73,14 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             uint16_t program = program_no;
             auto inst = midi.get_drum(bank_no, program, key_no, all);
-            std::string& filename = inst.first.file;
+            std::string& filename = inst.file;
             if (!filename.empty() && filename != "")
             {
                 if (!midi.buffer_avail(filename))
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.first.file : inst.first.name;
+                                           inst.file : inst.name;
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              key_no, bank_no >> 7, bank_no & 0x7F,
@@ -116,7 +116,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             uint16_t program = program_no;
             auto inst = midi.get_instrument(bank_no, program, all);
-            auto patch = midi.get_patch(inst.first.file, key);
+            auto patch = midi.get_patch(inst.file, key);
             std::string& patch_name = patch.second.file;
             if (!patch_name.empty())
             {
@@ -125,7 +125,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.first.file : patch.second.name;
+                                           inst.file : patch.second.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                              bank_no >> 7, bank_no & 0x7F, program+1,
@@ -162,9 +162,9 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     else {
                         throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
                     }
-                    midi.channel(channel_no).set_wide(inst.second.wide);
-                    midi.channel(channel_no).set_spread(inst.second.spread);
-                    midi.channel(channel_no).set_stereo(inst.second.stereo);
+                    midi.channel(channel_no).set_wide(inst.wide);
+                    midi.channel(channel_no).set_spread(inst.spread);
+                    midi.channel(channel_no).set_stereo(inst.stereo);
                 }
             }
         }
@@ -295,15 +295,15 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);
-        std::string& patch_name = inst.first.key_on;
+        std::string& patch_name = inst.key_on;
         if (!patch_name.empty())
         {
-            bool wide = inst.second.wide;
+            bool wide = inst.wide;
             if (!key_on)
             {
                 key_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
-                std::string name = inst.first.name;
+                std::string name = inst.name;
                 MESSAGE(3, "Loading %s: key-on file: %s\n",
                         name.c_str(),  patch_name.c_str());
                 key_on.add( midi.buffer(patch_name) );
@@ -312,7 +312,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
                 key_on.tie(key_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
-                pan.wide = inst.second.wide;
+                pan.wide = inst.wide;
 
                 Mixer::add(key_on);
             }
@@ -360,15 +360,15 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
-    std::string& patch_name = inst.first.key_off;
+    std::string& patch_name = inst.key_off;
     if (!patch_name.empty())
     {
-        bool wide = inst.second.wide;
+        bool wide = inst.wide;
         if (!key_off)
         {
             key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
-            std::string name = inst.first.name;
+            std::string name = inst.name;
             MESSAGE(3, "Loading %s: key-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
             key_off.add( midi.buffer(patch_name) );
@@ -377,7 +377,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
             buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
             key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
-            pan.wide = inst.second.wide;
+            pan.wide = inst.wide;
 
             Mixer::add(key_off);
         }

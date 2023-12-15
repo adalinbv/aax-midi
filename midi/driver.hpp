@@ -35,22 +35,12 @@
 namespace aax
 {
 
+class MIDIInstrument;
+
+
 enum {
     MIDI_POLYPHONIC = 3,
     MIDI_MONOPHONIC
-};
-
-struct set_t
-{
-    set_t() = default;
-    ~set_t() = default;
-
-    int wide = 0;
-    float spread = 1.0f;
-    bool stereo = false;
-
-    int min_key = 0;
-    int max_key = 128;
 };
 
 struct info_t
@@ -62,15 +52,24 @@ struct info_t
     std::string file;
     std::string key_on;
     std::string key_off;
+
+    // A reference should not be a problem as MIDIDriver inherits AeonWave
+    // which manages the buffers.
+//  Buffer& buffer;
+
+    float gain = 1.0f;
+    float pitch = 1.0f;
+
+    float spread = 1.0f;
+    int wide = 0;
+
+    int min_key = 0;
+    int max_key = 128;
+
+    bool stereo = false;
 };
 
-using buffer_t = std::pair<int, std::shared_ptr<Buffer>>;
-using inst_t = std::pair<struct info_t, struct set_t>;
-using inst_map_t = std::map<int, inst_t>;
-
-
-class MIDIInstrument;
-
+using info_map_t = std::map<int, info_t>;
 
 class MIDIDriver : public AeonWave
 {
@@ -88,9 +87,14 @@ public:
     virtual ~MIDIDriver() {
         AeonWave::remove(delay);
         AeonWave::remove(reverb);
-        for (auto it : buffers) {
-            aaxBufferDestroy(*it.second.second); it.second.first = 0;
+#if 0
+        for (auto& it : instruments) {
+            for (auto& it2 : it.second) destroy(it2.second.buffer);
         }
+        for (auto& it : drums) {
+            for (auto& it2 : it.second) destroy(it2.second.buffer);
+        }
+#endif
     }
 
     bool process(uint8_t channel, uint8_t message, uint8_t key, uint8_t velocity, bool omni, float pitch=1.0f);
@@ -161,15 +165,15 @@ public:
     void set_grep(bool g) { grep_mode = g; }
     bool get_grep() { return grep_mode; }
 
-    const inst_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
-    const inst_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
-    std::map<uint16_t,info_t>& get_frames() { return frames; }
+    const info_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
+    const info_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
+    info_map_t& get_frames() { return frames; }
     std::map<std::string,patch_map_t>& get_patches() { return patches; }
 
     const patch_entry_t get_patch(std::string& name, uint8_t& key);
     const patch_entry_t get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
         auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
-        return get_patch(inst.first.file, key);
+        return get_patch(inst.file, key);
     }
 
     void set_initialize(bool i) { initialize = i; };
@@ -247,36 +251,6 @@ public:
 
     void set_gm2_reverb_type(uint16_t value);
 
-    // ** buffer management ******
-    Buffer& buffer(std::string& name) {
-        auto it = buffers.find(name);
-        if (it == buffers.end()) {
-            std::shared_ptr<Buffer> b(new Buffer(ptr,name.c_str(),false,true));
-            if (b) {
-                auto ret = buffers.insert({name,{0,b}});
-                it = ret.first;
-            } else {
-                return nullBuffer;
-            }
-        }
-        it->second.first++;
-        return *it->second.second;
-    }
-    void destroy(Buffer& b) {
-        for(auto it=buffers.begin(); it!=buffers.end(); ++it)
-        {
-            if ((*it->second.second == b) && it->second.first && !(--it->second.first)) {
-                aaxBufferDestroy(*it->second.second);
-                buffers.erase(it); break;
-            }
-        }
-    }
-    bool buffer_avail(std::string &name) {
-        auto it = buffers.find(name);
-        if (it == buffers.end()) return false;
-        return true;
-    }
-
     bool exists(const std::string& path) {
         struct stat buffer;
         return (stat(path.c_str(), &buffer) == 0);
@@ -335,10 +309,10 @@ private:
     channel_map_t reverb_channels;
 
     // banks name and audio-frame filter and effects file
-    std::map<uint16_t, info_t> frames;
+    info_map_t frames;
 
-    std::map<uint16_t, inst_map_t> drums;
-    std::map<uint16_t, inst_map_t> instruments;
+    std::map<uint16_t, info_map_t> drums;
+    std::map<uint16_t, info_map_t> instruments;
     std::map<std::string, patch_map_t> patches;
 
     std::vector<uint16_t> missing_drum_bank;
@@ -347,10 +321,6 @@ private:
     bool is_avail(std::vector<uint16_t>& vec, uint16_t item) {
         return (std::find(vec.begin(), vec.end(), item) != vec.end());
     }
-
-    std::map<std::string, buffer_t> buffers;
-
-    Buffer nullBuffer;
 
     std::vector<std::string> loaded;
 

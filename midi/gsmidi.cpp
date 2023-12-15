@@ -978,7 +978,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
             else
             {
                 auto inst = midi.get_instrument(bank_no, program_no);
-                name = inst.first.name;
+                name = inst.name;
             }
         } catch(const std::invalid_argument& e) {
             ERROR("Error: " << e.what());

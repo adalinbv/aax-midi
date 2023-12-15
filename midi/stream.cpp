@@ -433,7 +433,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                     else
                     {
                         auto inst = midi.get_instrument(bank_no, program_no);
-                        name = inst.first.name;
+                        name = inst.name;
                     }
                 } catch(const std::invalid_argument& e) {
                     ERROR("Error: " << e.what());

@@ -814,9 +814,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{{name,file,key_on,key_off},
-                                                   {wide,spread,stereo,min,max}}
-                                                });
+                                    bank.insert({n,{name,file,key_on,key_off,1.0f,1.0f,
+                                                   spread,wide,min,max,stereo}});
 
                                     patch_map_t p;
                                     p.insert({0,{i,{name,file}}});
@@ -832,7 +831,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     {
                                         file[slen] = 0;
 					add_patch(file, name, 64);
-                                        bank.insert({n,{{name,file,""},{wide,spread,stereo}}});
+                                        bank.insert({n,{name,file,"","",1.0f,1.0f,
+                                                        spread,wide,0,128,stereo}});
                                     }
                                 }
                             }
@@ -953,14 +953,14 @@ MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
  * bank_no (msb) in the lower eight bits of the bank number of the map
  * and the key_no in the program number of the map.
  */
-const inst_t
+const info_t
 MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, bool all)
 {
     if (program_no == 0 && drum_set_no != -1) {
         program_no = drum_set_no;
     }
 
-    inst_t empty_map;
+    info_t empty_map;
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;
     do
@@ -975,9 +975,9 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
             {
                 if (all || selection.empty() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.first.file) != selection.end() ||
+                              iti->second.file) != selection.end() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.first.name) != selection.end())
+                              iti->second.name) != selection.end())
                 {
                     if (req_program_no != program_no)
                     {
@@ -1057,10 +1057,10 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     return iti.first->second;
 }
 
-const inst_t
+const info_t
 MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 {
-    inst_t empty_map;
+    info_t empty_map;
     uint16_t prev_bank_no = bank_no;
     uint16_t req_bank_no = bank_no;
 
@@ -1076,16 +1076,16 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
             {
                 if (all || selection.empty() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.first.file) != selection.end() ||
+                              iti->second.file) != selection.end() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.first.name) != selection.end())
+                              iti->second.name) != selection.end())
                 {
                     return iti->second;
                 }
 
                 auto& inst = iti->second;
                 std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.first.file : inst.first.name;
+                                           inst.file : inst.name;
                 DISPLAY(4, "No instrument mapped to bank %i, program %i\n",
                             bank_no, program_no);
                 DISPLAY(4,  "%s will not be heard\n", display.c_str());
@@ -1348,7 +1348,7 @@ MIDIDriver::get_channel_name(uint16_t part_no)
         uint16_t bank_no = channel(part_no).get_bank_no();
         uint8_t program_no = channel(part_no).get_program_no();
         auto inst = midi.get_instrument(bank_no, program_no);
-        rv = inst.first.name;
+        rv = inst.name;
     }
     return rv;
 }
