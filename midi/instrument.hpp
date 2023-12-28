@@ -83,7 +83,7 @@ public:
 
     Buffer& get_buffer(uint8_t key) {
         auto it = name_map.find(key);
-        if (it == name_map.end()) return nullBuffer;
+        if (it == name_map.end()) return aax::nullBuffer;
         return it->second;
     }
 
@@ -92,8 +92,6 @@ private:
     std::string track_name;
 
     MIDIDriver &midi;
-
-    Buffer nullBuffer;
 
     Emitter key_on;
     Emitter key_off;

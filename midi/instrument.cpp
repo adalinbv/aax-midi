@@ -90,7 +90,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 
                 if (midi.get_grep())
                 {
-                   auto ret = name_map.insert({key_no,nullBuffer});
+                   auto ret = name_map.insert({key_no,aax::nullBuffer});
                    it = ret.first;
                 }
                 else
@@ -135,7 +135,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 
                 if (midi.get_grep())
                 {
-                   auto ret = name_map.insert({key,nullBuffer});
+                   auto ret = name_map.insert({key,aax::nullBuffer});
                    it = ret.first;
                 }
                 else

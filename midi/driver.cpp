@@ -312,7 +312,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
         if (it != chorus_channels.end() && it->second)
         {
             chorus.remove(*it->second);
-            it->second->add(nullBuffer);
+            it->second->add(aax::nullBuffer);
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from chorus\n", part_no);
         }
@@ -451,7 +451,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
         if (it != delay_channels.end() && it->second)
         {
             delay.remove(*it->second);
-            it->second->add(nullBuffer);
+            it->second->add(aax::nullBuffer);
             AeonWave::add(*it->second);
             MESSAGE(3, "Remove part %i from delay\n", part_no);
         }
