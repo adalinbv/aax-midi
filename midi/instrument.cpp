@@ -361,12 +361,8 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 void
 MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
-    if (is_drums()) {
-        Instrument::stop(key_no, velocity);
-        return;
-    }
-
     Ensemble::stop(key_no, velocity);
+    if (is_drums()) return;
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);
