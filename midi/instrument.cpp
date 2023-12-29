@@ -33,7 +33,7 @@ using namespace aax;
 
 MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
                  uint8_t channel, uint16_t bank, uint8_t program, bool drums)
-   : Instrument(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
+   : Ensemble(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
      channel_no(channel), bank_no(bank),
      program_no(program)
 {
@@ -290,8 +290,15 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
-        Instrument::play(key_no, velocity/127.0f, it->second, pitch);
-        if (is_drums()) return;
+        if (is_drums()) {
+            Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+            return;
+        }
+
+        if (Ensemble::no_members() == 0) {
+            Ensemble::add_member(it->second);
+        }
+        Ensemble::play(key_no, velocity/127.0f, pitch);
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -354,9 +361,12 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 void
 MIDIInstrument::stop(uint32_t key_no, float velocity)
 {
-    Instrument::stop(key_no, velocity);
-//  if (midi.get_initialize()) return;
-    if (is_drums()) return;
+    if (is_drums()) {
+        Instrument::stop(key_no, velocity);
+        return;
+    }
+
+    Ensemble::stop(key_no, velocity);
 
     bool all = midi.no_active_tracks() > 0;
     auto inst = midi.get_instrument(bank_no, program_no, all);

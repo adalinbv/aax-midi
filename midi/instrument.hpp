@@ -33,7 +33,7 @@ namespace aax
 
 class MIDIDriver;
 
-class MIDIInstrument : public Instrument
+class MIDIInstrument : public Ensemble
 {
 private:
     MIDIInstrument(const MIDIInstrument&) = delete;
