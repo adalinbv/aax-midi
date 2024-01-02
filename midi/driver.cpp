@@ -635,7 +635,7 @@ void
 MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 {
     const char *filename, *type = "instrument";
-    auto imap = instruments;
+    auto imap = instrument_map;
 
     std::string iname;
     if (!gmmidi.empty())
@@ -750,10 +750,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         if (slen)
                         {
                             file[slen] = 0;
-                            frames.insert({bank_no,{name,file}});
+                            configuration_map.insert({bank_no,{name,file}});
                         }
 
-                        // type is 'instrument' or ´patch' for drums/ensembles
+                        // type is 'instrument' or ´ensemble' for drums/ensembles
                         inum = xmlNodeGetNum(xbid, type);
                         auto bank = imap[bank_no];
                         for (int i=0; i<inum; i++)
@@ -826,7 +826,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     bank.insert({n,{name,file,key_on,key_off,1.0f,1.0f,
                                                    spread,wide,min,max,stereo}});
 
-                                    patch_map_t p;
+                                    ensemble_map_t p;
                                     p.insert({0,{i,{name,file}}});
 
                                     ensembles.insert({file,p});
@@ -865,7 +865,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
         if (id == 0)
         {
-            instruments = std::move(imap);
+            instrument_map = std::move(imap);
 
             // next up: drums
             if (!gmdrums.empty())
@@ -885,11 +885,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 iname.append(drum);
             }
             filename = iname.c_str();
-            type = "patch"; // was: "drum";
-            imap = drums;
+            type = "ensemble";
+            imap = drum_map;
         }
         else {
-            drums = std::move(imap);
+            drum_map = std::move(imap);
         }
     }
 
@@ -897,8 +897,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     {
         std::ostringstream s;
 
-        auto it = frames.find(drum_set_no<<7);
-        if (it != frames.end()) {
+        auto it = configuration_map.find(drum_set_no<<7);
+        if (it != configuration_map.end()) {
             s << "Switching to drum " << it->second.name;
         } else {
             s << "Switching to drum set number:  " << drum_set_no+1;
@@ -907,7 +907,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     }
 }
 
-// patches are xml configuration files which define two or more
+// ensemblees are xml configuration files which define two or more
 // instrument definitions spread across midi note ranges.
 void
 MIDIDriver::add_ensemble(const char *file, char *name, size_t nlen)
@@ -925,12 +925,12 @@ MIDIDriver::add_ensemble(const char *file, char *name, size_t nlen)
         xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
         if (xlid)
         {
-            unsigned int pnum = xmlNodeGetNum(xlid, "patch");
+            unsigned int pnum = xmlNodeGetNum(xlid, "ensemble");
             xmlId *xpid = xmlMarkId(xlid);
-            patch_map_t p;
+            ensemble_map_t p;
             for (uint8_t i=0; i<pnum; i++)
             {
-                if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
+                if (xmlNodeGetPos(xlid, xpid, "ensemble", i) != 0)
                 {
                     unsigned int slen;
                     char file[64] = "";
@@ -974,8 +974,8 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     uint16_t req_program_no = program_no;
     do
     {
-        auto itb = drums.find(program_no << 7 | bank_no);
-        bool bank_found = (itb != drums.end());
+        auto itb = drum_map.find(program_no << 7 | bank_no);
+        bool bank_found = (itb != drum_map.end());
         if (bank_found)
         {
             auto bank = itb->second;
@@ -990,8 +990,8 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
                 {
                     if (req_program_no != program_no)
                     {
-                        auto itrb = drums.find(req_program_no << 7);
-                        if (itrb != drums.end()) {
+                        auto itrb = drum_map.find(req_program_no << 7);
+                        if (itrb != drum_map.end()) {
                             auto& bank = itrb->second;
 //                          bank.insert({key_no,{{"",""},{}}});
                             bank.insert({key_no,iti->second});
@@ -1060,7 +1060,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     while (true);
 
     // default drums
-    auto itb = drums.find(program_no);
+    auto itb = drum_map.find(program_no);
     auto& bank = itb->second;
     auto iti = bank.insert({key_no, std::move(empty_map)});
     return iti.first->second;
@@ -1075,8 +1075,8 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 
     do
     {
-        auto itb = instruments.find(bank_no);
-        bool bank_found = (itb != instruments.end());
+        auto itb = instrument_map.find(bank_no);
+        bool bank_found = (itb != instrument_map.end());
         if (bank_found)
         {
             auto bank = itb->second;
@@ -1157,22 +1157,22 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
     DISPLAY(4, "No instrument mapped to bank %i, program %i\n",
             bank_no, program_no);
 
-    auto itb = instruments.find(bank_no);
+    auto itb = instrument_map.find(bank_no);
     auto& bank = itb->second;
     auto iti = bank.insert({program_no, std::move(empty_map)});
     return iti.first->second;
 }
 
-const MIDIDriver::patch_entry_t
+const MIDIDriver::ensemble_t
 MIDIDriver::get_ensemble(std::string& name, uint8_t& key)
 {
-    auto patches = get_ensembles();
-    auto it = patches.find(name);
-    if (it != patches.end())
+    auto ensemblees = get_ensembles();
+    auto it = ensemblees.find(name);
+    if (it != ensemblees.end())
     {
-        auto patch = it->second.upper_bound(key);
-        if (patch != it->second.end()) {
-            return patch->second;
+        auto ensemble = it->second.upper_bound(key);
+        if (ensemble != it->second.end()) {
+            return ensemble->second;
         }
 
         // above the largest upper key, use the last key.
@@ -1225,10 +1225,10 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
     }
 
     std::string file = "";
-    if (drums && !frames.empty())
+    if (drums && !configuration_map.empty())
     {
-        auto it = frames.find(program_no);
-        if (it != frames.end()) {
+        auto it = configuration_map.find(program_no);
+        if (it != configuration_map.end()) {
             file = it->second.file;
         }
     }
@@ -1345,8 +1345,8 @@ MIDIDriver::get_channel_name(uint16_t part_no)
     {
         rv = "Drums";
         uint16_t bank_no = channel(part_no).get_bank_no();
-        auto itb = frames.find(bank_no);
-        if (itb != frames.end())
+        auto itb = configuration_map.find(bank_no);
+        if (itb != configuration_map.end())
         {
            auto bank = itb->second;
            rv = bank.name;

@@ -53,10 +53,6 @@ struct info_t
     std::string key_on;
     std::string key_off;
 
-    // A reference should not be a problem as MIDIDriver inherits AeonWave
-    // which manages the buffers.
-//  Buffer& buffer;
-
     float gain = 1.0f;
     float pitch = 1.0f;
 
@@ -72,12 +68,12 @@ struct info_t
 class MIDIDriver : public AeonWave
 {
 private:
-    using info_map_t = std::map<int, info_t>;
-    using instrument_t = std::map<uint16_t, info_map_t>;
+    using configuration_map_t = std::map<int, info_t>;
+    using patch_map_t = std::map<uint16_t, configuration_map_t>;
 
-    using patch_entry_t = std::pair<int, struct info_t>;
-    using patch_map_t = std::map<uint8_t, patch_entry_t>;
-    using ensemble_cache_t = std::map<std::string, patch_map_t>;
+    using ensemble_t = std::pair<int, struct info_t>;
+    using ensemble_map_t = std::map<uint8_t, ensemble_t>;
+    using ensemble_cache_t = std::map<std::string, ensemble_map_t>;
 
     using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
 
@@ -90,14 +86,6 @@ public:
     virtual ~MIDIDriver() {
         AeonWave::remove(delay);
         AeonWave::remove(reverb);
-#if 0
-        for (auto& it : instruments) {
-            for (auto& it2 : it.second) destroy(it2.second.buffer);
-        }
-        for (auto& it : drums) {
-            for (auto& it2 : it.second) destroy(it2.second.buffer);
-        }
-#endif
     }
 
     bool process(uint8_t channel, uint8_t message, uint8_t key, uint8_t velocity, bool omni, float pitch=1.0f);
@@ -170,11 +158,11 @@ public:
 
     const info_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const info_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
-    info_map_t& get_frames() { return frames; }
+    configuration_map_t& get_configurations() { return configuration_map; }
     ensemble_cache_t& get_ensembles() { return ensembles; }
 
-    const patch_entry_t get_ensemble(std::string& name, uint8_t& key);
-    const patch_entry_t get_ensemble(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
+    const ensemble_t get_ensemble(std::string& name, uint8_t& key);
+    const ensemble_t get_ensemble(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
         auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
         return get_ensemble(inst.file, key);
     }
@@ -302,11 +290,11 @@ private:
     channel_map_t delay_channels;
     channel_map_t reverb_channels;
 
-    // banks name and audio-frame filter and effects file
-    info_map_t frames;
+    // banks name and submixer filter and effects file
+    configuration_map_t configuration_map;
 
-    instrument_t drums;
-    instrument_t instruments;
+    patch_map_t drum_map;
+    patch_map_t instrument_map;
     ensemble_cache_t ensembles;
 
     std::vector<uint16_t> missing_drum_bank;

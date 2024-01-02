@@ -969,7 +969,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
             midi.new_channel(channel_no, bank_no, program_no);
             if (midi.is_drums(channel_no))
             {
-                auto frames = midi.get_frames();
+                auto frames = midi.get_configurations();
                 auto it = frames.find(program_no);
                 if (it != frames.end()) {
                     name = it->second.name;

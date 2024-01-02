@@ -424,7 +424,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                     midi.new_channel(channel_no, bank_no, program_no);
                     if (midi.is_drums(channel_no))
                     {
-                        auto frames = midi.get_frames();
+                        auto frames = midi.get_configurations();
                         auto it = frames.find(program_no);
                         if (it != frames.end()) {
                             name = it->second.name;
