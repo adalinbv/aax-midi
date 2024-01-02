@@ -70,11 +70,6 @@ class MIDIDriver : public AeonWave
 private:
     using configuration_map_t = std::map<int, info_t>;
     using patch_map_t = std::map<uint16_t, configuration_map_t>;
-
-    using ensemble_t = std::pair<int, struct info_t>;
-    using ensemble_map_t = std::map<uint8_t, ensemble_t>;
-    using ensemble_cache_t = std::map<std::string, ensemble_map_t>;
-
     using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
 
 public:
@@ -159,13 +154,6 @@ public:
     const info_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const info_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
     configuration_map_t& get_configurations() { return configuration_map; }
-    ensemble_cache_t& get_ensembles() { return ensembles; }
-
-    const ensemble_t get_ensemble(std::string& name, uint8_t& key);
-    const ensemble_t get_ensemble(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
-        auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
-        return get_ensemble(inst.file, key);
-    }
 
     void set_initialize(bool i) { initialize = i; };
     bool get_initialize() { return initialize; }
@@ -278,8 +266,6 @@ private:
         return rv;
     }
 
-    void add_ensemble(const char *patch, char *name, size_t nlen);
-
     std::string patch_set = "default";
     std::string patch_version = "1.0.0";
 
@@ -295,7 +281,6 @@ private:
 
     patch_map_t drum_map;
     patch_map_t instrument_map;
-    ensemble_cache_t ensembles;
 
     std::vector<uint16_t> missing_drum_bank;
     std::vector<uint16_t> missing_instrument_bank;

@@ -721,7 +721,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                     effects = xmlAttributeGetString(xmid, "file");
                 }
 
-                unsigned int bnum = xmlNodeGetNum(xmid, "layer"); // was: bank
+                unsigned int bnum = xmlNodeGetNum(xmid, "layer"); // bank
                 xmlId *xbid = xmlMarkId(xmid);
                 for (unsigned int b=0; b<bnum; b++)
                 {
@@ -826,20 +826,15 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     bank.insert({n,{name,file,key_on,key_off,1.0f,1.0f,
                                                    spread,wide,min,max,stereo}});
 
-                                    ensemble_map_t p;
-                                    p.insert({0,{i,{name,file}}});
-
-                                    ensembles.insert({file,p});
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
-                                else // ensembles
+                                else // ensembles?
                                 {
                                     slen = xmlAttributeCopyString(xiid, "include",
                                                                   file, 64);
                                     if (slen)
                                     {
                                         file[slen] = 0;
-					add_ensemble(file, name, 64);
                                         bank.insert({n,{name,file,"","",1.0f,1.0f,
                                                         spread,wide,0,128,stereo}});
                                     }
@@ -904,56 +899,6 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
             s << "Switching to drum set number:  " << drum_set_no+1;
         }
         INFO(s.str().c_str());
-    }
-}
-
-// ensemblees are xml configuration files which define two or more
-// instrument definitions spread across midi note ranges.
-void
-MIDIDriver::add_ensemble(const char *file, char *name, size_t nlen)
-{
-    const char *path = midi.info(AAX_SHARED_DATA_DIR);
-
-    std::string xmlfile(path);
-    xmlfile.append("/");
-    xmlfile.append(file);
-    xmlfile.append(".xml");
-
-    xmlId *xid = xmlOpen(xmlfile.c_str());
-    if (xid)
-    {
-        xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
-        if (xlid)
-        {
-            unsigned int pnum = xmlNodeGetNum(xlid, "ensemble");
-            xmlId *xpid = xmlMarkId(xlid);
-            ensemble_map_t p;
-            for (uint8_t i=0; i<pnum; i++)
-            {
-                if (xmlNodeGetPos(xlid, xpid, "ensemble", i) != 0)
-                {
-                    unsigned int slen;
-                    char file[64] = "";
-
-		    if (xmlAttributeExists(xpid, "name")) {
-     		        xmlAttributeCopyString(xpid, "name", name, nlen);
-		    }
-                    slen = xmlAttributeCopyString(xpid, "file", file, 64);
-                    if (slen)
-                    {
-                        uint8_t max = xmlAttributeGetInt(xpid, "max");
-                        file[slen] = 0;
-
-                        p.insert({max,{i,{name,file}}});
-                    }
-                }
-            }
-            ensembles.insert({file,p});
-
-            xmlFree(xpid);
-            xmlFree(xlid);
-        }
-        xmlFree(xid);
     }
 }
 
@@ -1161,29 +1106,6 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
     auto& bank = itb->second;
     auto iti = bank.insert({program_no, std::move(empty_map)});
     return iti.first->second;
-}
-
-const MIDIDriver::ensemble_t
-MIDIDriver::get_ensemble(std::string& name, uint8_t& key)
-{
-    auto ensemblees = get_ensembles();
-    auto it = ensemblees.find(name);
-    if (it != ensemblees.end())
-    {
-        auto ensemble = it->second.upper_bound(key);
-        if (ensemble != it->second.end()) {
-            return ensemble->second;
-        }
-
-        // above the largest upper key, use the last key.
-        auto last = it->second.rbegin();
-        if (last != it->second.rend()) {
-            return last->second;
-        }
-    }
-
-    key = 255;
-    return {0,{name,name}};
 }
 
 void

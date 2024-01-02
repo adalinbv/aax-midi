@@ -116,8 +116,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             uint16_t program = program_no;
             auto inst = midi.get_instrument(bank_no, program, all);
-            auto patch = midi.get_ensemble(inst.file, key);
-            std::string& patch_name = patch.second.file;
+            std::string& patch_name = inst.file;
             if (!patch_name.empty())
             {
                 if (!midi.buffer_avail(patch_name) &&
@@ -125,7 +124,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.file : patch.second.name;
+                                           inst.file : inst.name;
 
                     DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                              bank_no >> 7, bank_no & 0x7F, program+1,
@@ -176,10 +175,10 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             switch(program_no)
             {
-            case 0:	// Standard Set
-            case 16:	// Power set
-            case 32:	// Jazz set
-            case 40:	// Brush set
+            case 0: // Standard Set
+            case 16: // Power set
+            case 32: // Jazz set
+            case 40: // Brush set
                 switch(key_no)
                 {
                 case 29: // EXC7: Scratch Push
@@ -234,7 +233,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     break;
                 }
                 break;
-            case 26:	// Analog Set
+            case 26: // Analog Set
                 switch(key_no)
                 {
                 case 42: // EXC1: Closed Hi-Hat
@@ -253,7 +252,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     break;
                 }
                 break;
-            case 48:	// Orchestra Set
+            case 48: // Orchestra Set
                 switch(key_no)
                 {
                 case 27: // EXC1: Closed Hi-Hat
@@ -272,7 +271,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
                     break;
                 }
                 break;
-            case 57:	// SFX Set
+            case 57: // SFX Set
                 switch(key_no)
                 {
                 case 41: // EXC7: Scratch Pus
