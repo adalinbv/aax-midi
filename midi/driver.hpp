@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2023 by Erik Hofman.
- * Copyright (C) 2018-2023 by Adalin B.V.
+ * Copyright (C) 2018-2024 by Erik Hofman.
+ * Copyright (C) 2018-2024 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -69,13 +69,16 @@ struct info_t
     bool stereo = false;
 };
 
-using info_map_t = std::map<int, info_t>;
-
 class MIDIDriver : public AeonWave
 {
 private:
+    using info_map_t = std::map<int, info_t>;
+    using instrument_t = std::map<uint16_t, info_map_t>;
+
     using patch_entry_t = std::pair<int, struct info_t>;
     using patch_map_t = std::map<uint8_t, patch_entry_t>;
+    using ensemble_cache_t = std::map<std::string, patch_map_t>;
+
     using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
 
 public:
@@ -168,12 +171,12 @@ public:
     const info_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
     const info_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
     info_map_t& get_frames() { return frames; }
-    std::map<std::string,patch_map_t>& get_patches() { return patches; }
+    ensemble_cache_t& get_ensembles() { return ensembles; }
 
-    const patch_entry_t get_patch(std::string& name, uint8_t& key);
-    const patch_entry_t get_patch(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
+    const patch_entry_t get_ensemble(std::string& name, uint8_t& key);
+    const patch_entry_t get_ensemble(uint16_t bank_no, uint8_t program_no, uint8_t& key) {
         auto inst = get_instrument(bank_no, program_no, no_active_tracks() > 0);
-        return get_patch(inst.file, key);
+        return get_ensemble(inst.file, key);
     }
 
     void set_initialize(bool i) { initialize = i; };
@@ -266,15 +269,6 @@ public:
     int simd64 = (capabilities & AAX_SIMD256);
     int simd = (capabilities & AAX_SIMD);
 
-    float lin2log(float v) { return log10f(v); }
-    float log2lin(float v) { return powf(10.0f,v); }
-    float lin2db(float v) { return 20.0f*log10f(v); }
-    float db2lin(float v) { return _MINMAX(powf(10.0f,v/20.0f),0.0f,10.0f); }
-    float ln(float v) { return powf(v, GMATH_1_E1); }
-    float note2freq(uint32_t d) {
-        return 440.0f*powf(2.0f, (float(d)-69.0f)/12.0f);
-    }
-
     void reset_timer() {
         start_time = std::chrono::system_clock::now();
         timer_started = true;
@@ -296,7 +290,7 @@ private:
         return rv;
     }
 
-    void add_patch(const char *patch, char *name, size_t nlen);
+    void add_ensemble(const char *patch, char *name, size_t nlen);
 
     std::string patch_set = "default";
     std::string patch_version = "1.0.0";
@@ -311,9 +305,9 @@ private:
     // banks name and audio-frame filter and effects file
     info_map_t frames;
 
-    std::map<uint16_t, info_map_t> drums;
-    std::map<uint16_t, info_map_t> instruments;
-    std::map<std::string, patch_map_t> patches;
+    instrument_t drums;
+    instrument_t instruments;
+    ensemble_cache_t ensembles;
 
     std::vector<uint16_t> missing_drum_bank;
     std::vector<uint16_t> missing_instrument_bank;

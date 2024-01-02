@@ -158,8 +158,8 @@ void MIDIStream::XG_initialize()
         midi.set_chorus("XG/chorus1", XGMIDI_CHORUS1, XG);
         midi.set_chorus_level(it.first, 0.0f);
 
-        it.second->set_expression(midi.ln(127.0f/127.0f));
-        it.second->set_gain(midi.ln(100.0f/127.0f));
+        it.second->set_expression(aax::math::ln(127.0f/127.0f));
+        it.second->set_gain(aax::math::ln(100.0f/127.0f));
         it.second->set_pan(0.0f);
         if (it.first != MIDI_DRUMS_CHANNEL) {
             it.second->set_drums(false);
@@ -927,7 +927,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 }
                 case XGMIDI_VOLUME: // 0-127
                     expl = "VOLUME";
-                    channel.set_gain(midi.ln(float(value)/127.0f));
+                    channel.set_gain(aax::math::ln(float(value)/127.0f));
                     break;
                 case XGMIDI_VELOCITY_SENSE_DEPTH: // 0-127
                     expl = "VELOCITY_SENSE_DEPTH";

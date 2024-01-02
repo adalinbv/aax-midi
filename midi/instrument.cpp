@@ -37,8 +37,8 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
      channel_no(channel), bank_no(bank),
      program_no(program)
 {
-    set_gain(midi.ln(100.0f/127.0f));
-    set_expression(midi.ln(127.0f/127.0f));
+    set_gain(aax::math::ln(100.0f/127.0f));
+    set_expression(aax::math::ln(127.0f/127.0f));
     set_pan(0.0f/64.f);
     set_drums(channel == MIDI_DRUMS_CHANNEL ? true : drums);
     if (is_drums() && buffer) {
@@ -116,7 +116,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
         {
             uint16_t program = program_no;
             auto inst = midi.get_instrument(bank_no, program, all);
-            auto patch = midi.get_patch(inst.file, key);
+            auto patch = midi.get_ensemble(inst.file, key);
             std::string& patch_name = patch.second.file;
             if (!patch_name.empty())
             {
@@ -325,7 +325,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
 
             // note2pitch
-            float key_frequency =  midi.note2freq(key_no);
+            float key_frequency =  aax::math::note2freq(key_no);
             float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
             key_freq += buffer_frequency;
 
@@ -389,7 +389,7 @@ MIDIInstrument::stop(uint32_t key_no, float velocity)
         }
 
         // note2pitch
-        float key_frequency =  midi.note2freq(key_no);
+        float key_frequency =  aax::math::note2freq(key_no);
         float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
         key_freq += buffer_frequency;
 

@@ -46,8 +46,8 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
             midi.set_reverb_level(it.first, 0.0f);
             midi.set_chorus_level(it.first, 0.0f);
-            it.second->set_expression(midi.ln(127.0f/127.0f));
-            it.second->set_gain(midi.ln(100.0f/127.0f));
+            it.second->set_expression(aax::math::ln(127.0f/127.0f));
+            it.second->set_gain(aax::math::ln(100.0f/127.0f));
             it.second->set_pan(0.0f);
             if (it.first != MIDI_DRUMS_CHANNEL) {
                 it.second->set_drums(false);
@@ -72,8 +72,8 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
 
             midi.set_reverb_level(it.first, 0.0f);
             midi.set_chorus_level(it.first, 0.0f);
-            it.second->set_expression(midi.ln(127.0f/127.0f));
-            it.second->set_gain(midi.ln(100.0f/127.0f));
+            it.second->set_expression(aax::math::ln(127.0f/127.0f));
+            it.second->set_gain(aax::math::ln(100.0f/127.0f));
             it.second->set_pan(0.0f);
             if (it.first != MIDI_DRUMS_CHANNEL) {
                 it.second->set_drums(false);

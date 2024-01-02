@@ -49,8 +49,8 @@ void MIDIStream::GS_initialize()
     for (auto& it : midi.get_channels())
     {
         midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
-        it.second->set_expression(midi.ln(127.0f/127.0f));
-        it.second->set_gain(midi.ln(100.0f/127.0f));
+        it.second->set_expression(aax::math::ln(127.0f/127.0f));
+        it.second->set_gain(aax::math::ln(100.0f/127.0f));
         it.second->set_pan(0.0f);
         if (it.first != MIDI_DRUMS_CHANNEL) {
             it.second->set_drums(false);
@@ -211,7 +211,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     {
                         expl = "REVERB_PRE_LPF";
                         float val = (7-value)/7.0f;
-                        float fc = midi.log2lin(val*midi.lin2log(22000.0f));
+                        float fc = aax::math::log2lin(val*aax::math::lin2log(22000.0f));
                         midi.set_reverb_cutoff_frequency(fc);
                         break;
                     }
@@ -279,7 +279,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     {
                         expl = "CHORUS_PRE_LPF";
                         float val = (7-value)/7.0f;
-                        float fc = midi.log2lin(val*midi.lin2log(22000.0f));
+                        float fc = aax::math::log2lin(val*aax::math::lin2log(22000.0f));
                         midi.set_chorus_cutoff_frequency(fc);
                         break;
                     }
@@ -368,7 +368,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     {
                         expl = "DELAY_PRE_LPF";
                         float val = (7-value)/7.0f;
-                        float fc = midi.log2lin(val*midi.lin2log(22000.0f));
+                        float fc = aax::math::log2lin(val*aax::math::lin2log(22000.0f));
                         midi.set_delay_cutoff_frequency(fc);
                         break;
                     }
@@ -1108,7 +1108,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
     case GSMIDI_PART_VOLUME:
         expl = "VOLUME";
         if (!volume_enabled) break;
-        channel.set_gain(midi.ln(float(value)/127.0f));
+        channel.set_gain(aax::math::ln(float(value)/127.0f));
         break;
     case GSMIDI_PART_VELOCITY_SENSE_DEPTH:
         expl = "Unsupported VELOCITY_SENSE_DEPTH";

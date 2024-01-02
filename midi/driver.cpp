@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2023 by Erik Hofman.
- * Copyright (C) 2018-2023 by Adalin B.V.
+ * Copyright (C) 2018-2024 by Erik Hofman.
+ * Copyright (C) 2018-2024 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -190,7 +190,7 @@ MIDIDriver::is_drums(uint8_t n)
 void
 MIDIDriver::set_volume(float g)
 {
-    g = volume * ln(g);
+    g = volume * aax::math::ln(g);
 
     aax::dsp dsp = get(AAX_VOLUME_FILTER);
     dsp.set(AAX_GAIN, g);
@@ -829,7 +829,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     patch_map_t p;
                                     p.insert({0,{i,{name,file}}});
 
-                                    patches.insert({file,p});
+                                    ensembles.insert({file,p});
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
                                 else // ensembles
@@ -839,7 +839,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-					add_patch(file, name, 64);
+					add_ensemble(file, name, 64);
                                         bank.insert({n,{name,file,"","",1.0f,1.0f,
                                                         spread,wide,0,128,stereo}});
                                     }
@@ -910,7 +910,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 // patches are xml configuration files which define two or more
 // instrument definitions spread across midi note ranges.
 void
-MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
+MIDIDriver::add_ensemble(const char *file, char *name, size_t nlen)
 {
     const char *path = midi.info(AAX_SHARED_DATA_DIR);
 
@@ -948,7 +948,7 @@ MIDIDriver::add_patch(const char *file, char *name, size_t nlen)
                     }
                 }
             }
-            patches.insert({file,p});
+            ensembles.insert({file,p});
 
             xmlFree(xpid);
             xmlFree(xlid);
@@ -1164,9 +1164,9 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 }
 
 const MIDIDriver::patch_entry_t
-MIDIDriver::get_patch(std::string& name, uint8_t& key)
+MIDIDriver::get_ensemble(std::string& name, uint8_t& key)
 {
-    auto patches = get_patches();
+    auto patches = get_ensembles();
     auto it = patches.find(name);
     if (it != patches.end())
     {
