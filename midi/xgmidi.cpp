@@ -33,7 +33,7 @@
 namespace aax
 {
 
-static float XGMIDI_LFO_table[128] = {	// Hz
+static float XGMIDI_LFO_table[128] = { // Hz
  0.f, 0.08f, 0.08f, 0.16f, 0.16f, 0.25f, 0.25f, 0.33f, 0.33f, 0.42f, 0.42f,
  0.5f, 0.5f, 0.58f, 0.58f, 0.67f, 0.67f, 0.75f, 0.75f, 0.84, 0.84f, 0.92f,
  0.92f, 1.f, 1.f, 1.09f, 1.09f, 1.17f, 1.17f, 1.26f, 1.26f, 1.34f, 1.34f,
@@ -62,7 +62,7 @@ static float XGMIDI_delay_offset_table[128] = {
  46.9f, 48.4f, 50.f
 };
 
-static float XGMIDI_delay_time_table[128] = {	// ms
+static float XGMIDI_delay_time_table[128] = { // ms
  0.1f, 1.7f, 3.2f, 4.8f, 6.4f, 8.0f, 9.5f, 11.1f, 12.7f, 14.3f, 15.8f, 17.4f,
  19.f, 2.6f, 22.1f, 23.7f, 25.3f, 26.9f, 28.4f, 30.f, 31.6f, 33.2f, 34.7f,
  36.3f, 37.9f, 39.5f, 41.f, 42.6f, 44.2f, 45.7f, 47.3f, 48.9f, 50.5f, 52.f,
@@ -322,45 +322,45 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     }
                     break;
                 }
-                case XGMIDI_REVERB_PARAMETER1:	// Reverb Time
+                case XGMIDI_REVERB_PARAMETER1: // Reverb Time
                 {
                     expl = "REVERB_PARAMETER1: Time";
                     float reverb_time = XGMIDI_reverb_time[value];
                     midi.set_reverb_time_rt60(reverb_time);
                     break;
                 }
-                case XGMIDI_REVERB_PARAMETER2:	// Diffusion
+                case XGMIDI_REVERB_PARAMETER2: // Diffusion
                 {
                     expl = "REVERB_PARAMETER2: Diffusion";
                     float decay_depth = 0.1f*MAX_REVERB_EFFECTS_TIME*value;
                     midi.set_reverb_decay_depth(decay_depth);
                     break;
                 }
-                case XGMIDI_REVERB_PARAMETER3:	// Initial Delay
+                case XGMIDI_REVERB_PARAMETER3: // Initial Delay
                 {
                     expl = "REVERB_PARAMETER2: Initial Delay";
                     float delay_depth = XGMIDI_delay_time_table[value]*1e-3f;
                     midi.set_reverb_delay_depth(delay_depth);
                     break;
                 }
-                case XGMIDI_REVERB_PARAMETER5:	// LPF Cutoff
+                case XGMIDI_REVERB_PARAMETER5: // LPF Cutoff
                 {
                     expl = "XGMIDI_REVERB_PARAMETER5: LPF Cutoff";
                     float cutoff_freq = XGMIDI_EQ_frequency_table[value];
                     midi.set_reverb_cutoff_frequency(cutoff_freq);
                     break;
                 }
-                case XGMIDI_REVERB_PARAMETER14:	// High Damp
-                case XGMIDI_REVERB_PARAMETER6:	// Room Width
-                case XGMIDI_REVERB_PARAMETER7:	// Room Height
-                case XGMIDI_REVERB_PARAMETER8:	// Room Depth
-                case XGMIDI_REVERB_PARAMETER9:	// Wall Vary
-                case XGMIDI_REVERB_PARAMETER4:	// HPF Cutoff
-                case XGMIDI_REVERB_PARAMETER10:	// Dry/Wet
-                case XGMIDI_REVERB_PARAMETER11:	// Rev Delay
-                case XGMIDI_REVERB_PARAMETER12:	// Density
-                case XGMIDI_REVERB_PARAMETER13:	// Rev/Er Balance
-                case XGMIDI_REVERB_PARAMETER15:	// Feedback Level
+                case XGMIDI_REVERB_PARAMETER14: // High Damp
+                case XGMIDI_REVERB_PARAMETER6:  // Room Width
+                case XGMIDI_REVERB_PARAMETER7:  // Room Height
+                case XGMIDI_REVERB_PARAMETER8:  // Room Depth
+                case XGMIDI_REVERB_PARAMETER9:  // Wall Vary
+                case XGMIDI_REVERB_PARAMETER4:  // HPF Cutoff
+                case XGMIDI_REVERB_PARAMETER10: // Dry/Wet
+                case XGMIDI_REVERB_PARAMETER11: // Rev Delay
+                case XGMIDI_REVERB_PARAMETER12: // Density
+                case XGMIDI_REVERB_PARAMETER13: // Rev/Er Balance
+                case XGMIDI_REVERB_PARAMETER15: // Feedback Level
                 case XGMIDI_REVERB_PARAMETER16:
                 {
                     expl = "Unknown REVERB_PARAMETER";
@@ -454,22 +454,22 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     }
                     break;
                 }
-                case XGMIDI_CHORUS_PARAMETER1:	// LO Frequency
-                case XGMIDI_CHORUS_PARAMETER2:	// LFO (PM) Depth
-                case XGMIDI_CHORUS_PARAMETER3:	// Feedback Level
-                case XGMIDI_CHORUS_PARAMETER4:	// Delay Offset
+                case XGMIDI_CHORUS_PARAMETER1:  // LO Frequency
+                case XGMIDI_CHORUS_PARAMETER2:  // LFO (PM) Depth
+                case XGMIDI_CHORUS_PARAMETER3:  // Feedback Level
+                case XGMIDI_CHORUS_PARAMETER4:  // Delay Offset
                 case XGMIDI_CHORUS_PARAMETER5:
-                case XGMIDI_CHORUS_PARAMETER6:	// EQ Low Frequency
-                case XGMIDI_CHORUS_PARAMETER7:	// EQ Low Gain
-                case XGMIDI_CHORUS_PARAMETER8:	// EQ High Frequency
-                case XGMIDI_CHORUS_PARAMETER9:	// EQ High Gain
-                case XGMIDI_CHORUS_PARAMETER10:	// Dry/Wet
-                case XGMIDI_CHORUS_PARAMETER11:	// EQ Mid Frequency
-                case XGMIDI_CHORUS_PARAMETER12:	// EQ Mid Gain
-                case XGMIDI_CHORUS_PARAMETER13:	// EQ Mid Width
-                case XGMIDI_CHORUS_PARAMETER14:	// EQ High Gain
-                case XGMIDI_CHORUS_PARAMETER15:	// LFO AM Depth
-                case XGMIDI_CHORUS_PARAMETER16:	// Mono/Stereo
+                case XGMIDI_CHORUS_PARAMETER6:  // EQ Low Frequency
+                case XGMIDI_CHORUS_PARAMETER7:  // EQ Low Gain
+                case XGMIDI_CHORUS_PARAMETER8:  // EQ High Frequency
+                case XGMIDI_CHORUS_PARAMETER9:  // EQ High Gain
+                case XGMIDI_CHORUS_PARAMETER10: // Dry/Wet
+                case XGMIDI_CHORUS_PARAMETER11: // EQ Mid Frequency
+                case XGMIDI_CHORUS_PARAMETER12: // EQ Mid Gain
+                case XGMIDI_CHORUS_PARAMETER13: // EQ Mid Width
+                case XGMIDI_CHORUS_PARAMETER14: // EQ High Gain
+                case XGMIDI_CHORUS_PARAMETER15: // LFO AM Depth
+                case XGMIDI_CHORUS_PARAMETER16: // Mono/Stereo
                 {
                     expl = "Unknown CHORUS_PARAMETER";
                     uint8_t param = addr - XGMIDI_CHORUS_TYPE;
@@ -862,7 +862,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 LOG(99, "LOG: Unsupported XG sysex type: Multi EQ\n");
                 break;
             case XGMIDI_MULTI_PART:
-            {	// http://www.studio4all.de/htmle/main92.html#xgprgxgpart02a01
+            { // http://www.studio4all.de/htmle/main92.html#xgprgxgpart02a01
                 switch (addr_low)
                 {
                 case XGMIDI_BANK_SELECT_MSB:// 0-127

@@ -35,7 +35,7 @@
 namespace aax
 {
 
-#define _MINMAX(a,b,c)	(((a)>(c)) ? (c) : (((a)<(b)) ? (b) : (a)))
+#define _MINMAX(a,b,c)  (((a)>(c)) ? (c) : (((a)<(b)) ? (b) : (a)))
 
 class MIDIDriver;
 
