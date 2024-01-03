@@ -45,7 +45,7 @@ struct param_t
    uint8_t fine;
 };
 
-class MIDIInstrument;
+class MIDIEnsemble;
 
 class MIDIStream : public byte_stream
 {
@@ -66,9 +66,9 @@ public:
 
     MIDIDriver& midi;
 private:
-    float key2pitch(MIDIInstrument& channel, uint16_t key);
-    int16_t get_key(MIDIInstrument& channel, int16_t key);
-    float get_pitch(MIDIInstrument& channel);
+    float key2pitch(MIDIEnsemble& channel, uint16_t key);
+    int16_t get_key(MIDIEnsemble& channel, int16_t key);
+    float get_pitch(MIDIEnsemble& channel);
     float cents2pitch(float p, uint8_t channel);
     float cents2modulation(float p, uint8_t channel);
 

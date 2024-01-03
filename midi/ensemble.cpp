@@ -27,11 +27,11 @@
 #include <midi/shared.hpp>
 #include <midi/file.hpp>
 #include <midi/driver.hpp>
-#include <midi/instrument.hpp>
+#include <midi/ensemble.hpp>
 
 using namespace aax;
 
-MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
+MIDIEnsemble::MIDIEnsemble(MIDIDriver& ptr, Buffer &buffer,
                  uint8_t channel, uint16_t bank, uint8_t program, bool drums)
    : Ensemble(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
      channel_no(channel), bank_no(bank),
@@ -48,19 +48,19 @@ MIDIInstrument::MIDIInstrument(MIDIDriver& ptr, Buffer &buffer,
 }
 
 void
-MIDIInstrument::set_stereo(bool s)
+MIDIEnsemble::set_stereo(bool s)
 {
     stereo = s;
     if (stereo)
     {
         std::string name = "stereo";
         Buffer &buffer = midi.buffer(name);
-        int res = MIDIInstrument::add(buffer);
+        int res = MIDIEnsemble::add(buffer);
     }
 }
 
 void
-MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
+MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
 {
     assert (velocity);
 
@@ -108,7 +108,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
     }
-    else
+    else // !drums
     {
         uint8_t key = key_no;
         it = name_map.upper_bound(key);
@@ -358,7 +358,7 @@ MIDIInstrument::play(uint8_t key_no, uint8_t velocity, float pitch)
 }
 
 void
-MIDIInstrument::stop(uint32_t key_no, float velocity)
+MIDIEnsemble::stop(uint32_t key_no, float velocity)
 {
     Ensemble::stop(key_no, velocity);
     if (is_drums()) return;

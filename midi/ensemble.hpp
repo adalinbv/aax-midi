@@ -33,23 +33,23 @@ namespace aax
 
 class MIDIDriver;
 
-class MIDIInstrument : public Ensemble
+class MIDIEnsemble : public Ensemble
 {
 private:
-    MIDIInstrument(const MIDIInstrument&) = delete;
+    MIDIEnsemble(const MIDIEnsemble&) = delete;
 
-    MIDIInstrument& operator=(const MIDIInstrument&) = delete;
+    MIDIEnsemble& operator=(const MIDIEnsemble&) = delete;
 
 public:
-    MIDIInstrument(MIDIDriver& ptr, Buffer& buffer,
+    MIDIEnsemble(MIDIDriver& ptr, Buffer& buffer,
                    uint8_t channel, uint16_t bank, uint8_t program,
                    bool is_drums);
 
-    MIDIInstrument(MIDIInstrument&&) = default;
+    MIDIEnsemble(MIDIEnsemble&&) = default;
 
-    virtual ~MIDIInstrument() = default;
+    virtual ~MIDIEnsemble() = default;
 
-    MIDIInstrument& operator=(MIDIInstrument&&) = default;
+    MIDIEnsemble& operator=(MIDIEnsemble&&) = default;
 
     void play(uint8_t key_no, uint8_t velocity, float pitch);
     void stop(uint32_t key_no, float velocity = 0);

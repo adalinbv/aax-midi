@@ -19,12 +19,11 @@
  *  with this program; if not, write to the Free Software Foundation, Inc.,
  *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
  */
-
+#include <cstdint>
 #include <cstring>
-
 #include <string>
 
-#include <midi/instrument.hpp>
+#include <midi/ensemble.hpp>
 #include <midi/stream.hpp>
 #include <midi/driver.hpp>
 
@@ -37,7 +36,7 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
 }
 
 float
-MIDIStream::key2pitch(MIDIInstrument& channel, uint16_t key)
+MIDIStream::key2pitch(MIDIEnsemble& channel, uint16_t key)
 {
     auto& buffer = channel.get_buffer(key);
     float frequency = buffer.get(AAX_BASE_FREQUENCY);
@@ -48,7 +47,7 @@ MIDIStream::key2pitch(MIDIInstrument& channel, uint16_t key)
 }
 
 int16_t
-MIDIStream::get_key(MIDIInstrument& channel, int16_t key)
+MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
 {
     if (!channel.is_drums()) {
         return (key-0x20) + param[MIDI_CHANNEL_COARSE_TUNING].coarse;
@@ -58,7 +57,7 @@ MIDIStream::get_key(MIDIInstrument& channel, int16_t key)
 
 
 float
-MIDIStream::get_pitch(MIDIInstrument& channel)
+MIDIStream::get_pitch(MIDIEnsemble& channel)
 {
     float pitch = 1.0f;
     if (!channel.is_drums()) {

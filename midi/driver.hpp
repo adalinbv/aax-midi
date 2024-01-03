@@ -35,7 +35,7 @@
 namespace aax
 {
 
-class MIDIInstrument;
+class MIDIEnsemble;
 
 
 enum {
@@ -70,7 +70,7 @@ class MIDIDriver : public AeonWave
 private:
     using configuration_map_t = std::map<int, info_t>;
     using patch_map_t = std::map<uint16_t, configuration_map_t>;
-    using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIInstrument>>;
+    using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIEnsemble>>;
 
 public:
     MIDIDriver(const char* n, const char *tnames = nullptr,
@@ -85,9 +85,9 @@ public:
 
     bool process(uint8_t channel, uint8_t message, uint8_t key, uint8_t velocity, bool omni, float pitch=1.0f);
 
-    MIDIInstrument& new_channel(uint8_t channel, uint16_t bank, uint8_t program);
+    MIDIEnsemble& new_channel(uint8_t channel, uint16_t bank, uint8_t program);
 
-    MIDIInstrument& channel(uint16_t channel_no);
+    MIDIEnsemble& channel(uint16_t channel_no);
 
     channel_map_t& get_channels() {
         return channels;

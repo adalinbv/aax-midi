@@ -32,7 +32,7 @@
 #include <midi/shared.hpp>
 #include <midi/file.hpp>
 #include <midi/driver.hpp>
-#include <midi/instrument.hpp>
+#include <midi/ensemble.hpp>
 
 using namespace aax;
 
@@ -1135,7 +1135,7 @@ MIDIDriver::grep(std::string& filename, const char *grep)
     }
 }
 
-MIDIInstrument&
+MIDIEnsemble&
 MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
 {
     bool drums = is_drums(track_no);
@@ -1165,8 +1165,8 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
     {
         try {
             auto ret = channels.insert(
-                { track_no, std::shared_ptr<MIDIInstrument>(
-                                    new MIDIInstrument(*this, buffer,
+                { track_no, std::shared_ptr<MIDIEnsemble>(
+                                    new MIDIEnsemble(*this, buffer,
                                           track_no, bank_no, program_no, drums))
                 } );
             it = ret.first;
@@ -1176,7 +1176,7 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
         }
     }
 
-    MIDIInstrument& rv = *it->second;
+    MIDIEnsemble& rv = *it->second;
     rv.set_program_no(program_no);
     rv.set_bank_no(bank_no);
 
@@ -1188,7 +1188,7 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
     return rv;
 }
 
-MIDIInstrument&
+MIDIEnsemble&
 MIDIDriver::channel(uint16_t track_no)
 {
     auto it = channels.find(track_no);

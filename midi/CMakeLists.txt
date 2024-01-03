@@ -3,7 +3,7 @@ set( MIDI_SOURCES
      midi.cpp
      driver.cpp
      file.cpp
-     instrument.cpp
+     ensemble.cpp
      stream.cpp
      gmmidi.cpp
      gsmidi.cpp
