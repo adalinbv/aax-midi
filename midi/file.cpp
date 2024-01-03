@@ -295,6 +295,12 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
     uint32_t wait_parts;
     bool rv = false;
 
+    if (streams.size() == 0)
+    {
+        throw(std::runtime_error("No streams to process"));
+        return rv;
+    }
+
     next = UINT_MAX;
     for (size_t t=0; t<no_tracks; ++t)
     {
