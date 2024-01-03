@@ -188,7 +188,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 break;
             case MIDI_MASTER_FINE_TUNING:
             {
-                expl = "FINE_TUNING";
+                expl = "MASTER_FINE_TUNING";
                 uint16_t tuning;
                 float pitch;
 
@@ -208,7 +208,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
             }
             case MIDI_MASTER_COARSE_TUNING:
             {
-                expl = "COARSE_TUNING";
+                expl = "MASTER_COARSE_TUNING";
                 float pitch;
 
                 value = pull_byte();     // lsb, always zero

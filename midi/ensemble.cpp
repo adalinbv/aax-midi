@@ -1,6 +1,6 @@
 /*
- * Copyright (C) 2018-2023 by Erik Hofman.
- * Copyright (C) 2018-2023 by Adalin B.V.
+ * Copyright (C) 2018-2024 by Erik Hofman.
+ * Copyright (C) 2018-2024 by Adalin B.V.
  * All rights reserved.
  *
  * This file is part of AeonWave-MIDI
@@ -32,7 +32,7 @@
 using namespace aax;
 
 MIDIEnsemble::MIDIEnsemble(MIDIDriver& ptr, Buffer &buffer,
-                 uint8_t channel, uint16_t bank, uint8_t program, bool drums)
+                    uint8_t channel, uint16_t bank, uint8_t program, bool drums)
    : Ensemble(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
      channel_no(channel), bank_no(bank),
      program_no(program)
@@ -110,61 +110,56 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
     }
     else // !drums
     {
-        uint8_t key = key_no;
-        it = name_map.upper_bound(key);
-        if (it == name_map.end())
+        uint16_t program = program_no;
+        auto inst = midi.get_instrument(bank_no, program, all);
+        std::string& patch_name = inst.file;
+        if (!patch_name.empty())
         {
-            uint16_t program = program_no;
-            auto inst = midi.get_instrument(bank_no, program, all);
-            std::string& patch_name = inst.file;
-            if (!patch_name.empty())
+            if (!midi.buffer_avail(patch_name) && !midi.is_loaded(patch_name))
             {
-                if (!midi.buffer_avail(patch_name) &&
-                    !midi.is_loaded(patch_name))
+                uint16_t bank_no = midi.channel(channel_no).get_bank_no();
+                std::string& display = (midi.get_verbose() >= 99) ?
+                                       inst.file : inst.name;
+
+                DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
+                         bank_no >> 7, bank_no & 0x7F, program+1,
+                         display.c_str());
+                midi.load(patch_name);
+            }
+
+            if (midi.get_grep())
+            {
+               auto ret = name_map.insert({key_no,aax::nullBuffer});
+               it = ret.first;
+            }
+            else
+            {
+// TODO: handle ensemble files
+                Buffer& buffer = midi.buffer(patch_name);
+                if (buffer)
                 {
-                    uint16_t bank_no = midi.channel(channel_no).get_bank_no();
-                    std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.file : inst.name;
+                    auto ret = name_map.insert({key_no,buffer});
+                    it = ret.first;
 
-                    DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
-                             bank_no >> 7, bank_no & 0x7F, program+1,
-                             display.c_str());
-                    midi.load(patch_name);
-                }
-
-                if (midi.get_grep())
-                {
-                   auto ret = name_map.insert({key,aax::nullBuffer});
-                   it = ret.first;
-                }
-                else
-                {
-                    Buffer& buffer = midi.buffer(patch_name);
-                    if (buffer)
-                    {
-                        auto ret = name_map.insert({key,buffer});
-                        it = ret.first;
-
-                        // mode == 0: volume bend only
-                        // mode == 1: pitch bend only
-                        // mode == 2: volume and pitch bend
-                        int pressure_mode = buffer.get(AAX_MIDI_PRESSURE_FACTOR);
-                        if (pressure_mode == 0 || pressure_mode == 2) {
-                           pressure_volume_bend = true;
-                        }
-                        if (pressure_mode > 0) {
-                           pressure_pitch_bend = true;
-                        }
-
-                        pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
+                    // mode == 0: volume bend only
+                    // mode == 1: pitch bend only
+                    // mode == 2: volume and pitch bend
+                    int pressure_mode = buffer.get(AAX_MIDI_PRESSURE_FACTOR);
+                    if (pressure_mode == 0 || pressure_mode == 2) {
+                       pressure_volume_bend = true;
                     }
-                    else {
-                        throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
+                    if (pressure_mode > 0) {
+                       pressure_pitch_bend = true;
                     }
-                    midi.channel(channel_no).set_wide(inst.wide);
-                    midi.channel(channel_no).set_spread(inst.spread);
-                    midi.channel(channel_no).set_stereo(inst.stereo);
+
+                    pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
                 }
+                else {
+                    throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
+                }
+                midi.channel(channel_no).set_wide(inst.wide);
+                midi.channel(channel_no).set_spread(inst.spread);
+                midi.channel(channel_no).set_stereo(inst.stereo);
             }
         }
     }
@@ -334,9 +329,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
             // panning
             if (wide)
             {
-                key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
-                key_freq += buffer_frequency;
-
+                key_freq = key_frequency;
                 float p = (math::lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
                 p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
                 if (p != pan_prev)
