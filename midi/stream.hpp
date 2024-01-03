@@ -66,9 +66,8 @@ public:
 
     MIDIDriver& midi;
 private:
-    float key2pitch(MIDIEnsemble& channel, uint16_t key);
     int16_t get_key(MIDIEnsemble& channel, int16_t key);
-    float get_pitch(MIDIEnsemble& channel);
+    float get_pitch(MIDIEnsemble& channel, int16_t key);
     float cents2pitch(float p, uint8_t channel);
     float cents2modulation(float p, uint8_t channel);
 

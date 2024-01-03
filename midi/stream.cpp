@@ -35,17 +35,6 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
     timestamp_parts = pull_message()*24/600000;
 }
 
-float
-MIDIStream::key2pitch(MIDIEnsemble& channel, uint16_t key)
-{
-    auto& buffer = channel.get_buffer(key);
-    float frequency = buffer.get(AAX_BASE_FREQUENCY);
-    float fraction = buffer.getf(AAX_PITCH_FRACTION);
-    float f = aax::math::note2freq(key);
-    f = (f - frequency)*fraction + frequency;
-    return f/frequency;
-}
-
 int16_t
 MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
 {
@@ -55,13 +44,14 @@ MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
     return key;
 }
 
-
+// For GM2 it is recommended not to apply master tuning for drum channels
+// GS applies NRPN Coarse Pitch for drums and XG applies  Fine Pitch to drums
 float
-MIDIStream::get_pitch(MIDIEnsemble& channel)
+MIDIStream::get_pitch(MIDIEnsemble& channel, int16_t key_no)
 {
-    float pitch = 1.0f;
+    // tuning
+    float pitch = channel.get_tuning();
     if (!channel.is_drums()) {
-        pitch = channel.get_tuning();
         pitch *= midi.get_tuning();
     }
     return pitch;
@@ -136,18 +126,18 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         lsb_type = type;
         break;
     case MIDI_DATA_ENTRY:
-        expl = "DATA_ENTRY COARSE";
+        expl = "DATA_ENTRY_COARSE";
         if (rpn && registered)
         {
-            param[msb_type].coarse = value;
+            param[msb_type << 7 | lsb_type].coarse = value;
             data = true;
         }
         break;
     case MIDI_DATA_ENTRY|MIDI_FINE:
-        expl = "DATA_ENTRY FINE";
+        expl = "DATA_ENTRY_FINE";
         if (rpn && registered)
         {
-            param[lsb_type].fine = value;
+            param[msb_type << 7 | lsb_type].fine = value;
             data = true;
         }
         break;
@@ -176,10 +166,10 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
         }
         break;
     case MIDI_UNREGISTERED_PARAM_COARSE:
-        expl = "UNREGISTERED_PARAM COARSE";
+        expl = "UNREGISTERED_PARAM_COARSE";
         break;
     case MIDI_UNREGISTERED_PARAM_FINE:
-        expl = "UNREGISTERED_PARAM FINE";
+        expl = "UNREGISTERED_PARAM_FINE";
         break;
     default:
         expl = "Unkown REGISTERED_PARAM";
@@ -212,20 +202,23 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             break;
         }
         case MIDI_CHANNEL_FINE_TUNING:
-        {
+        { // 00 00 = -100 cents; 40 00 = A440; 7F 7F = +100 cents.
             expl = "CHANNEL_FINE_TUNING";
-            uint32_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
+            int32_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
                               | param[MIDI_CHANNEL_FINE_TUNING].fine;
-            float pitch = float(tuning-8192);
-            if (pitch < 0) pitch /= 8192.0f;
-            else pitch /= 8191.0f;
-            midi.channel(channel).set_tuning(pitch);
+            float cents = 100.0f*float(tuning-8192)/8192.0f;
+            midi.channel(channel).set_tuning(cents2pitch(cents, channel_no));
             break;
         }
         case MIDI_CHANNEL_COARSE_TUNING:
+        {   // 00 = -64 semitones; 40 = A440; 7F = +63 semitones.
             expl = "CHANNEL_COARSE_TUNING";
-            // This is handled by MIDI_NOTE_ON and MIDI_NOTE_OFF
+            int32_t tuning = param[MIDI_CHANNEL_COARSE_TUNING].coarse;
+            float semitones = float(tuning-64)/64.0f;
+            midi.channel(channel).set_semi_tones(semitones);
+printf("channel: %i, semitones: %f\n", channel, semitones);
             break;
+        }
         case MIDI_NULL_FUNCTION_NUMBER:
             expl = "NULL_FUNCTION_NUMBER";
             // disable the data entry, data increment, and data decrement
@@ -341,7 +334,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 uint8_t velocity = pull_byte();
                 CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 if (key < key_range_low || key > key_range_high) break;
-                float pitch = get_pitch(channel);
+                float pitch = get_pitch(channel, key);
                 try {
                     key = get_key(channel, key);
                     midi.process(channel_no, message & 0xf0, key, velocity, omni, pitch);
@@ -517,7 +510,6 @@ bool MIDIStream::process_control(uint8_t track_no)
         channel.set_sustain(false);
         channel.set_soft(false);
         channel.set_semi_tones(2.0f);
-        channel.set_pitch(1.0f);
         // Do not Reset: Program change, Bank Select, Volume, Pan,
         // Effects Controllers #91-95, Sound controllers #70-79,
         // Other Channel mode messages (#120, #122-#127)
@@ -772,10 +764,10 @@ bool MIDIStream::process_control(uint8_t track_no)
         channel.set_vibrato_delay(float(value)/64.0f);
         break;
     case MIDI_PORTAMENTO_CONTROL:
-    {
+    { // TODO: Fix portamento control
         expl = "PORTAMENTO_CONTROL";
         int16_t key = get_key(channel, value);
-        float pitch = get_pitch(channel)*key2pitch(channel, key);
+        float pitch = get_pitch(channel, key);
         channel.set_pitch_start(pitch);
         break;
     }
