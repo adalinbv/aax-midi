@@ -66,8 +66,8 @@ public:
     void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
     float get_tuning() { return tuning; }
 
-    void set_semi_tones(float s) { set_tuning(1.0f + 0.5f*s); }
-    float get_semi_tones() { return (get_tuning() - 1.0f) * 2.0f; }
+    void set_semi_tones(float s) { semi_tones = s; }
+    float get_semi_tones() { return semi_tones; }
 
     void set_modulation_depth(float d) { modulation_range = d; }
     float get_modulation_depth() { return modulation_range; }
@@ -101,6 +101,7 @@ private:
 
     float modulation_range = 2.0f;
     float pressure_sensitivity = 1.0f;
+    float semi_tones = 2.0f;
 
     uint16_t bank_no = 0;
     uint16_t channel_no = 0;
