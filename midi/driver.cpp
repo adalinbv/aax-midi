@@ -885,7 +885,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 iname.append(drum);
             }
             filename = iname.c_str();
-            type = "ensemble";
+            type = "patch";
             imap = drum_map;
         }
         else {
