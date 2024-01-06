@@ -45,30 +45,35 @@ MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
 }
 
 // For GM2 it is recommended not to apply master tuning for drum channels
-// GS applies NRPN Coarse Pitch for drums and XG applies  Fine Pitch to drums
+// GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
+// a semitone is one twelfth of an octave, 100 cents is a semitone
 float
 MIDIStream::get_pitch(MIDIEnsemble& channel, int16_t key_no)
 {
-    // tuning
-    float pitch = channel.get_tuning();
+    float coarse_tuning = channel.get_tuning_coarse();
+    float fine_tuning = channel.get_tuning_fine()/100.0f;
     if (!channel.is_drums()) {
-        pitch *= midi.get_tuning();
+       coarse_tuning += midi.get_tuning_coarse();
+        fine_tuning += midi.get_tuning_fine()/100.0f;
     }
-    return pitch;
+
+    float base_freq = aax::math::note2freq(69.0f+coarse_tuning+fine_tuning);
+    float freq = aax::math::note2freq(key_no, base_freq);
+    return freq/aax::math::note2freq(key_no);
 }
 
 float
-MIDIStream::cents2pitch(float p, uint8_t channel)
+MIDIStream::cents2pitch(float cents, uint8_t channel)
 {
-    float r = midi.channel(channel).get_semi_tones();
-    return powf(2.0f, p*r/12.0f);
+    float semitones = midi.channel(channel).get_pitch_depth();
+    return powf(2.0f, cents*semitones/12.0f);
 }
 
 float
-MIDIStream::cents2modulation(float p, uint8_t channel)
+MIDIStream::cents2modulation(float cents, uint8_t channel)
 {
-    float r = midi.channel(channel).get_modulation_depth();
-    return powf(2.0f, p*r/12.0f);
+    float moddepth = midi.channel(channel).get_modulation_depth();
+    return powf(2.0f, cents*moddepth/12.0f);
 }
 
 // Variable-length quantity
@@ -189,7 +194,7 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             float val;
             val = float(param[MIDI_PITCH_BEND_SENSITIVITY].coarse) +
                   float(param[MIDI_PITCH_BEND_SENSITIVITY].fine*0.01f);
-            midi.channel(channel).set_semi_tones(val);
+            midi.channel(channel).set_pitch_depth(val);
             break;
         }
         case MIDI_MODULATION_DEPTH_RANGE:
@@ -202,21 +207,20 @@ MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value,
             break;
         }
         case MIDI_CHANNEL_FINE_TUNING:
-        { // 00 00 = -100 cents; 40 00 = A440; 7F 7F = +100 cents.
+        { // 0x00 0x00 = -100 cents; 0x40 0x00 = A440; 0x7F 0x7F = +100 cents.
             expl = "CHANNEL_FINE_TUNING";
             int32_t tuning = param[MIDI_CHANNEL_FINE_TUNING].coarse << 7
                               | param[MIDI_CHANNEL_FINE_TUNING].fine;
             float cents = 100.0f*float(tuning-8192)/8192.0f;
-            midi.channel(channel).set_tuning(cents2pitch(cents, channel_no));
+            midi.channel(channel).set_tuning_fine(cents);
             break;
         }
         case MIDI_CHANNEL_COARSE_TUNING:
-        {   // 00 = -64 semitones; 40 = A440; 7F = +63 semitones.
+        {   // 0x00 = -64 semitones; 0x40 = A440; 0x7F = +63 semitones.
             expl = "CHANNEL_COARSE_TUNING";
             int32_t tuning = param[MIDI_CHANNEL_COARSE_TUNING].coarse;
-            float semitones = float(tuning-64)/64.0f;
-            midi.channel(channel).set_semi_tones(semitones);
-printf("channel: %i, semitones: %f\n", channel, semitones);
+            float semitones = float(tuning-64);
+            midi.channel(channel).set_tuning_coarse(semitones);
             break;
         }
         case MIDI_NULL_FUNCTION_NUMBER:
@@ -236,7 +240,9 @@ printf("channel: %i, semitones: %f\n", channel, semitones);
             break;
         case MIDI_PARAMETER_RESET:
             expl = "PARAMETER_RESET";
-            midi.channel(channel).set_semi_tones(2.0f);
+            midi.channel(channel).set_pitch_depth(2.0f);
+            midi.channel(channel).set_tuning_coarse(2.0f);
+            midi.channel(channel).set_tuning_fine(0.0f);
             break;
         default:
             expl = "Unkown REGISTERED_PARAM_TYPE";
@@ -509,7 +515,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         channel.set_pressure(0.0f);
         channel.set_sustain(false);
         channel.set_soft(false);
-        channel.set_semi_tones(2.0f);
+        channel.set_pitch_depth(2.0f);
         // Do not Reset: Program change, Bank Select, Volume, Pan,
         // Effects Controllers #91-95, Sound controllers #70-79,
         // Other Channel mode messages (#120, #122-#127)
@@ -690,7 +696,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         for(auto& it : midi.get_channels())
         {
             midi.process(it.first, MIDI_NOTE_OFF, 0, 0, true);
-            channel.set_semi_tones(2.0f);
+            channel.set_pitch_depth(2.0f);
         }
         break;
     case MIDI_UNREGISTERED_PARAM_COARSE:

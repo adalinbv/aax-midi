@@ -1027,7 +1027,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 {
                     expl = "MW_PITCH_CONTROL";
                     float val = 0.375f*(value-64);
-                    channel.set_semi_tones(val);
+                    channel.set_pitch_depth(val);
                     break;
                 }
                 case XGMIDI_MW_FILTER_CONTROL: // -9600 - +9450 cents
@@ -1124,12 +1124,10 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 uint8_t mm = pull_byte();
                 uint8_t ll = pull_byte();
                 uint8_t cc = pull_byte();
-                uint32_t tuning = mm << 7 | ll;
-                float pitch = float(tuning-8192);
                 CSV(channel_no, ", %d, %d, %d", mm, ll, cc);
-                if (pitch < 0) pitch /= 8192.0f;
-                else pitch /= 8191.0f;
-                midi.set_tuning(pitch);
+                uint32_t tuning = mm << 7 | ll;
+                float cents = 100.0f*float(tuning-8192)/8192.0f;
+                midi.set_tuning_fine(cents);
                 rv = true;
             }
             break;

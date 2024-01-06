@@ -63,19 +63,6 @@ public:
     uint16_t get_bank_no() { return bank_no; }
     void set_bank_no(uint16_t bank) { bank_no = bank; }
 
-    void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
-    float get_tuning() { return tuning; }
-
-    void set_semi_tones(float s) { semi_tones = s; }
-    float get_semi_tones() { return semi_tones; }
-
-    void set_modulation_depth(float d) { modulation_range = d; }
-    float get_modulation_depth() { return modulation_range; }
-
-    bool get_pressure_volume_bend() { return pressure_volume_bend; }
-    bool get_pressure_pitch_bend() { return pressure_pitch_bend; }
-    float get_aftertouch_sensitivity() { return pressure_sensitivity; }
-
     void set_track_name(std::string& tname) { track_name = tname; }
 
     void set_stereo(bool s);
@@ -96,20 +83,11 @@ private:
 
     float pan_prev = -1000.0f;
 
-    float buffer_frequency = 22050.f;
-    float buffer_fraction = 1.0f;
-
-    float modulation_range = 2.0f;
-    float pressure_sensitivity = 1.0f;
-    float semi_tones = 2.0f;
-
     uint16_t bank_no = 0;
     uint16_t channel_no = 0;
     uint16_t program_no = 0;
 
     bool stereo = false;
-    bool pressure_volume_bend = true;
-    bool pressure_pitch_bend = false;
 };
 
 } // namespace aax

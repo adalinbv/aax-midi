@@ -308,9 +308,6 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
                 MESSAGE(3, "Loading %s: key-on file: %s\n",
                         name.c_str(),  patch_name.c_str());
                 key_on.add( midi.buffer(patch_name) );
-
-                buffer_frequency = midi.buffer(patch_name).get(AAX_BASE_FREQUENCY);
-                buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
                 key_on.tie(key_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
                 pan.wide = inst.wide;
@@ -320,17 +317,12 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
 
             // note2pitch
             float key_frequency =  aax::math::note2freq(key_no);
-            float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
-            key_freq += buffer_frequency;
-
-            float pitch = key_freq/buffer_frequency;
-            key_on_pitch_param = pitch;
+            key_on_pitch_param = buffer.get_pitch(key_no);
 
             // panning
             if (wide)
             {
-                key_freq = key_frequency;
-                float p = (math::lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+                float p = (math::lin2log(key_frequency) - 1.3f)/2.8f; // 0.0f .. 1.0f
                 p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
                 if (p != pan_prev)
                 {
@@ -370,9 +362,6 @@ MIDIEnsemble::stop(uint32_t key_no, float velocity)
             MESSAGE(3, "Loading %s: key-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
             key_off.add( midi.buffer(patch_name) );
-
-            buffer_frequency = midi.buffer(patch_name).get(AAX_BASE_FREQUENCY);
-            buffer_fraction = midi.buffer(patch_name).getf(AAX_PITCH_FRACTION);
             key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
             pan.wide = inst.wide;
@@ -382,19 +371,12 @@ MIDIEnsemble::stop(uint32_t key_no, float velocity)
 
         // note2pitch
         float key_frequency =  aax::math::note2freq(key_no);
-        float key_freq = (key_frequency - buffer_frequency)*buffer_fraction;
-        key_freq += buffer_frequency;
-
-        float pitch = key_freq/buffer_frequency;
-        key_off_pitch_param = pitch;
+        key_off_pitch_param = buffer.get_pitch(key_no);
 
         // panning
         if (wide)
-        {
-            key_freq = (key_frequency - buffer_frequency); //*buffer_fraction;
-            key_freq += buffer_frequency;
-
-            float p = (math::lin2log(key_freq) - 1.3f)/2.8f; // 0.0f .. 1.0f
+        {   // 0.0f .. 1.0f
+            float p = (math::lin2log(key_frequency) - 1.3f)/2.8f;
             p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
             if (p != pan_prev)
             {

@@ -190,7 +190,6 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
             {
                 expl = "MASTER_FINE_TUNING";
                 uint16_t tuning;
-                float pitch;
 
                 value = pull_byte();
                 CSV(channel_no, ", %d", value);
@@ -200,16 +199,13 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 CSV(channel_no, ", %d", value);
                 tuning |= value << 7;
 
-                pitch = float(tuning-8192);
-                if (pitch < 0) pitch /= 8192.0f;
-                else pitch /= 8191.0f;
-                midi.set_tuning(pitch);
+                float cents = 100.0f*float(tuning-8192)/8192.0f;
+                midi.set_tuning_fine(cents);
                 break;
             }
             case MIDI_MASTER_COARSE_TUNING:
             {
                 expl = "MASTER_COARSE_TUNING";
-                float pitch;
 
                 value = pull_byte();     // lsb, always zero
                 CSV(channel_no, ", %d", value);
@@ -217,10 +213,8 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
                 value = pull_byte();     // msb
                 CSV(channel_no, ", %d", value);
 
-                pitch = float(value-64);
-                if (pitch < 0) pitch /= 64.0f;
-                else pitch /= 63.0f;
-                midi.set_tuning(pitch);
+                float semitones = float(value-64);
+                midi.set_tuning_coarse(semitones);
                 break;
             }
             case MIDI_GLOBAL_PARAMETER_CONTROL:

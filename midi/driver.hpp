@@ -142,8 +142,11 @@ public:
     int get_refresh_rate() { return refresh_rate; }
     int get_polyphony() { return polyphony; }
 
-    void set_tuning(float pitch) { tuning = powf(2.0f, pitch/12.0f); }
-    float get_tuning() { return tuning; }
+    void set_tuning_coarse(float semi_tones) { tuning_coarse = semi_tones; }
+    float get_tuning_coarse() { return tuning_coarse; }
+
+    void set_tuning_fine(float cents) { tuning_fine = cents; }
+    float get_tuning_fine() { return tuning_fine; }
 
     void set_mode(uint8_t m) { if (m > mode) mode = m; }
     uint8_t get_mode() { return mode; }
@@ -299,7 +302,9 @@ private:
     std::string path;
 
     float volume = 1.0f;
-    float tuning = 1.0f;
+
+    float tuning_coarse = 0.0f;
+    float tuning_fine = 0.0f;
 
     int refresh_rate = 0;
     int polyphony = UINT_MAX;
