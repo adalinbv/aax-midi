@@ -36,12 +36,12 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
 }
 
 int16_t
-MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
+MIDIStream::get_note(MIDIEnsemble& channel, int16_t note_no)
 {
     if (!channel.is_drums()) {
-        return (key-0x20) + param[MIDI_CHANNEL_COARSE_TUNING].coarse;
+        return (note_no-0x20) + param[MIDI_CHANNEL_COARSE_TUNING].coarse;
     }
-    return key;
+    return note_no;
 }
 
 float
@@ -318,13 +318,13 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_NOTE_ON:
             {
                 if (!note_message_enabled) break;
-                int16_t key = pull_byte();
+                int16_t note_no = pull_byte();
                 uint8_t velocity = pull_byte();
-                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
-                if (key < key_range_low || key > key_range_high) break;
+                CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, note_no, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
+                if (note_no < key_range_low || note_no > key_range_high) break;
                 try {
-                    key = get_key(channel, key);
-                    midi.process(channel_no, message & 0xf0, key, velocity, omni);
+                    note_no = get_note(channel, note_no);
+                    midi.process(channel_no, message & 0xf0, note_no, velocity, omni);
                 } catch (const std::runtime_error &e) {
                     throw(e);
                 }
@@ -333,29 +333,29 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_NOTE_OFF:
             {
                 if (!note_message_enabled) break;
-                int16_t key = pull_byte();
+                int16_t note_no = pull_byte();
                 uint8_t velocity = pull_byte();
-                key = get_key(channel, key);
-                midi.process(channel_no, message & 0xf0, key, velocity, omni);
-                CSV(channel_no, "Note_off_c, %d, %d, %d, NOTE_OFF\n", channel_no, key, velocity);
+                note_no = get_note(channel, note_no);
+                midi.process(channel_no, message & 0xf0, note_no, velocity, omni);
+                CSV(channel_no, "Note_off_c, %d, %d, %d, NOTE_OFF\n", channel_no, note_no, velocity);
                 break;
             }
             case MIDI_POLYPHONIC_AFTERTOUCH:
             {
                 if (!poly_pressure_enabled) break;
-                uint8_t key = get_key(channel, pull_byte());
+                uint8_t note_no = get_note(channel, pull_byte());
                 uint8_t pressure = pull_byte();
                 if (!channel.is_drums())
                 {
                     float s = channel.get_aftertouch_sensitivity();
                     if (channel.get_pressure_pitch_bend()) {
-                        channel.set_pitch(key, cents2pitch(s*pressure/127.0f, channel_no));
+                        channel.set_pitch(note_no, cents2pitch(s*pressure/127.0f, channel_no));
                     }
                     if (channel.get_pressure_volume_bend()) {
-                        channel.set_pressure(key, 1.0f-0.33f*pressure/127.0f);
+                        channel.set_pressure(note_no, 1.0f-0.33f*pressure/127.0f);
                     }
                 }
-                CSV(channel_no, "Poly_aftertouch_c, %d, %d, %d\n", channel_no, key, pressure);
+                CSV(channel_no, "Poly_aftertouch_c, %d, %d, %d\n", channel_no, note_no, pressure);
                 break;
             }
             case MIDI_CHANNEL_AFTERTOUCH:
@@ -753,8 +753,8 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_PORTAMENTO_CONTROL:
     { // TODO: Fix portamento control
         expl = "PORTAMENTO_CONTROL";
-        int16_t key = get_key(channel, value);
-        float pitch = 1.0f; // get_pitch(channel, key);
+        int16_t note_no = get_note(channel, value);
+        float pitch = 1.0f; // get_pitch(channel, note_no);
         channel.set_pitch_start(pitch);
         break;
     }

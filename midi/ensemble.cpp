@@ -63,7 +63,7 @@ MIDIEnsemble::set_stereo(bool s)
 // GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
 // a semitone is one twelfth of an octave, 100 cents is a semitone
 float   
-MIDIEnsemble::get_pitch(int16_t key_no)
+MIDIEnsemble::get_pitch(int16_t note_no)
 {
     auto& channel = midi.channel(channel_no);
     float coarse_tuning = channel.get_tuning_coarse();
@@ -74,13 +74,13 @@ MIDIEnsemble::get_pitch(int16_t key_no)
     }
 
     float base_freq = aax::math::note2freq(69.0f+coarse_tuning+fine_tuning);
-    float freq = aax::math::note2freq(key_no, base_freq);
-    float pitch = freq/aax::math::note2freq(key_no);
+    float freq = aax::math::note2freq(note_no, base_freq);
+    float pitch = freq/aax::math::note2freq(note_no);
     return pitch;
 }
 
 void
-MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
+MIDIEnsemble::play(uint8_t note_no, uint8_t velocity)
 {
     assert (velocity);
 
@@ -88,11 +88,11 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
     auto it = name_map.begin();
     if (midi.channel(channel_no).is_drums())
     {
-        it = name_map.find(key_no);
+        it = name_map.find(note_no);
         if (it == name_map.end())
         {
             uint16_t program = program_no;
-            auto inst = midi.get_drum(bank_no, program, key_no, all);
+            auto inst = midi.get_drum(bank_no, program, note_no, all);
             std::string& filename = inst.file;
             if (!filename.empty() && filename != "")
             {
@@ -103,14 +103,14 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                                            inst.file : inst.name;
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
-                             key_no, bank_no >> 7, bank_no & 0x7F,
+                             note_no, bank_no >> 7, bank_no & 0x7F,
                              program, display.c_str());
                     midi.load(filename);
                 }
 
                 if (midi.get_grep())
                 {
-                   auto ret = name_map.insert({key_no,aax::nullBuffer});
+                   auto ret = name_map.insert({note_no,aax::nullBuffer});
                    it = ret.first;
                 }
                 else
@@ -118,7 +118,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                     Buffer& buffer = midi.buffer(filename);
                     if (buffer)
                     {
-                        auto ret = name_map.insert({key_no,buffer});
+                        auto ret = name_map.insert({note_no,buffer});
                         it = ret.first;
                     }
                     else {
@@ -149,7 +149,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
 
             if (midi.get_grep())
             {
-               auto ret = name_map.insert({key_no,aax::nullBuffer});
+               auto ret = name_map.insert({note_no,aax::nullBuffer});
                it = ret.first;
             }
             else
@@ -158,7 +158,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                 Buffer& buffer = midi.buffer(patch_name);
                 if (buffer)
                 {
-                    auto ret = name_map.insert({key_no,buffer});
+                    auto ret = name_map.insert({note_no,buffer});
                     it = ret.first;
 
                     // mode == 0: volume bend only
@@ -194,7 +194,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
             case 16: // Power set
             case 32: // Jazz set
             case 40: // Brush set
-                switch(key_no)
+                switch(note_no)
                 {
                 case 29: // EXC7: Scratch Push
                     Instrument::stop(30);
@@ -249,7 +249,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                 }
                 break;
             case 26: // Analog Set
-                switch(key_no)
+                switch(note_no)
                 {
                 case 42: // EXC1: Closed Hi-Hat
                     Instrument::stop(44);
@@ -268,7 +268,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                 }
                 break;
             case 48: // Orchestra Set
-                switch(key_no)
+                switch(note_no)
                 {
                 case 27: // EXC1: Closed Hi-Hat
                     Instrument::stop(28);
@@ -287,7 +287,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
                 }
                 break;
             case 57: // SFX Set
-                switch(key_no)
+                switch(note_no)
                 {
                 case 41: // EXC7: Scratch Pus
                     Instrument::stop(42);
@@ -304,16 +304,16 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
             }
         }
 
-        float pitch = get_pitch(key_no);
+        float pitch = get_pitch(note_no);
         if (is_drums()) {
-            Instrument::play(key_no, velocity/127.0f, it->second, pitch);
+            Instrument::play(note_no, velocity/127.0f, it->second, pitch);
             return;
         }
 
         if (Ensemble::no_members() == 0) {
             Ensemble::add_member(it->second);
         }
-        Ensemble::play(key_no, velocity/127.0f, pitch);
+        Ensemble::play(note_no, velocity/127.0f, pitch);
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);
@@ -337,13 +337,13 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
             }
 
             // note2pitch
-            float key_frequency =  aax::math::note2freq(key_no);
-            key_on_pitch_param = buffer.get_pitch(key_no);
+            float note_frequency =  aax::math::note2freq(note_no);
+            key_on_pitch_param = buffer.get_pitch(note_no);
 
             // panning
             if (wide)
             {
-                float p = (math::lin2log(key_frequency) - 1.3f)/2.8f; // 0.0f .. 1.0f
+                float p = (math::lin2log(note_frequency) - 1.3f)/2.8f; // 0.0f .. 1.0f
                 p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
                 if (p != pan_prev)
                 {
@@ -364,9 +364,9 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
 }
 
 void
-MIDIEnsemble::stop(uint32_t key_no, float velocity)
+MIDIEnsemble::stop(uint32_t note_no, float velocity)
 {
-    Ensemble::stop(key_no, velocity);
+    Ensemble::stop(note_no, velocity);
     if (is_drums()) return;
 
     bool all = midi.no_active_tracks() > 0;
@@ -391,13 +391,13 @@ MIDIEnsemble::stop(uint32_t key_no, float velocity)
         }
 
         // note2pitch
-        float key_frequency =  aax::math::note2freq(key_no);
-        key_off_pitch_param = buffer.get_pitch(key_no);
+        float note_frequency =  aax::math::note2freq(note_no);
+        key_off_pitch_param = buffer.get_pitch(note_no);
 
         // panning
         if (wide)
         {   // 0.0f .. 1.0f
-            float p = (math::lin2log(key_frequency) - 1.3f)/2.8f;
+            float p = (math::lin2log(note_frequency) - 1.3f)/2.8f;
             p = floorf(-2.0f*(p-0.5f)*note::pan_levels)/note::pan_levels;
             if (p != pan_prev)
             {

@@ -905,10 +905,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 /*
  * For drum mapping the program_no is stored in the upper 8 bits, and the
  * bank_no (msb) in the lower eight bits of the bank number of the map
- * and the key_no in the program number of the map.
+ * and the note_no in the program number of the map.
  */
 const info_t
-MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, bool all)
+MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bool all)
 {
     if (program_no == 0 && drum_set_no != -1) {
         program_no = drum_set_no;
@@ -924,7 +924,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         if (bank_found)
         {
             auto bank = itb->second;
-            auto iti = bank.find(key_no);
+            auto iti = bank.find(note_no);
             if (iti != bank.end())
             {
                 if (all || selection.empty() ||
@@ -938,8 +938,8 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
                         auto itrb = drum_map.find(req_program_no << 7);
                         if (itrb != drum_map.end()) {
                             auto& bank = itrb->second;
-//                          bank.insert({key_no,{{"",""},{}}});
-                            bank.insert({key_no,iti->second});
+//                          bank.insert({note_no,{{"",""},{}}});
+                            bank.insert({note_no,iti->second});
                         }
                     }
                     return iti->second;
@@ -954,7 +954,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         if (bank_no >> 7)
         {
             DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/%i\n",
-                       key_no, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
+                       note_no, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
             bank_no &= 0x7F;
             continue;
         }
@@ -963,7 +963,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         if (bank_no & 0x7F)
         {
             DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/0\n",
-                       key_no, bank_no >> 7, bank_no & 0x7F);
+                       note_no, bank_no >> 7, bank_no & 0x7F);
             bank_no = 0;
             continue;
         }
@@ -989,9 +989,9 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
         if (bank_found) {
             if (prev_program_no != program_no) {
                 DISPLAY(4, "Drum %i not found in program %i, trying: %i\n",
-                        key_no, prev_program_no, program_no);
+                        note_no, prev_program_no, program_no);
             } else {
-                DISPLAY(4, "Drum %i not found.\n", key_no);
+                DISPLAY(4, "Drum %i not found.\n", note_no);
             }
         } else if (!is_avail(missing_drum_bank, prev_program_no)) {
             DISPLAY(4, "Drum program %i not found, trying %i\n",
@@ -1007,7 +1007,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t key_no, boo
     // default drums
     auto itb = drum_map.find(program_no);
     auto& bank = itb->second;
-    auto iti = bank.insert({key_no, std::move(empty_map)});
+    auto iti = bank.insert({note_no, std::move(empty_map)});
     return iti.first->second;
 }
 
@@ -1227,13 +1227,13 @@ MIDIDriver::channel(uint16_t track_no)
  * Scratch Push(41) | Scratch Pull (42)
  */
 bool
-MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velocity, bool omni)
+MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t note_no, uint8_t velocity, bool omni)
 {
     // Omni mode: Device responds to MIDI data regardless of channel
     if (message == MIDI_NOTE_ON && velocity) {
         if (is_track_active(track_no)) {
             try {
-                channel(track_no).play(key, velocity);
+                channel(track_no).play(note_no, velocity);
                 if (channel(track_no).get_stereo()) {
                     set_reverb_level(track_no, 1.0f);
                 }
@@ -1247,7 +1247,7 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velo
         if (message == MIDI_NOTE_ON) {
             velocity = 64;
         }
-        channel(track_no).stop(key, velocity);
+        channel(track_no).stop(note_no, velocity);
     }
     return true;
 }
