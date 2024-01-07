@@ -59,8 +59,28 @@ MIDIEnsemble::set_stereo(bool s)
     }
 }
 
+// For GM2 it is recommended not to apply master tuning for drum channels
+// GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
+// a semitone is one twelfth of an octave, 100 cents is a semitone
+float   
+MIDIEnsemble::get_pitch(int16_t key_no)
+{
+    auto& channel = midi.channel(channel_no);
+    float coarse_tuning = channel.get_tuning_coarse();
+    float fine_tuning = channel.get_tuning_fine()/100.0f;
+    if (!channel.is_drums()) {
+        coarse_tuning += midi.get_tuning_coarse();
+        fine_tuning += midi.get_tuning_fine()/100.0f;
+    }
+
+    float base_freq = aax::math::note2freq(69.0f+coarse_tuning+fine_tuning);
+    float freq = aax::math::note2freq(key_no, base_freq);
+    float pitch = freq/aax::math::note2freq(key_no);
+    return pitch;
+}
+
 void
-MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
+MIDIEnsemble::play(uint8_t key_no, uint8_t velocity)
 {
     assert (velocity);
 
@@ -284,6 +304,7 @@ MIDIEnsemble::play(uint8_t key_no, uint8_t velocity, float pitch)
             }
         }
 
+        float pitch = get_pitch(key_no);
         if (is_drums()) {
             Instrument::play(key_no, velocity/127.0f, it->second, pitch);
             return;

@@ -923,7 +923,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     CSV(part_no, ", %d", byte);
                     tune |= byte & 0xf;
                     level = cents2pitch(0.1f*tune, part_no);
-                    channel.set_detune(level);
+                    channel.set_celeste_depth(level);
                     break;
                 }
                 case XGMIDI_VOLUME: // 0-127

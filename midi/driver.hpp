@@ -83,7 +83,7 @@ public:
         AeonWave::remove(reverb);
     }
 
-    bool process(uint8_t channel, uint8_t message, uint8_t key, uint8_t velocity, bool omni, float pitch=1.0f);
+    bool process(uint8_t channel, uint8_t message, uint8_t key, uint8_t velocity, bool omni);
 
     MIDIEnsemble& new_channel(uint8_t channel, uint16_t bank, uint8_t program);
 

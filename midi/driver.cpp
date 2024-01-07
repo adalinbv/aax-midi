@@ -1227,13 +1227,13 @@ MIDIDriver::channel(uint16_t track_no)
  * Scratch Push(41) | Scratch Pull (42)
  */
 bool
-MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velocity, bool omni, float pitch)
+MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t key, uint8_t velocity, bool omni)
 {
     // Omni mode: Device responds to MIDI data regardless of channel
     if (message == MIDI_NOTE_ON && velocity) {
         if (is_track_active(track_no)) {
             try {
-                channel(track_no).play(key, velocity, pitch);
+                channel(track_no).play(key, velocity);
                 if (channel(track_no).get_stereo()) {
                     set_reverb_level(track_no, 1.0f);
                 }

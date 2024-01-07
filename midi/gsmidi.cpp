@@ -139,13 +139,11 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     {   // 1st bit3-0: bit7-4, 2nd bit3-0: bit3-0
                         expl = "MASTER_TUNE";
                         int8_t tune = (value << 4);
-                        float level;
                         byte = pull_byte();
                         CSV(channel_no, ", %d", byte);
                         tune |= byte & 0xf;
-                        level = cents2pitch(0.1f*tune, channel_no);
                         for(auto& it : midi.get_channels()) {
-                            it.second->set_detune(level);
+                            it.second->set_tuning_fine(0.1f*tune);
                         }
                         break;
                     }

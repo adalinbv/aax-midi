@@ -44,24 +44,6 @@ MIDIStream::get_key(MIDIEnsemble& channel, int16_t key)
     return key;
 }
 
-// For GM2 it is recommended not to apply master tuning for drum channels
-// GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
-// a semitone is one twelfth of an octave, 100 cents is a semitone
-float
-MIDIStream::get_pitch(MIDIEnsemble& channel, int16_t key_no)
-{
-    float coarse_tuning = channel.get_tuning_coarse();
-    float fine_tuning = channel.get_tuning_fine()/100.0f;
-    if (!channel.is_drums()) {
-       coarse_tuning += midi.get_tuning_coarse();
-        fine_tuning += midi.get_tuning_fine()/100.0f;
-    }
-
-    float base_freq = aax::math::note2freq(69.0f+coarse_tuning+fine_tuning);
-    float freq = aax::math::note2freq(key_no, base_freq);
-    return freq/aax::math::note2freq(key_no);
-}
-
 float
 MIDIStream::cents2pitch(float cents, uint8_t channel)
 {
@@ -340,10 +322,9 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 uint8_t velocity = pull_byte();
                 CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, key, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 if (key < key_range_low || key > key_range_high) break;
-                float pitch = get_pitch(channel, key);
                 try {
                     key = get_key(channel, key);
-                    midi.process(channel_no, message & 0xf0, key, velocity, omni, pitch);
+                    midi.process(channel_no, message & 0xf0, key, velocity, omni);
                 } catch (const std::runtime_error &e) {
                     throw(e);
                 }
@@ -679,7 +660,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         expl = "CELESTE_EFFECT_DEPTH";
         float level = float(value)/127.0f;
         level = cents2pitch(level, track_no);
-        channel.set_detune(level);
+        channel.set_celeste_depth(level);
         break;
     }
     case MIDI_CHANNEL_VOLUME:
@@ -773,7 +754,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     { // TODO: Fix portamento control
         expl = "PORTAMENTO_CONTROL";
         int16_t key = get_key(channel, value);
-        float pitch = get_pitch(channel, key);
+        float pitch = 1.0f; // get_pitch(channel, key);
         channel.set_pitch_start(pitch);
         break;
     }
