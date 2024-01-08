@@ -245,8 +245,8 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
         }
     } catch (const std::exception& e) {
         if (!csv) {
-            std::cerr << "Error while processing the MIDI file: "
-                      << e.what() << std::endl;
+            std::cerr << "Error while processing the MIDI file: " << std::endl
+                      << "    " << e.what() << std::endl;
         }
     }
 }

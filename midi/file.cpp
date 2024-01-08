@@ -81,13 +81,25 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
                     if (header == 0x4d546864) // "MThd"
                     {
                         size = stream.pull_long();
-                        if (size != 6) return;
+                        if (size != 6)
+                        {
+                            throw(std::runtime_error("Premature end of file."));
+                            return;
+                        }
 
                         format = stream.pull_word();
-                        if (format != 0 && format != 1) return;
+                        if (format != 0 && format != 1)
+                        {
+                            throw(std::runtime_error("MIDI file format not supported"));
+                            return;
+                        }
 
                         no_tracks = stream.pull_word();
-                        if (format == 0 && no_tracks != 1) return;
+                        if (format == 0 && no_tracks != 1)
+                        {
+                            throw(std::runtime_error("MIDI format 0 requested with more than one track"));
+                            return;
+                        }
 
                         midi.set_format(format);
 
