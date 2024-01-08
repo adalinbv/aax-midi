@@ -63,24 +63,21 @@ MIDIEnsemble::set_stereo(bool s)
 // GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
 // a semitone is one twelfth of an octave, 100 cents is a semitone
 float   
-MIDIEnsemble::get_pitch(int16_t note_no)
+MIDIEnsemble::get_pitch(int& note_no)
 {
     auto& channel = midi.channel(channel_no);
-    float coarse_tuning = channel.get_tuning_coarse();
     float fine_tuning = channel.get_tuning_fine()/100.0f;
     if (!channel.is_drums()) {
-        coarse_tuning += midi.get_tuning_coarse();
         fine_tuning += midi.get_tuning_fine()/100.0f;
     }
 
-    float base_freq = aax::math::note2freq(69.0f+coarse_tuning+fine_tuning);
+    float base_freq = aax::math::note2freq(69.0f+fine_tuning);
     float freq = aax::math::note2freq(note_no, base_freq);
-    float pitch = freq/aax::math::note2freq(note_no);
-    return pitch;
+    return freq/aax::math::note2freq(note_no);
 }
 
 void
-MIDIEnsemble::play(uint8_t note_no, uint8_t velocity)
+MIDIEnsemble::play(int note_no, uint8_t velocity)
 {
     assert (velocity);
 
@@ -321,24 +318,24 @@ MIDIEnsemble::play(uint8_t note_no, uint8_t velocity)
         if (!patch_name.empty())
         {
             bool wide = inst.wide;
-            if (!key_on)
+            if (!note_on)
             {
-                key_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
+                note_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
                 std::string name = inst.name;
-                MESSAGE(3, "Loading %s: key-on file: %s\n",
+                MESSAGE(3, "Loading %s: note-on file: %s\n",
                         name.c_str(),  patch_name.c_str());
-                key_on.add( midi.buffer(patch_name) );
-                key_on.tie(key_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
+                note_on.add( midi.buffer(patch_name) );
+                note_on.tie(note_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
                 pan.wide = inst.wide;
 
-                Mixer::add(key_on);
+                Mixer::add(note_on);
             }
 
             // note2pitch
             float note_frequency =  aax::math::note2freq(note_no);
-            key_on_pitch_param = buffer.get_pitch(note_no);
+            note_on_pitch_param = buffer.get_pitch(note_no);
 
             // panning
             if (wide)
@@ -348,15 +345,15 @@ MIDIEnsemble::play(uint8_t note_no, uint8_t velocity)
                 if (p != pan_prev)
                 {
                     pan.set(p, true);
-                    key_on.matrix(pan.mtx);
+                    note_on.matrix(pan.mtx);
                     pan_prev = p;
                 }
             }
 
-            key_on.set(AAX_PROCESSED);
-            key_on.set(AAX_INITIALIZED);
-            key_on.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 127.0f*velocity);
-            key_on.set(AAX_PLAYING);
+            note_on.set(AAX_PROCESSED);
+            note_on.set(AAX_INITIALIZED);
+            note_on.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 127.0f*velocity);
+            note_on.set(AAX_PLAYING);
         }
     } else {
 //      throw(std::invalid_argument("Instrument file "+name+" not found"));
@@ -364,7 +361,7 @@ MIDIEnsemble::play(uint8_t note_no, uint8_t velocity)
 }
 
 void
-MIDIEnsemble::stop(uint32_t note_no, float velocity)
+MIDIEnsemble::stop(int note_no, float velocity)
 {
     Ensemble::stop(note_no, velocity);
     if (is_drums()) return;
@@ -375,24 +372,24 @@ MIDIEnsemble::stop(uint32_t note_no, float velocity)
     if (!patch_name.empty())
     {
         bool wide = inst.wide;
-        if (!key_off)
+        if (!note_off)
         {
-            key_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
+            note_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
             std::string name = inst.name;
-            MESSAGE(3, "Loading %s: key-off file: %s\n",
+            MESSAGE(3, "Loading %s: note-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
-            key_off.add( midi.buffer(patch_name) );
-            key_off.tie(key_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
+            note_off.add( midi.buffer(patch_name) );
+            note_off.tie(note_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
             pan.wide = inst.wide;
 
-            Mixer::add(key_off);
+            Mixer::add(note_off);
         }
 
         // note2pitch
         float note_frequency =  aax::math::note2freq(note_no);
-        key_off_pitch_param = buffer.get_pitch(note_no);
+        note_off_pitch_param = buffer.get_pitch(note_no);
 
         // panning
         if (wide)
@@ -402,14 +399,14 @@ MIDIEnsemble::stop(uint32_t note_no, float velocity)
             if (p != pan_prev)
             {
                 pan.set(p, true);
-                key_off.matrix(pan.mtx);
+                note_off.matrix(pan.mtx);
                 pan_prev = p;
             }
         }
 
-        key_off.set(AAX_PROCESSED);
-        key_off.set(AAX_INITIALIZED);
-        key_off.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 64.0f*velocity);
-        key_off.set(AAX_PLAYING);
+        note_off.set(AAX_PROCESSED);
+        note_off.set(AAX_INITIALIZED);
+        note_off.set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 64.0f*velocity);
+        note_off.set(AAX_PLAYING);
     }
 }

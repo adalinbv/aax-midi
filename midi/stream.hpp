@@ -66,7 +66,7 @@ public:
 
     MIDIDriver& midi;
 private:
-    int16_t get_note(MIDIEnsemble& channel, int16_t note_no);
+    int get_note(MIDIEnsemble& channel, int note_no);
     float cents2pitch(float p, uint8_t channel);
     float cents2modulation(float p, uint8_t channel);
 

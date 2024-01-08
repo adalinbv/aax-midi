@@ -663,8 +663,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         {
             xmlId *xaid = xmlNodeGet(xid, "aeonwave");
             xmlId *xmid = nullptr;
-            char key_off[64] = "";
-            char key_on[64] = "";
+            char note_off[64] = "";
+            char note_on[64] = "";
             char name[64] = "";
             char file[64] = "";
 
@@ -807,15 +807,15 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 xmlAttributeCopyString(xiid, "name",
                                                               name, 64);
 
-                                // key-on file-name
-                                key_on[0] = '\0';
-                                xmlAttributeCopyString(xiid, "key-on",
-                                                              key_on, 64);
+                                // note-on file-name
+                                note_on[0] = '\0';
+                                xmlAttributeCopyString(xiid, "note-on",
+                                                              note_on, 64);
 
-                                // key-off file-name
-                                key_off[0] = '\0';
-                                xmlAttributeCopyString(xiid, "key-off",
-                                                              key_off, 64);
+                                // note-off file-name
+                                note_off[0] = '\0';
+                                xmlAttributeCopyString(xiid, "note-off",
+                                                              note_off, 64);
 
                                 // instrument file-name
                                 slen = xmlAttributeCopyString(xiid, "file",
@@ -823,7 +823,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{name,file,key_on,key_off,1.0f,1.0f,
+                                    bank.insert({n,{name,file,note_on,note_off,1.0f,1.0f,
                                                    spread,wide,min,max,stereo}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
@@ -1182,7 +1182,7 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
 
     char *env = getenv("AAX_KEY_FINISH");
     if (env && atoi(env)) {
-        rv.set_key_finish(true);
+        rv.set_note_finish(true);
     }
 
     return rv;

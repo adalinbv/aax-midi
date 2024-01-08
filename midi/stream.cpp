@@ -35,8 +35,8 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
     timestamp_parts = pull_message()*24/600000;
 }
 
-int16_t
-MIDIStream::get_note(MIDIEnsemble& channel, int16_t note_no)
+int
+MIDIStream::get_note(MIDIEnsemble& channel, int note_no)
 {
     if (!channel.is_drums()) {
         return (note_no-0x20) + param[MIDI_CHANNEL_COARSE_TUNING].coarse;
@@ -318,12 +318,12 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_NOTE_ON:
             {
                 if (!note_message_enabled) break;
-                int16_t note_no = pull_byte();
+                int note_no = pull_byte();
                 uint8_t velocity = pull_byte();
                 CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, note_no, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 if (note_no < key_range_low || note_no > key_range_high) break;
                 try {
-                    note_no = get_note(channel, note_no);
+//                  note_no = get_note(channel, note_no);
                     midi.process(channel_no, message & 0xf0, note_no, velocity, omni);
                 } catch (const std::runtime_error &e) {
                     throw(e);

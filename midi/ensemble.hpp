@@ -51,8 +51,8 @@ public:
 
     MIDIEnsemble& operator=(MIDIEnsemble&&) = default;
 
-    void play(uint8_t note_no, uint8_t velocity);
-    void stop(uint32_t note_no, float velocity = 0);
+    void play(int note_no, uint8_t velocity);
+    void stop(int note_no, float velocity = 0);
 
     uint16_t get_channel_no() { return channel_no; }
     void set_channel_no(uint16_t channel) { channel_no = channel; }
@@ -68,7 +68,7 @@ public:
     void set_stereo(bool s);
     bool get_stereo() { return stereo; }
 
-    float get_pitch(int16_t note_no);
+    float get_pitch(int& note_no);
 
 private:
     std::map<uint8_t,Buffer&> name_map;
@@ -76,10 +76,10 @@ private:
 
     MIDIDriver &midi;
 
-    Emitter key_on;
-    Emitter key_off;
-    Param key_on_pitch_param = 1.0f;
-    Param key_off_pitch_param = 1.0f;
+    Emitter note_on;
+    Emitter note_off;
+    Param note_on_pitch_param = 1.0f;
+    Param note_off_pitch_param = 1.0f;
 
     float pan_prev = -1000.0f;
 
