@@ -35,15 +35,6 @@ MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16
     timestamp_parts = pull_message()*24/600000;
 }
 
-int
-MIDIStream::get_note(MIDIEnsemble& channel, int note_no)
-{
-    if (!channel.is_drums()) {
-        return (note_no-0x20) + param[MIDI_CHANNEL_COARSE_TUNING].coarse;
-    }
-    return note_no;
-}
-
 float
 MIDIStream::cents2pitch(float cents, uint8_t channel)
 {
@@ -323,7 +314,6 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 CSV(channel_no, "Note_on_c, %d, %d, %d, NOTE_%s VELOCITY: %.0f%%\n", channel_no, note_no, velocity, velocity ? "ON" : "OFF", float(velocity)/1.27f);
                 if (note_no < key_range_low || note_no > key_range_high) break;
                 try {
-//                  note_no = get_note(channel, note_no);
                     midi.process(channel_no, message & 0xf0, note_no, velocity, omni);
                 } catch (const std::runtime_error &e) {
                     throw(e);
@@ -335,7 +325,6 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                 if (!note_message_enabled) break;
                 int16_t note_no = pull_byte();
                 uint8_t velocity = pull_byte();
-                note_no = get_note(channel, note_no);
                 midi.process(channel_no, message & 0xf0, note_no, velocity, omni);
                 CSV(channel_no, "Note_off_c, %d, %d, %d, NOTE_OFF\n", channel_no, note_no, velocity);
                 break;
@@ -343,7 +332,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
             case MIDI_POLYPHONIC_AFTERTOUCH:
             {
                 if (!poly_pressure_enabled) break;
-                uint8_t note_no = get_note(channel, pull_byte());
+                uint8_t note_no = pull_byte();
                 uint8_t pressure = pull_byte();
                 if (!channel.is_drums())
                 {
@@ -753,7 +742,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_PORTAMENTO_CONTROL:
     { // TODO: Fix portamento control
         expl = "PORTAMENTO_CONTROL";
-        int16_t note_no = get_note(channel, value);
+        int16_t note_no = value;
         float pitch = 1.0f; // get_pitch(channel, note_no);
         channel.set_pitch_start(pitch);
         break;
