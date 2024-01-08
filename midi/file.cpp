@@ -88,7 +88,7 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
                         }
 
                         format = stream.pull_word();
-                        if (format != 0 && format != 1)
+                        if (format > 3)
                         {
                             throw(std::runtime_error("MIDI file format not supported"));
                             return;
