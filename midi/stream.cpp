@@ -490,7 +490,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         msb_type = lsb_type = 0x7F; // (UN)REGISTERED_PARAM
         channel.set_pitch(64.0f/64.0f);
         channel.set_pressure(0.0f);
-        channel.set_sustain(false);
+        channel.set_sustain(true);
         channel.set_soft(false);
         channel.set_pitch_depth(2.0f);
         // Do not Reset: Program change, Bank Select, Volume, Pan,
