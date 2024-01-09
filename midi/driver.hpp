@@ -142,13 +142,13 @@ public:
     int get_refresh_rate() { return refresh_rate; }
     int get_polyphony() { return polyphony; }
 
-    void set_tuning_coarse(float semi_tones) { tuning_coarse = semi_tones; }
+    void set_tuning_coarse(float semi_tones);
     float get_tuning_coarse() { return tuning_coarse; }
 
-    void set_tuning_fine(float cents) { tuning_fine = cents; }
+    void set_tuning_fine(float cents);
     float get_tuning_fine() { return tuning_fine; }
 
-    void set_mode(uint8_t m) { if (m > mode) mode = m; }
+    void set_mode(uint8_t m) { mode = m; }
     uint8_t get_mode() { return mode; }
 
     void set_grep(bool g) { grep_mode = g; }

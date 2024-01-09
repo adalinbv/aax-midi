@@ -56,8 +56,9 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
         }
         midi.set_mode(MIDI_GENERAL_MIDI1);
         break;
-    case 0x02:
-        // midi.set_mode(MIDI_MODE0);
+    case GMMIDI_GM_OFF:
+        expl = "GM OFF";
+        midi.set_mode(MIDI_MODE0);
         break;
     case GMMIDI_GM2_RESET:
         expl = "GM2 RESET";

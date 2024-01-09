@@ -1304,6 +1304,22 @@ MIDIDriver::elapsed_time(double dt)
     return rv;
 }
 
+void
+MIDIDriver::set_tuning_coarse(float semi_tones)
+{
+    for (auto& it : channels) { 
+        it.second->set_master_tuning_coarse(semi_tones);
+    }
+}
+
+void
+MIDIDriver::set_tuning_fine(float cents)
+{
+    for (auto& it : channels) { 
+        it.second->set_master_tuning_fine(cents);
+    }
+}
+
 const std::vector<std::string>
 MIDIDriver::midi_channel_convention = {
     "Piano Solo (Left & Right Hand)",

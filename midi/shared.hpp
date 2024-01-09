@@ -124,6 +124,7 @@ enum {
 #define GMMIDI_BROADCAST					0x7f
 
 #define GMMIDI_GM_RESET						0x01
+#define GMMIDI_GM_OFF						0x02
 #define GMMIDI_GM2_RESET					0x03
 
 #define GM2_CHORUS1						0x00
