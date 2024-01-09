@@ -256,6 +256,13 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
 {
     bool rv = !eof();
 
+    if (elapsed_parts < smpte_parts)
+    {
+        smpte_parts -= elapsed_parts;
+        next = smpte_parts;
+        return rv;
+    }
+
     if (elapsed_parts < wait_parts)
     {
         wait_parts -= elapsed_parts;
@@ -1065,13 +1072,20 @@ bool MIDIStream::process_meta()
     }
     case MIDI_SMPTE_OFFSET:
     {
-        uint8_t hr = pull_byte(); // 0sshhhhha: ss is the frame rate
+        uint8_t hr = pull_byte(); // hours byte: 0sshhhhh: ss is the frame rate
         uint8_t mn = pull_byte(); // ss = 00: 24 frames per second
         uint8_t se = pull_byte(); // ss = 01: 25 frames per second
         uint8_t fr = pull_byte(); // ss = 10: 29.97 frames per second
         uint8_t ff = pull_byte(); // ss = 11: 30 frames per second
         CSV(channel_no, "%s, %d, %d, %d, %d, %d\n", "SMPTE_offset",
                                          hr, mn, se, fr, ff);
+        uint8_t ss = (hr >> 6);
+        float framerate = smpte_framerate[ss];
+        uint64_t smpte_offset = (hr & 0x1f) * 60 * 60;
+        smpte_offset += mn * 60;
+        smpte_offset += se;
+        smpte_offset += (fr + ff/100.0f)/framerate;
+        smpte_parts = smpte_offset*1000000/midi.get_uspp();
         break;
     }
     case MIDI_KEY_SIGNATURE:

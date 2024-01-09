@@ -124,6 +124,11 @@ private:
     uint8_t key_range_low = 0;
     uint8_t key_range_high = 127;
 
+    uint32_t smpte_parts = 0;
+    float smpte_framerate[4] = {
+        24.0f, 25.0f, 29.97f, 30.0f
+    };
+
     uint16_t msb_type = 0;
     uint16_t lsb_type = 0;
     std::map<uint16_t,struct param_t> param = {

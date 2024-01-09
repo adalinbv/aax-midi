@@ -181,6 +181,7 @@ public:
     uint16_t get_format() { return format; }
 
     void set_tempo(uint32_t t) { tempo = t; uSPP = t/PPQN; }
+    int32_t get_tempo() { return tempo; }
 
     void set_uspp(uint32_t uspp) { uSPP = uspp; }
     int32_t get_uspp() { return uSPP; }

@@ -2,7 +2,6 @@ test-control-40-damper
 test-control-41-portamento
 test-gm2-doggy-78-00-38-4c
 test-gm2-doggy-79-01-7b
-test-smpte-offset
 test-sysex-7f-04-03-master-fine-tuning
 test-sysex-7f-04-04-master-coarse-tuning
 test-sysex-7x-08-0x-scale-tuning
