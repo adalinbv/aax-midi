@@ -163,13 +163,13 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                     // mode == 2: volume and pitch bend
                     int pressure_mode = buffer.get(AAX_MIDI_PRESSURE_FACTOR);
                     if (pressure_mode == 0 || pressure_mode == 2) {
-                       pressure_volume_bend = true;
+                       p.pressure_volume_bend = true;
                     }
                     if (pressure_mode > 0) {
-                       pressure_pitch_bend = true;
+                       p.pressure_pitch_bend = true;
                     }
 
-                    pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
+                    p.pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
                 }
                 else {
                     throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
