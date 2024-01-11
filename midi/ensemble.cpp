@@ -59,23 +59,6 @@ MIDIEnsemble::set_stereo(bool s)
     }
 }
 
-// For GM2 it is recommended not to apply master tuning for drum channels
-// GS applies NRPN Coarse Pitch for drums and XG applies Fine Pitch to drums
-// a semitone is one twelfth of an octave, 100 cents is a semitone
-float   
-MIDIEnsemble::get_pitch(int& note_no)
-{
-    auto& channel = midi.channel(channel_no);
-    float fine_tuning = channel.get_tuning_fine()/100.0f;
-    if (!channel.is_drums()) {
-        fine_tuning += midi.get_tuning_fine()/100.0f;
-    }
-
-    float base_freq = aax::math::note2freq(69.0f+fine_tuning);
-    float freq = aax::math::note2freq(note_no, base_freq);
-    return freq/aax::math::note2freq(note_no);
-}
-
 void
 MIDIEnsemble::play(int note_no, uint8_t velocity)
 {
@@ -163,13 +146,13 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                     // mode == 2: volume and pitch bend
                     int pressure_mode = buffer.get(AAX_MIDI_PRESSURE_FACTOR);
                     if (pressure_mode == 0 || pressure_mode == 2) {
-                       pressure_volume_bend = true;
+                       p.pressure_volume_bend = true;
                     }
                     if (pressure_mode > 0) {
-                       pressure_pitch_bend = true;
+                       p.pressure_pitch_bend = true;
                     }
 
-                    pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
+                    p.pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
                 }
                 else {
                     throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
@@ -301,16 +284,15 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             }
         }
 
-        float pitch = get_pitch(note_no);
         if (is_drums()) {
-            Instrument::play(note_no, velocity/127.0f, it->second, pitch);
+            Instrument::play(note_no, velocity/127.0f, it->second);
             return;
         }
 
         if (Ensemble::no_members() == 0) {
             Ensemble::add_member(it->second);
         }
-        Ensemble::play(note_no, velocity/127.0f, pitch);
+        Ensemble::play(note_no, velocity/127.0f);
 
         bool all = midi.no_active_tracks() > 0;
         auto inst = midi.get_instrument(bank_no, program_no, all);

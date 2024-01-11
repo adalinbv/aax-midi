@@ -68,8 +68,6 @@ public:
     void set_stereo(bool s);
     bool get_stereo() { return stereo; }
 
-    float get_pitch(int& note_no);
-
 private:
     std::map<uint8_t,Buffer&> name_map;
     std::string track_name;
