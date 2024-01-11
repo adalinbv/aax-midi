@@ -1,23 +1,10 @@
 /*
- * Copyright (C) 2018-2023 by Erik Hofman.
- * Copyright (C) 2018-2023 by Adalin B.V.
- * All rights reserved.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Erik Hofman.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Adalin B.V.
  *
- * This file is part of AeonWave-MIDI
+ * Package Name: AeonWave MIDI library.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  version 3 of the License.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only
  */
 #include <cstdint>
 
@@ -30,7 +17,7 @@
  * for 16 parts, meaning that if the MIDI IN connectors are used to make
  * connections, a maximum of 32 parts can be played.
  *
- * Normally, MIDI IN 1 i used to play parts A01 through A16,
+ * Normally, MIDI IN 1 is used to play parts A01 through A16,
  * and MIDI IN 2 is used to play parts B01 through B16
  */
 
@@ -138,12 +125,12 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     case GSMIDI_MASTER_TUNE:
                     {   // 1st bit3-0: bit7-4, 2nd bit3-0: bit3-0
                         expl = "MASTER_TUNE";
-                        int8_t tune = (value << 4);
+                        int cents = (value & 0xf) << 4;
                         byte = pull_byte();
                         CSV(channel_no, ", %d", byte);
-                        tune |= byte & 0xf;
+                        cents |= byte & 0xf;
                         for(auto& it : midi.get_channels()) {
-                            it.second->set_tuning_fine(0.1f*tune);
+                            it.second->set_tuning_fine(cents);
                         }
                         break;
                     }
@@ -1099,11 +1086,27 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         break;
     }
     case GSMIDI_PART_PITCH_KEY_SHIFT: // -24 - +24 [semitones], default: 40
-        expl = "Unsupported PITCH_KEY_SHIFT";
+    {
+        expl = "PITCH_KEY_SHIFT";
+        float semitones = 24.0f * (float(value)-64.0f)/64.0f;
+        for(auto& it : midi.get_channels()) {
+            it.second->set_tuning_coarse(semitones);
+        }
         break;
+    }
     case GSMIDI_PART_PITCH_OFFSET_FINE: // -12.0 - +12.0 [Hz], default 08 00
-        expl = "Unsupported PITCH_OFFSET_FINE";
+    { // Aows you to alter, by a specified frequency amount,
+      // the pitch at which notes will sound.
+        expl = "PITCH_OFFSET_FINE";
+        int val = (value & 0xf) << 4;
+        byte = pull_byte();
+        CSV(channel_no, ", %d", byte);
+        val |= byte & 0xf;
+        for(auto& it : midi.get_channels()) {
+            it.second->set_tuning_offset(12.0f * (val-0x80)/64.0f);
+        }
         break;
+    }
     case GSMIDI_PART_VOLUME:
         expl = "VOLUME";
         if (!volume_enabled) break;
@@ -1123,7 +1126,6 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
             else channel.set_pan((float(value)-63.f)/63.f);
         }
         break;
-
     case GSMIDI_PART_KEYBOARD_RANGE_LOW:
         expl = "KEYBOARD_RANGE_LOW";
         key_range_low = value;
@@ -1157,9 +1159,18 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         expl = "BANK_SELECT_LSB_SWITCH";
         bank_select_lsb_enabled = value;
         break;
-    case GSMIDI_PART_PITCH_FINE_TUNE:
-        expl = "Unsupported PITCH_FINE_TUNE";
+    case GSMIDI_PART_PITCH_FINE_TUNE: // -100 - 0 - +100 [cents], default 40 00
+    {
+        expl = "PITCH_FINE_TUNE";
+        int val = (value & 0xf) << 4;
+        byte = pull_byte();
+        CSV(channel_no, ", %d", byte);
+        val |= byte & 0xf;
+        for(auto& it : midi.get_channels()) {
+            it.second->set_tuning_fine(100.0f * (val - 0x40)/64.0f);
+        }
         break;
+    }
     case GSMIDI_PART_DELAY_SEND_LEVEL:
         expl = "Unsupported DELAY_SEND_LEVEL";
         break;
@@ -1210,6 +1221,27 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         expl = "VIBRATO_DELAY";
         float val = float(value)/64.0f;
         channel.set_vibrato_delay(val);
+        break;
+    }
+    case GSMIDI_PART_SCALE_TUNING_C:
+    case GSMIDI_PART_SCALE_TUNING_C_HASH:
+    case GSMIDI_PART_SCALE_TUNING_D:
+    case GSMIDI_PART_SCALE_TUNING_D_HASH:
+    case GSMIDI_PART_SCALE_TUNING_E:
+    case GSMIDI_PART_SCALE_TUNING_F:
+    case GSMIDI_PART_SCALE_TUNING_F_HASH:
+    case GSMIDI_PART_SCALE_TUNING_G:
+    case GSMIDI_PART_SCALE_TUNING_G_HASH:
+    case GSMIDI_PART_SCALE_TUNING_A:
+    case GSMIDI_PART_SCALE_TUNING_A_HASH:
+    case GSMIDI_PART_SCALE_TUNING_B:
+    { // Allows fine adjustment to the pitch of each note in the octave. The
+      // pitch of each identically-named note in all octaves will change
+      // simultaneously
+        expl = "GSMIDI_PART_SCALE";
+        int note = float(addr-GSMIDI_PART_SCALE_TUNING_C);
+        float cents = float(value)-64.0f; // -64 - 0 - +63 cents
+        channel.set_tuning_fine(cents, note);
         break;
     }
     default:
