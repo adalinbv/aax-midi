@@ -24,6 +24,8 @@
 
 #include <thread>
 
+#include <xml.h>
+
 #include <midi/shared.hpp>
 #include <midi/file.hpp>
 #include <midi/driver.hpp>
@@ -110,8 +112,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
     }
     else // !drums
     {
-        uint16_t program = program_no;
-        auto inst = midi.get_instrument(bank_no, program, all);
+        auto inst = midi.get_instrument(bank_no, program_no, all);
         std::string& patch_name = inst.file;
         if (!patch_name.empty())
         {
@@ -122,7 +123,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                                        inst.file : inst.name;
 
                 DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
-                         bank_no >> 7, bank_no & 0x7F, program+1,
+                         bank_no >> 7, bank_no & 0x7F, program_no+1,
                          display.c_str());
                 midi.load(patch_name);
             }
@@ -134,7 +135,6 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             }
             else
             {
-// TODO: handle ensemble files
                 Buffer& buffer = midi.buffer(patch_name);
                 if (buffer)
                 {
@@ -284,13 +284,14 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             }
         }
 
-        if (is_drums()) {
+        if (is_drums())
+        {
             Instrument::play(note_no, velocity/127.0f, it->second);
             return;
         }
 
         if (Ensemble::no_members() == 0) {
-            Ensemble::add_member(it->second);
+            register_members();
         }
         Ensemble::play(note_no, velocity/127.0f);
 
@@ -392,3 +393,50 @@ MIDIEnsemble::stop(int note_no, float velocity)
         note_off.set(AAX_PLAYING);
     }
 }
+
+void // // TODO: add ensembles
+MIDIEnsemble::register_members()
+{
+    bool all = midi.no_active_tracks() > 0;
+    auto inst = midi.get_instrument(bank_no, program_no, all);
+    if (inst.ensemble)
+    {
+        std::string path = midi.info(AAX_SHARED_DATA_DIR);
+        path += inst.file.c_str();
+        path += ".xml";
+        xmlId *xid = xmlOpen(path.c_str());
+        if (xid)
+        {
+            xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
+            if (xlid)
+            {
+                char file[64] = "";
+                xmlId *xpid = xmlMarkId(xlid);
+                int slen, num = xmlNodeGetNum(xlid, "patch");
+                for (int i=0; i<num; i++)
+                {
+                    if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
+                    {
+                        int min = xmlAttributeGetInt(xpid, "min");
+                        int max = xmlAttributeGetInt(xpid, "max");
+                        slen = xmlAttributeCopyString(xpid, "file", file, 64);
+                        if (slen)
+                        {
+                            file[slen] = 0;
+                            Buffer& buffer = midi.buffer(file);
+                            Ensemble::add_member(buffer, min, max);
+                        }
+                    }
+                }
+                xmlFree(xpid);
+            }
+            xmlFree(xid);
+        }
+    }
+    else
+    {
+        Buffer& buffer = midi.buffer(inst.file);
+        Ensemble::add_member(buffer);
+    }
+}
+

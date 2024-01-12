@@ -928,6 +928,7 @@ bool
 MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::string &expl)
 {
     auto& channel = midi.channel(part_no);
+    uint8_t byte;
     bool rv = true;
     switch(addr)
     {

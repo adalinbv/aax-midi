@@ -749,9 +749,8 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_PORTAMENTO_CONTROL:
     { // TODO: Fix portamento control
         expl = "PORTAMENTO_CONTROL";
-        int16_t note_no = value;
-        float pitch = 1.0f; // get_pitch(channel, note_no);
-        channel.set_pitch_start(pitch);
+        channel.set_pitch_slide_state(true);
+        channel.set_portamento(value);
         break;
     }
     case MIDI_PORTAMENTO_TIME:

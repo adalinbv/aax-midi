@@ -753,7 +753,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                             configuration_map.insert({bank_no,{name,file}});
                         }
 
-                        // type is 'instrument' or ´ensemble' for drums/ensembles
+                        // type is 'instrument' or ´patch' for drums/patch
                         inum = xmlNodeGetNum(xbid, type);
                         auto bank = imap[bank_no];
                         for (int i=0; i<inum; i++)
@@ -823,8 +823,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{name,file,note_on,note_off,1.0f,1.0f,
-                                                   spread,wide,min,max,stereo}});
+                                    bank.insert({n,{name,file,note_on,note_off,
+                                                    1.0f,1.0f,spread,wide,
+                                                    min,max,stereo,false}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
@@ -835,8 +836,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-                                        bank.insert({n,{name,file,"","",1.0f,1.0f,
-                                                        spread,wide,0,128,stereo}});
+                                        bank.insert({n,{name,file,"","",
+                                                        1.0f,1.0f,spread,wide,
+                                                        0,128,stereo,true}});
                                     }
                                 }
                             }

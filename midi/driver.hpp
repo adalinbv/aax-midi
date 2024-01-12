@@ -63,6 +63,7 @@ struct info_t
     int max_key = 128;
 
     bool stereo = false;
+    bool ensemble = false;
 };
 
 class MIDIDriver : public AeonWave
