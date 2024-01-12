@@ -417,6 +417,13 @@ MIDIEnsemble::register_members()
                 {
                     if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
                     {
+                        float gain = 1.0f, pitch = 1.0f;
+                        if (xmlAttributeExists(xpid, "gain")) {
+                            gain = xmlAttributeGetDouble(xpid, "gain");
+                        }
+                        if (xmlAttributeExists(xpid, "pitch")) {
+                            gain = xmlAttributeGetDouble(xpid, "pitch");
+                        }
                         int min = xmlAttributeGetInt(xpid, "min");
                         int max = xmlAttributeGetInt(xpid, "max");
                         slen = xmlAttributeCopyString(xpid, "file", file, 64);
@@ -424,7 +431,7 @@ MIDIEnsemble::register_members()
                         {
                             file[slen] = 0;
                             Buffer& buffer = midi.buffer(file);
-                            Ensemble::add_member(buffer, min, max);
+                            Ensemble::add_member(buffer, pitch, gain, min, max);
                         }
                     }
                 }
