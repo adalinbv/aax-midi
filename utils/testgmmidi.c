@@ -45,16 +45,16 @@ int main(int argc, char **argv)
         }
         file++;
 
-        xmid = xmlNodeGet(xid, "/aeonwave/midi");
+        xmid = xmlNodeGet(xid, "/aeonwave/set");
         if (xmid)
         {
-            unsigned int bnum = xmlNodeGetNum(xmid, "bank");
+            unsigned int bnum = xmlNodeGetNum(xmid, "layer");
             void *xbid = xmlMarkId(xmid);
             unsigned int b;
 
             for (b=0; b<bnum; b++)
             {
-                if (xmlNodeGetPos(xmid, xbid, "bank", b) != 0)
+                if (xmlNodeGetPos(xmid, xbid, "layer", b) != 0)
                 {
                     unsigned int slen, inum = xmlNodeGetNum(xbid, "instrument");
                     void *xiid = xmlMarkId(xbid);
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
                                 continue;
                             }
 
-                            slen = xmlAttributeCopyString(xiid, "patch", file, 64);
+                            slen = xmlAttributeCopyString(xiid, "include", file, 64);
                             if (slen)
                             {
                                 if (!check_file(file, ".xml")) {
@@ -108,7 +108,7 @@ int main(int argc, char **argv)
                     }
                     xmlFree(xiid);
 
-                    inum = xmlNodeGetNum(xbid, "drum");
+                    inum = xmlNodeGetNum(xbid, "patch");
                     xiid = xmlMarkId(xbid);
 
                     for (i=0; i<inum; i++)
