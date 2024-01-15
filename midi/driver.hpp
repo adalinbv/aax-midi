@@ -59,6 +59,7 @@ struct info_t
     float spread = 1.0f;
     int wide = 0;
 
+    int count = 1;
     int min_key = 0;
     int max_key = 128;
 

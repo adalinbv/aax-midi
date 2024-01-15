@@ -290,13 +290,13 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             return;
         }
 
+        bool all = midi.no_active_tracks() > 0;
+        auto inst = midi.get_instrument(bank_no, program_no, all);
         if (Ensemble::no_members() == 0) {
             register_members();
         }
-        Ensemble::play(note_no, velocity/127.0f);
+        Ensemble::play(note_no, velocity/127.0f, 1.0f, inst.count);
 
-        bool all = midi.no_active_tracks() > 0;
-        auto inst = midi.get_instrument(bank_no, program_no, all);
         std::string& patch_name = inst.key_on;
         if (!patch_name.empty())
         {

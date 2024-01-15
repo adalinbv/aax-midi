@@ -760,7 +760,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
-                                int n, min, max, wide;
+                                int n, count, min, max, wide;
                                 float spread, pitch, gain;
                                 bool stereo;
 
@@ -771,6 +771,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 }
                                 if (xmlAttributeExists(xiid, "pitch")) {
                                     pitch = xmlAttributeGetInt(xiid, "pitch");
+                                }
+
+                                count = 1;
+                                if (xmlAttributeExists(xiid, "count")) {
+                                    count = xmlAttributeGetInt(xiid, "count");
                                 }
 
                                 min = 0;
@@ -824,7 +829,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 {
                                     file[slen] = 0;
                                     bank.insert({n,{name,file,note_on,note_off,
-                                                    1.0f,1.0f,spread,wide,
+                                                    1.0f,1.0f,spread,wide,count,
                                                     min,max,stereo,false}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
@@ -837,8 +842,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     {
                                         file[slen] = 0;
                                         bank.insert({n,{name,file,"","",
-                                                        1.0f,1.0f,spread,wide,
-                                                        0,128,stereo,true}});
+                                                    1.0f,1.0f,spread,wide,count,
+                                                    0,128,stereo,true}});
                                     }
                                 }
                             }
