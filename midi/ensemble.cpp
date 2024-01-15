@@ -295,7 +295,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         if (Ensemble::no_members() == 0) {
             register_members();
         }
-        Ensemble::play(note_no, velocity/127.0f, 1.0f, inst.count);
+        Ensemble::play(note_no, velocity/127.0f, 1.0f);
 
         std::string& patch_name = inst.key_on;
         if (!patch_name.empty())
@@ -394,7 +394,7 @@ MIDIEnsemble::stop(int note_no, float velocity)
     }
 }
 
-void // // TODO: add ensembles
+void
 MIDIEnsemble::register_members()
 {
     bool all = midi.no_active_tracks() > 0;
@@ -402,6 +402,7 @@ MIDIEnsemble::register_members()
     if (inst.ensemble)
     {
         std::string path = midi.info(AAX_SHARED_DATA_DIR);
+        path += '/';
         path += inst.file.c_str();
         path += ".xml";
         xmlId *xid = xmlOpen(path.c_str());
