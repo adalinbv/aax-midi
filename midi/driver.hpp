@@ -1,23 +1,10 @@
 /*
- * Copyright (C) 2018-2024 by Erik Hofman.
- * Copyright (C) 2018-2024 by Adalin B.V.
- * All rights reserved.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Erik Hofman.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Adalin B.V.
  *
- * This file is part of AeonWave-MIDI
+ * Package Name: AeonWave MIDI library.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  version 3 of the License.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only
  */
 
 #pragma once
@@ -60,8 +47,8 @@ struct info_t
     int wide = 0;
 
     int count = 1;
-    int min_key = 0;
-    int max_key = 128;
+    int min_note = 0;
+    int max_note = 128;
 
     bool stereo = false;
     bool ensemble = false;
@@ -70,8 +57,9 @@ struct info_t
 class MIDIDriver : public AeonWave
 {
 private:
-    using configuration_map_t = std::map<int, info_t>;
-    using patch_map_t = std::map<uint16_t, configuration_map_t>;
+    using ensemble_map_t = std::vector<info_t>;
+    using program_map_t = std::map<int, ensemble_map_t>;
+    using bank_map_t = std::map<uint16_t, program_map_t>;
     using channel_map_t = std::map<uint16_t, std::shared_ptr<MIDIEnsemble>>;
 
 public:
@@ -113,11 +101,12 @@ public:
         return active_track.empty() ? true : is_avail(active_track, t);
     }
 
+    void read_ensemble(program_map_t& bank, const char* name, const char *file, uint16_t bank_no, int n);
     void read_instruments(std::string gmidi=std::string(), std::string gmdrums=std::string());
 
-    void grep(std::string& filename, const char *grep);
-    void load(std::string& name) { loaded.push_back(name); }
-    bool is_loaded(std::string& name) {
+    void grep(const std::string& filename, const char *grep);
+    void load(const std::string& name) { loaded.push_back(name); }
+    bool is_loaded(const std::string& name) {
         return (std::find(loaded.begin(), loaded.end(), name) != loaded.end());
     }
 
@@ -156,9 +145,9 @@ public:
     void set_grep(bool g) { grep_mode = g; }
     bool get_grep() { return grep_mode; }
 
-    const info_t get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
-    const info_t get_instrument(uint16_t bank, uint8_t program, bool all=false);
-    configuration_map_t& get_configurations() { return configuration_map; }
+    const ensemble_map_t& get_drum(uint16_t bank, uint16_t& program, uint8_t key, bool all=false);
+    const ensemble_map_t& get_instrument(uint16_t bank, uint8_t program, bool all=false);
+    program_map_t& get_configurations() { return configuration_map; }
 
     void set_initialize(bool i) { initialize = i; };
     bool get_initialize() { return initialize; }
@@ -283,10 +272,10 @@ private:
     channel_map_t reverb_channels;
 
     // banks name and submixer filter and effects file
-    configuration_map_t configuration_map;
+    program_map_t configuration_map;
 
-    patch_map_t drum_map;
-    patch_map_t instrument_map;
+    bank_map_t drum_map;
+    bank_map_t instrument_map;
 
     std::vector<uint16_t> missing_drum_bank;
     std::vector<uint16_t> missing_instrument_bank;

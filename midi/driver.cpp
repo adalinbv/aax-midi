@@ -1,23 +1,10 @@
 /*
- * Copyright (C) 2018-2024 by Erik Hofman.
- * Copyright (C) 2018-2024 by Adalin B.V.
- * All rights reserved.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Erik Hofman.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Adalin B.V.
  *
- * This file is part of AeonWave-MIDI
+ * Package Name: AeonWave MIDI library.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  version 3 of the License.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only
  */
 
 #include <cstring>
@@ -750,7 +737,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         if (slen)
                         {
                             file[slen] = 0;
-                            configuration_map.insert({bank_no,{name,file}});
+                            configuration_map.insert({bank_no,{{name,file}}});
                         }
 
                         // type is 'instrument' or ´patch' for drums/patch
@@ -760,12 +747,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
                             {
-                                int n, count, min, max, wide;
-                                float spread, pitch, gain;
-                                bool stereo;
-
-                                gain = 1.0f;
-                                pitch = 1.0f;
+                                float gain = 1.0f;
+                                float pitch = 1.0f;
                                 if (xmlAttributeExists(xiid, "gain")) {
                                     gain = xmlAttributeGetInt(xiid, "gain");
                                 }
@@ -773,20 +756,20 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     pitch = xmlAttributeGetInt(xiid, "pitch");
                                 }
 
-                                count = 1;
+                                int count = 1;
                                 if (xmlAttributeExists(xiid, "count")) {
                                     count = xmlAttributeGetInt(xiid, "count");
                                 }
 
-                                min = 0;
-                                max = 128;
+                                int min = 0;
+                                int max = aax::note::max;
                                 if (xmlAttributeExists(xiid, "min")) {
                                     min = xmlAttributeGetInt(xiid, "min");
                                 }
                                 if (xmlAttributeExists(xiid, "max")) {
                                     max = xmlAttributeGetInt(xiid, "max");
                                 }
-                                n = xmlAttributeGetInt(xiid, "n");
+                                int n = xmlAttributeGetInt(xiid, "n");
                                 if (type == "instrument")
                                 {
                                     if (!offset) n++;
@@ -796,14 +779,14 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     min = max = n;
                                 }
 
-                                stereo = xmlAttributeGetBool(xiid, "stereo");
+                                bool stereo = xmlAttributeGetBool(xiid, "stereo");
 
-                                wide = xmlAttributeGetInt(xiid, "wide");
+                                int wide = xmlAttributeGetInt(xiid, "wide");
                                 if (!wide && (stereo || xmlAttributeGetBool(xiid, "wide"))) {
                                     wide = -1;
                                 }
 
-                                spread = 1.0f;
+                                float spread = 1.0f;
                                 if (xmlAttributeExists(xiid, "spread")) {
                                    spread = xmlAttributeGetDouble(xiid, "spread");
                                 }
@@ -828,9 +811,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 if (slen)
                                 {
                                     file[slen] = 0;
-                                    bank.insert({n,{name,file,note_on,note_off,
+                                    bank.insert({n,{{name,file,note_on,note_off,
                                                     1.0f,1.0f,spread,wide,count,
-                                                    min,max,stereo,false}});
+                                                    min,max,stereo,false}}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
@@ -841,9 +824,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                     if (slen)
                                     {
                                         file[slen] = 0;
-                                        bank.insert({n,{name,file,"","",
-                                                    1.0f,1.0f,spread,wide,count,
-                                                    0,128,stereo,true}});
+                                        read_ensemble(bank, name, file, bank_no, n);
                                     }
                                 }
                             }
@@ -901,7 +882,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
         auto it = configuration_map.find(drum_set_no<<7);
         if (it != configuration_map.end()) {
-            s << "Switching to drum " << it->second.name;
+            s << "Switching to drum " << it->second[0].name;
         } else {
             s << "Switching to drum set number:  " << drum_set_no+1;
         }
@@ -910,18 +891,112 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 }
 
 /*
+ * Create map of instrument banks and program numbers with their associated
+ * file names from the XML files for a quick access during playback.
+ */
+void
+MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* file, uint16_t bank_no, int program_no)
+{
+    std::string path = midi.info(AAX_SHARED_DATA_DIR);
+    path += file;
+    path += ".xml";
+    xmlId *xid = xmlOpen(path.c_str());
+    if (xid)
+    {
+        xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
+        if (xlid)
+        {
+            ensemble_map_t ensemble;
+            char note_off[64] = "";
+            char note_on[64] = "";
+//          char name[64] = "";
+            char file[64] = "";
+
+            xmlId *xpid = xmlMarkId(xlid);
+            int slen, num = xmlNodeGetNum(xlid, "patch");
+            for (int i=0; i<num; i++)
+            {
+                if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
+                {
+                    float gain = 1.0f;
+                    float pitch = 1.0f;
+                    if (xmlAttributeExists(xpid, "gain")) {
+                        gain = xmlAttributeGetDouble(xpid, "gain");
+                    }
+                    if (xmlAttributeExists(xpid, "pitch")) {
+                        gain = xmlAttributeGetDouble(xpid, "pitch");
+                    }
+
+
+                    int count = 1;
+                    if (xmlAttributeExists(xpid, "count")) {
+                        count = xmlAttributeGetInt(xpid, "count");
+                    }
+
+                    int min = 0;
+                    int max = aax::note::max;
+                    if (xmlAttributeExists(xpid, "min")) {
+                        min = xmlAttributeGetInt(xpid, "min");
+                    }
+                    if (xmlAttributeExists(xpid, "max")) {
+                        max = xmlAttributeGetInt(xpid, "max");
+                    }
+
+                    bool stereo = xmlAttributeGetBool(xpid, "stereo");
+
+                    int wide = xmlAttributeGetInt(xpid, "wide");
+                    if (!wide && (stereo || xmlAttributeGetBool(xpid, "wide"))) {
+                        wide = -1;
+                    }
+
+                    float spread = 1.0f;
+                    if (xmlAttributeExists(xpid, "spread")) {
+                       spread = xmlAttributeGetDouble(xpid, "spread");
+                    }
+
+//                  xmlAttributeCopyString(xpid, "name", name, 64);
+
+                    // note-on file-name
+                    note_on[0] = '\0';
+                    xmlAttributeCopyString(xpid, "note-on", note_on, 64);
+
+                    // note-off file-name
+                    note_off[0] = '\0';
+                    xmlAttributeCopyString(xpid, "note-off", note_off, 64);
+
+                    slen = xmlAttributeCopyString(xpid, "file", file, 64);
+
+                    if (slen)
+                    {
+                        file[slen] = 0;
+                        ensemble.push_back({name,file,note_on,note_off,
+                                                 1.0f,1.0f,spread,wide,count,
+                                                 min,max,stereo,false});
+                    }
+                }
+            }
+            xmlFree(xpid);
+
+            bank.insert({program_no, std::move(ensemble)});
+        }
+        xmlFree(xid);
+    }
+}
+
+/*
  * For drum mapping the program_no is stored in the upper 8 bits, and the
  * bank_no (msb) in the lower eight bits of the bank number of the map
  * and the note_no in the program number of the map.
  */
-const info_t
+const MIDIDriver::ensemble_map_t&
 MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bool all)
 {
+    static const ensemble_map_t empty_map;
+
     if (program_no == 0 && drum_set_no != -1) {
         program_no = drum_set_no;
     }
 
-    info_t empty_map;
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;
     do
@@ -930,15 +1005,15 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
         bool bank_found = (itb != drum_map.end());
         if (bank_found)
         {
-            auto bank = itb->second;
+            auto& bank = itb->second;
             auto iti = bank.find(note_no);
             if (iti != bank.end())
             {
                 if (all || selection.empty() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.file) != selection.end() ||
+                              iti->second[0].file) != selection.end() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.name) != selection.end())
+                              iti->second[0].name) != selection.end())
                 {
                     if (req_program_no != program_no)
                     {
@@ -1018,10 +1093,10 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
     return iti.first->second;
 }
 
-const info_t
+const MIDIDriver::ensemble_map_t&
 MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 {
-    info_t empty_map;
+    static const ensemble_map_t empty_map;
     uint16_t prev_bank_no = bank_no;
     uint16_t req_bank_no = bank_no;
 
@@ -1031,20 +1106,20 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
         bool bank_found = (itb != instrument_map.end());
         if (bank_found)
         {
-            auto bank = itb->second;
+            auto& bank = itb->second;
             auto iti = bank.find(program_no+1);
             if (iti != bank.end())
             {
                 if (all || selection.empty() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.file) != selection.end() ||
+                              iti->second[0].file) != selection.end() ||
                     std::find(selection.begin(), selection.end(),
-                              iti->second.name) != selection.end())
+                              iti->second[0].name) != selection.end())
                 {
                     return iti->second;
                 }
 
-                auto& inst = iti->second;
+                auto& inst = iti->second[0];
                 std::string& display = (midi.get_verbose() >= 99) ?
                                            inst.file : inst.name;
                 DISPLAY(4, "No instrument mapped to bank %i, program %i\n",
@@ -1116,7 +1191,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 }
 
 void
-MIDIDriver::grep(std::string& filename, const char *grep)
+MIDIDriver::grep(const std::string& filename, const char *grep)
 {
     if (midi.get_csv()) return;
 
@@ -1158,7 +1233,7 @@ MIDIDriver::new_channel(uint8_t track_no, uint16_t bank_no, uint8_t program_no)
     {
         auto it = configuration_map.find(program_no);
         if (it != configuration_map.end()) {
-            file = it->second.file;
+            file = it->second[0].file;
         }
     }
 
@@ -1277,7 +1352,7 @@ MIDIDriver::get_channel_name(uint16_t part_no)
         auto itb = configuration_map.find(bank_no);
         if (itb != configuration_map.end())
         {
-           auto bank = itb->second;
+           auto bank = itb->second[0];
            rv = bank.name;
         }
     }
@@ -1285,7 +1360,7 @@ MIDIDriver::get_channel_name(uint16_t part_no)
     {
         uint16_t bank_no = channel(part_no).get_bank_no();
         uint8_t program_no = channel(part_no).get_program_no();
-        auto inst = midi.get_instrument(bank_no, program_no);
+        auto inst = midi.get_instrument(bank_no, program_no)[0];
         rv = inst.name;
     }
     return rv;

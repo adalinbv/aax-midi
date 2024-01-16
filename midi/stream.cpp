@@ -402,12 +402,12 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                         auto frames = midi.get_configurations();
                         auto it = frames.find(program_no);
                         if (it != frames.end()) {
-                            name = it->second.name;
+                            name = it->second[0].name;
                         }
                     }
                     else
                     {
-                        auto inst = midi.get_instrument(bank_no, program_no);
+                        auto inst = midi.get_instrument(bank_no, program_no)[0];
                         name = inst.name;
                     }
                 } catch(const std::invalid_argument& e) {

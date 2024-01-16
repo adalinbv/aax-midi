@@ -1,23 +1,10 @@
 /*
- * Copyright (C) 2018-2024 by Erik Hofman.
- * Copyright (C) 2018-2024 by Adalin B.V.
- * All rights reserved.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Erik Hofman.
+ * SPDX-FileCopyrightText: Copyright © 2018-2024 by Adalin B.V.
  *
- * This file is part of AeonWave-MIDI
+ * Package Name: AeonWave MIDI library.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  version 3 of the License.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along
- *  with this program; if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA 02111-1307 USA.
+ * SPDX-License-Identifier: GPL-2.0-only OR GPL-3.0-only
  */
 
 #include <cassert>
@@ -74,15 +61,15 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         if (it == name_map.end())
         {
             uint16_t program = program_no;
-            auto inst = midi.get_drum(bank_no, program, note_no, all);
-            std::string& filename = inst.file;
+            auto& inst = midi.get_drum(bank_no, program, note_no, all)[0];
+            const std::string& filename = inst.file;
             if (!filename.empty() && filename != "")
             {
                 if (!midi.buffer_avail(filename))
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
-                    std::string& display = (midi.get_verbose() >= 99) ?
-                                           inst.file : inst.name;
+                    const std::string& display = (midi.get_verbose() >= 99) ?
+                                                  inst.file : inst.name;
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              note_no, bank_no >> 7, bank_no & 0x7F,
@@ -112,15 +99,15 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
     }
     else // !drums
     {
-        auto inst = midi.get_instrument(bank_no, program_no, all);
-        std::string& patch_name = inst.file;
+        auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
+        const std::string& patch_name = inst.file;
         if (!patch_name.empty())
         {
             if (!midi.buffer_avail(patch_name) && !midi.is_loaded(patch_name))
             {
                 uint16_t bank_no = midi.channel(channel_no).get_bank_no();
-                std::string& display = (midi.get_verbose() >= 99) ?
-                                       inst.file : inst.name;
+                const std::string& display = (midi.get_verbose() >= 99) ?
+                                              inst.file : inst.name;
 
                 DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                          bank_no >> 7, bank_no & 0x7F, program_no+1,
@@ -290,14 +277,23 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             return;
         }
 
-        bool all = midi.no_active_tracks() > 0;
-        auto inst = midi.get_instrument(bank_no, program_no, all);
-        if (Ensemble::no_members() == 0) {
-            register_members();
+        if (Ensemble::no_members() == 0)
+        {
+            bool all = midi.no_active_tracks() > 0;
+            auto& ens = midi.get_instrument(bank_no, program_no, all);
+            for (int n=0; n<ens.size(); ++n)
+            {
+                auto& i = ens[n];
+                Buffer& buffer = midi.buffer(i.file);
+                Ensemble::add_member(buffer, i.pitch, i.gain,
+                                             i.min_note, i.max_note);
+            }
         }
-        Ensemble::play(note_no, velocity/127.0f, 1.0f, inst.count);
+        Ensemble::play(note_no, velocity/127.0f, 1.0f);
 
-        std::string& patch_name = inst.key_on;
+        bool all = midi.no_active_tracks() > 0;
+        auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
+        const std::string& patch_name = inst.key_on;
         if (!patch_name.empty())
         {
             bool wide = inst.wide;
@@ -350,8 +346,8 @@ MIDIEnsemble::stop(int note_no, float velocity)
     if (is_drums()) return;
 
     bool all = midi.no_active_tracks() > 0;
-    auto inst = midi.get_instrument(bank_no, program_no, all);
-    std::string& patch_name = inst.key_off;
+    auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
+    const std::string& patch_name = inst.key_off;
     if (!patch_name.empty())
     {
         bool wide = inst.wide;
@@ -393,57 +389,3 @@ MIDIEnsemble::stop(int note_no, float velocity)
         note_off.set(AAX_PLAYING);
     }
 }
-
-void // // TODO: add ensembles
-MIDIEnsemble::register_members()
-{
-    bool all = midi.no_active_tracks() > 0;
-    auto inst = midi.get_instrument(bank_no, program_no, all);
-    if (inst.ensemble)
-    {
-        std::string path = midi.info(AAX_SHARED_DATA_DIR);
-        path += inst.file.c_str();
-        path += ".xml";
-        xmlId *xid = xmlOpen(path.c_str());
-        if (xid)
-        {
-            xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
-            if (xlid)
-            {
-                char file[64] = "";
-                xmlId *xpid = xmlMarkId(xlid);
-                int slen, num = xmlNodeGetNum(xlid, "patch");
-                for (int i=0; i<num; i++)
-                {
-                    if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
-                    {
-                        float gain = 1.0f, pitch = 1.0f;
-                        if (xmlAttributeExists(xpid, "gain")) {
-                            gain = xmlAttributeGetDouble(xpid, "gain");
-                        }
-                        if (xmlAttributeExists(xpid, "pitch")) {
-                            gain = xmlAttributeGetDouble(xpid, "pitch");
-                        }
-                        int min = xmlAttributeGetInt(xpid, "min");
-                        int max = xmlAttributeGetInt(xpid, "max");
-                        slen = xmlAttributeCopyString(xpid, "file", file, 64);
-                        if (slen)
-                        {
-                            file[slen] = 0;
-                            Buffer& buffer = midi.buffer(file);
-                            Ensemble::add_member(buffer, pitch, gain, min, max);
-                        }
-                    }
-                }
-                xmlFree(xpid);
-            }
-            xmlFree(xid);
-        }
-    }
-    else
-    {
-        Buffer& buffer = midi.buffer(inst.file);
-        Ensemble::add_member(buffer);
-    }
-}
-
