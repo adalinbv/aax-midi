@@ -906,6 +906,12 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
         xmlId *xlid = xmlNodeGet(xid, "aeonwave/set/layer");
         if (xlid)
         {
+            float volume = 1.0f;
+
+            if (xmlAttributeExists(xlid, "gain")) {
+               volume = xmlAttributeGetDouble(xlid, "gain");
+            }
+
             ensemble_map_t ensemble;
             char note_off[64] = "";
             char note_on[64] = "";
@@ -918,15 +924,14 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
             {
                 if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
                 {
-                    float gain = 1.0f;
+                    float gain = volume;
                     float pitch = 1.0f;
                     if (xmlAttributeExists(xpid, "gain")) {
-                        gain = xmlAttributeGetDouble(xpid, "gain");
+                        gain *= xmlAttributeGetDouble(xpid, "gain");
                     }
                     if (xmlAttributeExists(xpid, "pitch")) {
-                        gain = xmlAttributeGetDouble(xpid, "pitch");
+                        pitch = xmlAttributeGetDouble(xpid, "pitch");
                     }
-
 
                     int count = 1;
                     if (xmlAttributeExists(xpid, "count")) {
@@ -970,7 +975,7 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
                     {
                         file[slen] = 0;
                         ensemble.push_back({name,file,note_on,note_off,
-                                                 1.0f,1.0f,spread,wide,count,
+                                                 gain,pitch,spread,wide,count,
                                                  min,max,stereo,false});
                     }
                 }
@@ -980,6 +985,9 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
             bank.insert({program_no, std::move(ensemble)});
         }
         xmlFree(xid);
+    }
+    else {
+        ERROR("Unable to open: " << path);
     }
 }
 
