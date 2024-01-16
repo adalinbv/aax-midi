@@ -286,7 +286,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 auto& i = ens[n];
                 Buffer& buffer = midi.buffer(i.file);
                 Ensemble::add_member(buffer, i.pitch, i.gain,
-                                             i.min_note, i.max_note);
+                                             i.min_note, i.max_note, i.count);
             }
         }
         Ensemble::play(note_no, velocity/127.0f, 1.0f);
