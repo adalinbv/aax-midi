@@ -407,8 +407,8 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                     }
                     else
                     {
-                        auto inst = midi.get_instrument(bank_no, program_no)[0];
-                        name = inst.name;
+                        auto& inst = midi.get_instrument(bank_no, program_no);
+                        if (inst.size()) name = inst[0].name;
                     }
                 } catch(const std::invalid_argument& e) {
                     ERROR("Error: " << e.what());

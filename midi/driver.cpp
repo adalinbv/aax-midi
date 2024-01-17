@@ -1369,8 +1369,8 @@ MIDIDriver::get_channel_name(uint16_t part_no)
     {
         uint16_t bank_no = channel(part_no).get_bank_no();
         uint8_t program_no = channel(part_no).get_program_no();
-        auto inst = midi.get_instrument(bank_no, program_no)[0];
-        rv = inst.name;
+        auto& inst = midi.get_instrument(bank_no, program_no);
+        if (inst.size()) rv = inst[0].name;
     }
     return rv;
 }

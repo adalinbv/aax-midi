@@ -61,15 +61,15 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         if (it == name_map.end())
         {
             uint16_t program = program_no;
-            auto& inst = midi.get_drum(bank_no, program, note_no, all)[0];
-            const std::string& filename = inst.file;
-            if (!filename.empty() && filename != "")
+            auto& inst = midi.get_drum(bank_no, program, note_no, all);
+            if (inst.size() && !inst[0].file.empty())
             {
+                const std::string& filename = inst[0].file;
                 if (!midi.buffer_avail(filename))
                 {
                     uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                     const std::string& display = (midi.get_verbose() >= 99) ?
-                                                  inst.file : inst.name;
+                                                  inst[0].file : inst[0].name;
 
                     DISPLAY(2, "Loading drum:  %3i bank: %3i/%3i, program: %3i: # %s\n",
                              note_no, bank_no >> 7, bank_no & 0x7F,
@@ -99,15 +99,15 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
     }
     else // !drums
     {
-        auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
-        const std::string& patch_name = inst.file;
-        if (!patch_name.empty())
+        auto& inst = midi.get_instrument(bank_no, program_no);
+        if (inst.size() && !inst[0].file.empty())
         {
+            const std::string& patch_name = inst[0].file;
             if (!midi.buffer_avail(patch_name) && !midi.is_loaded(patch_name))
             {
                 uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                 const std::string& display = (midi.get_verbose() >= 99) ?
-                                              inst.file : inst.name;
+                                              inst[0].file : inst[0].name;
 
                 DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
                          bank_no >> 7, bank_no & 0x7F, program_no+1,
@@ -144,9 +144,9 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 else {
                     throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
                 }
-                midi.channel(channel_no).set_wide(inst.wide);
-                midi.channel(channel_no).set_spread(inst.spread);
-                midi.channel(channel_no).set_stereo(inst.stereo);
+                midi.channel(channel_no).set_wide(inst[0].wide);
+                midi.channel(channel_no).set_spread(inst[0].spread);
+                midi.channel(channel_no).set_stereo(inst[0].stereo);
             }
         }
     }
@@ -292,22 +292,22 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         Ensemble::play(note_no, velocity/127.0f, 1.0f);
 
         bool all = midi.no_active_tracks() > 0;
-        auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
-        const std::string& patch_name = inst.key_on;
-        if (!patch_name.empty())
+        auto& inst = midi.get_instrument(bank_no, program_no, all);
+        if (inst.size() && !inst[0].key_on.empty())
         {
-            bool wide = inst.wide;
+            const std::string& patch_name = inst[0].key_on;
+            bool wide = inst[0].wide;
             if (!note_on)
             {
                 note_on = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
-                std::string name = inst.name;
+                std::string name = inst[0].name;
                 MESSAGE(3, "Loading %s: note-on file: %s\n",
                         name.c_str(),  patch_name.c_str());
                 note_on.add( midi.buffer(patch_name) );
                 note_on.tie(note_on_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
-                pan.wide = inst.wide;
+                pan.wide = inst[0].wide;
 
                 Mixer::add(note_on);
             }
@@ -346,22 +346,22 @@ MIDIEnsemble::stop(int note_no, float velocity)
     if (is_drums()) return;
 
     bool all = midi.no_active_tracks() > 0;
-    auto& inst = midi.get_instrument(bank_no, program_no, all)[0];
-    const std::string& patch_name = inst.key_off;
-    if (!patch_name.empty())
+    auto& inst = midi.get_instrument(bank_no, program_no, all);
+    if (inst.size() && !inst[0].key_off.empty())
     {
-        bool wide = inst.wide;
+        const std::string& patch_name = inst[0].key_off;
+        bool wide = inst[0].wide;
         if (!note_off)
         {
             note_off = Emitter(wide ? AAX_ABSOLUTE : AAX_RELATIVE);
 
-            std::string name = inst.name;
+            std::string name = inst[0].name;
             MESSAGE(3, "Loading %s: note-off file: %s\n",
                     name.c_str(),  patch_name.c_str());
             note_off.add( midi.buffer(patch_name) );
             note_off.tie(note_off_pitch_param, AAX_PITCH_EFFECT, AAX_PITCH);
 
-            pan.wide = inst.wide;
+            pan.wide = inst[0].wide;
 
             Mixer::add(note_off);
         }
