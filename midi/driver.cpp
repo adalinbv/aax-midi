@@ -898,8 +898,9 @@ void
 MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* file, uint16_t bank_no, int program_no)
 {
     std::string path = midi.info(AAX_SHARED_DATA_DIR);
-    path += file;
-    path += ".xml";
+    path.append("/");
+    path.append(file);
+    path.append(".xml");
     xmlId *xid = xmlOpen(path.c_str());
     if (xid)
     {
