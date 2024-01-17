@@ -1045,7 +1045,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
         if (bank_no >> 7)
         {
             DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/%i\n",
-                       note_no, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
+                      note_no+1, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
             bank_no &= 0x7F;
             continue;
         }
