@@ -37,8 +37,7 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
                    const char *config)
     : MIDIDriver(devname, selection, mode), file(filename)
 {
-    struct stat info;
-    if (stat(filename, &info) != 0 || (info.st_mode & S_IFDIR)) {
+    if (!midi.exists(filename) || midi.is_directory(filename)) {
         throw(std::invalid_argument("File not found: "+std::string(filename)));
         return;
     }

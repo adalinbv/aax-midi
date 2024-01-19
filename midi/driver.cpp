@@ -86,6 +86,9 @@ MIDIDriver::set_path()
         path = name;
         AeonWave::set(AAX_SHARED_DATA_DIR, path.c_str());
     }
+    else {
+        ERROR("Path does not exist: " << path);
+    }
 }
 
 void
@@ -628,12 +631,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     if (!gmmidi.empty())
     {
         iname = gmmidi;
-
-        struct stat buffer;
-        if (stat(iname.c_str(), &buffer) != 0)
+        if (!midi.exists(iname))
         {
-           iname = path;
-           iname.append(gmmidi);
+            iname = path;
+            iname.append(gmmidi);
+            ERROR("File does not exist: " << iname);
         }
     } else {
         iname = path;
@@ -668,6 +670,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                     if (polyphony < 32) polyphony = 32;
                 }
                 xmid = xmlNodeGet(xaid, "set"); // was: midi
+            }
+            else {
+                ERROR("aeonwave not found in: " << filename);
             }
 
             if (xmid)
@@ -836,7 +841,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 xmlFree(xaid);
             }
             else {
-                ERROR("aeonwave/midi not found in: " << filename);
+                ERROR("aeonwave/set not found in: " << filename);
             }
             xmlClose(xid);
         }
@@ -852,12 +857,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
             if (!gmdrums.empty())
             {
                 iname = gmdrums;
-
-                struct stat buffer;
-                if (stat(iname.c_str(), &buffer) != 0)
+                if (!midi.exists(iname))
                 {
                    iname = path;
                    iname.append(gmmidi);
+                   ERROR("File does not exist: " << iname);
                 }
             } else {
                 iname = path;
@@ -979,6 +983,9 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
             xmlFree(xpid);
 
             bank.insert({program_no, std::move(ensemble)});
+        }
+        else {
+            ERROR("aeonwave/set/layer not found in: " << path);
         }
         xmlFree(xid);
     }

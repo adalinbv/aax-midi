@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <sys/stat.h>
 #include <climits>
 
 #include <map>
@@ -227,8 +226,10 @@ public:
     void set_gm2_reverb_type(uint16_t value);
 
     bool exists(const std::string& path) {
-        struct stat buffer;
-        return (stat(path.c_str(), &buffer) == 0);
+        return std::filesystem::exists(path);
+    }
+    bool is_directory(const std::string& path) {
+        return std::filesystem::is_directory(path);
     }
 
     std::string get_channel_type(uint16_t);
