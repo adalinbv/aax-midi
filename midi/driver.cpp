@@ -77,9 +77,9 @@ MIDIDriver::set_path()
 {
     path = AeonWave::info(AAX_SHARED_DATA_DIR);
 
-    std::string name = path;
+    std::filesystem::path name = path;
     if (instrument_mode == AAX_RENDER_NORMAL) {
-        name.append("/ultrasynth/");
+        name.append("ultrasynth");
     }
     if (midi.exists(name))
     {
@@ -624,7 +624,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     const char *filename, *type = "instrument";
     auto imap = instrument_map;
 
-    std::string iname;
+    std::filesystem::path iname;
     if (!gmmidi.empty())
     {
         iname = gmmidi;
@@ -633,12 +633,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         if (stat(iname.c_str(), &buffer) != 0)
         {
            iname = path;
-           iname.append("/");
            iname.append(gmmidi);
         }
     } else {
         iname = path;
-        iname.append("/");
         iname.append(instr);
     }
 
@@ -859,12 +857,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 if (stat(iname.c_str(), &buffer) != 0)
                 {
                    iname = path;
-                   iname.append("/");
                    iname.append(gmmidi);
                 }
             } else {
                 iname = path;
-                iname.append("/");
                 iname.append(drum);
             }
             filename = iname.c_str();
@@ -897,10 +893,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 void
 MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* file, uint16_t bank_no, int program_no)
 {
-    std::string path = midi.info(AAX_SHARED_DATA_DIR);
-    path.append("/");
+    std::filesystem::path path = midi.info(AAX_SHARED_DATA_DIR);
     path.append(file);
-    path.append(".xml");
+    path.replace_extension(".xml");
     xmlId *xid = xmlOpen(path.c_str());
     if (xid)
     {

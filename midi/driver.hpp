@@ -14,6 +14,7 @@
 
 #include <map>
 #include <chrono>
+#include <filesystem>
 
 #include <midi/shared.hpp>
 
@@ -291,7 +292,7 @@ private:
 
     std::string instr = "gmmidi.xml";
     std::string drum = "gmdrums.xml";
-    std::string path;
+    std::filesystem::path path;
 
     float volume = 1.0f;
 
