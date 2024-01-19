@@ -29,7 +29,7 @@
 #include <midi/shared.hpp>
 #include <midi/driver.hpp>
 
-namespace aax
+namespace aeonwave
 {
 
 class MIDIStream;
@@ -83,5 +83,5 @@ private:
     };
 };
 
-} // namespace aax
+} // namespace aeonwave
 

@@ -39,8 +39,8 @@
 #endif
 #include <locale.h>
 
-#include <aax/aeonwave.hpp>
-#include <aax/instrument.hpp>
+#include <aax/aeonwave>
+#include <aax/instrument>
 
 #include <aax/midi.h>
 

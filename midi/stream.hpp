@@ -24,15 +24,13 @@
 
 #include <map>
 
-// #include <aax/midi.h>
-
 #include <aax/byte_stream.hpp>
 
 #include <midi/shared.hpp>
 
 #include "base/types.h"
 
-namespace aax
+namespace aeonwave
 {
 
 #define _MINMAX(a,b,c)  (((a)>(c)) ? (c) : (((a)<(b)) ? (b) : (a)))
@@ -174,5 +172,5 @@ private:
     };
 };
 
-} // namespace aax
+} // namespace aeonwave
 

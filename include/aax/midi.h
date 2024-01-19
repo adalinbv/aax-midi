@@ -303,8 +303,9 @@ void aaxMIDISetCSV(aaxMIDI*, char v);
 #include <sstream>
 #include <functional>
 
-#include <aax/aeonwave.hpp>
-#include <aax/instrument.hpp>
+#include <aax/aeonwave>
+#include <aax/instrument>
+namespace aax = aeonwave;
 
 #ifndef NDEBUG
 # define THROW(x)	throw(std::domain_error(x))
@@ -312,7 +313,7 @@ void aaxMIDISetCSV(aaxMIDI*, char v);
 # define THROW(x)
 #endif
 
-namespace aax
+namespace aeonwave
 {
 
 class MIDIFile;
@@ -540,7 +541,7 @@ public:
 
 } // namespace midi
 
-} // namespace aax
+} // namespace aeonwave
 #endif	// defined(__cplusplus)
 
 #endif /* AAX_MIDI_H */

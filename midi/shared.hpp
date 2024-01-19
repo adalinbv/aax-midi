@@ -24,6 +24,8 @@
 
 #include <aax/midi.h>
 
+namespace aax = aeonwave;
+
 #define DISPLAY(l,...) \
   if(midi.get_initialize() && l <= midi.get_verbose()) printf(__VA_ARGS__)
 #define MESSAGE(l,...) \
@@ -52,7 +54,7 @@
   } while(0);
 
 
-namespace aax
+namespace aeonwave
 {
 #define MIDI_DRUMS_CHANNEL              0x9
 #define MIDI_DRUMS_CHANNEL_MT32		0x3f80
@@ -704,5 +706,5 @@ enum {
 #define XGMIDI_BEND_LFO_FMOD_DEPTH				0x27
 #define XGMIDI_BEND_LFO_AMOD_DEPTH				0x28
 
-} // namespace aax
+} // namespace aeonwave
 

@@ -24,11 +24,11 @@
 
 #include <map>
 
-#include <aax/instrument.hpp>
+#include <aax/instrument>
 
 #include "base/types.h"
 
-namespace aax
+namespace aeonwave
 {
 
 struct info_t;
@@ -89,4 +89,4 @@ private:
     bool stereo = false;
 };
 
-} // namespace aax
+} // namespace aeonwave

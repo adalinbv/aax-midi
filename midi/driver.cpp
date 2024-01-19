@@ -13,7 +13,7 @@
 #include <iostream>
 #include <cstring>
 
-#include <aax/strings.hpp>
+#include <aax/strings>
 #include <xml.h>
 
 #include <midi/shared.hpp>

@@ -19,7 +19,7 @@
 
 #include "base/types.h"
 
-namespace aax
+namespace aeonwave
 {
 
 class MIDIEnsemble;

@@ -25,7 +25,7 @@
 
 #include <fstream>
 
-#include <aax/strings.hpp>
+#include <aax/strings>
 
 #include <midi/stream.hpp>
 #include <midi/file.hpp>
