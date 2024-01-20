@@ -635,7 +635,6 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
         {
             iname = path;
             iname.append(gmmidi);
-            ERROR("File does not exist: " << iname);
         }
     } else {
         iname = path;
@@ -861,7 +860,6 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 {
                    iname = path;
                    iname.append(gmmidi);
-                   ERROR("File does not exist: " << iname);
                 }
             } else {
                 iname = path;
