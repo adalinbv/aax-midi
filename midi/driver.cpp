@@ -893,10 +893,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
  * file names from the XML files for a quick access during playback.
  */
 void
-MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* file, uint16_t bank_no, int program_no)
+MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* ensemble_file, uint16_t bank_no, int program_no)
 {
     std::filesystem::path path = midi.info(AAX_SHARED_DATA_DIR);
-    path.append(file);
+    path.append(ensemble_file);
     path.replace_extension(".xml");
     xmlId *xid = xmlOpen(path.c_str());
     if (xid)
@@ -974,7 +974,7 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* fil
                         file[slen] = 0;
                         ensemble.push_back({name,file,note_on,note_off,
                                                  gain,pitch,spread,wide,count,
-                                                 min,max,stereo,false});
+                                                 min,max,stereo,true});
                     }
                 }
             }

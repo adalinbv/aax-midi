@@ -102,16 +102,23 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         auto& inst = midi.get_instrument(bank_no, program_no);
         if (inst.size() && !inst[0].file.empty())
         {
-            const std::string& patch_name = inst[0].file;
-            if (!midi.buffer_avail(patch_name) && !midi.is_loaded(patch_name))
+            const std::string& patch_file = inst[0].file;
+            const std::string& patch_name = inst[0].name;
+            if (!midi.is_loaded(patch_name))
             {
                 uint16_t bank_no = midi.channel(channel_no).get_bank_no();
                 const std::string& display = (midi.get_verbose() >= 99) ?
                                               inst[0].file : inst[0].name;
 
-                DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
+                if (inst[0].ensemble) {
+                    DISPLAY(2, "Loading ensemble   bank: %3i/%3i, program: %3i: %s\n",
                          bank_no >> 7, bank_no & 0x7F, program_no+1,
                          display.c_str());
+                } else {
+                    DISPLAY(2, "Loading instrument bank: %3i/%3i, program: %3i: %s\n",
+                         bank_no >> 7, bank_no & 0x7F, program_no+1,
+                         display.c_str());
+                }
                 midi.load(patch_name);
             }
 
@@ -122,7 +129,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             }
             else
             {
-                Buffer& buffer = midi.buffer(patch_name);
+                Buffer& buffer = midi.buffer(patch_file);
                 if (buffer)
                 {
                     auto ret = name_map.insert({note_no,buffer});
@@ -142,7 +149,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                     p.pressure_sensitivity = 0.01f*buffer.get(AAX_MIDI_RELEASE_VELOCITY_FACTOR);
                 }
                 else {
-                    throw(std::invalid_argument("Instrument file "+patch_name+" could not load"));
+                    throw(std::invalid_argument("Instrument file "+patch_file+" could not load"));
                 }
                 midi.channel(channel_no).set_wide(inst[0].wide);
                 midi.channel(channel_no).set_spread(inst[0].spread);
@@ -269,10 +276,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             default:
                 break;
             }
-        }
 
-        if (is_drums())
-        {
             Instrument::play(note_no, velocity/127.0f, it->second);
             return;
         }
@@ -285,8 +289,12 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
             {
                 auto& i = ens[n];
                 Buffer& buffer = midi.buffer(i.file);
-                Ensemble::add_member(buffer, i.pitch, i.gain,
-                                             i.min_note, i.max_note, i.count);
+                if (buffer) {
+                    Ensemble::add_member(buffer, i.pitch, i.gain,
+                                         i.min_note, i.max_note, i.count);
+                } else {
+                    ERROR("Unable to open: " << i.file);
+                }
             }
         }
         Ensemble::play(note_no, velocity/127.0f, 1.0f);
