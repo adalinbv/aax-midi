@@ -262,6 +262,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
         next = smpte_parts;
         return rv;
     }
+    smpte_parts = 0;
 
     if (elapsed_parts < wait_parts)
     {
