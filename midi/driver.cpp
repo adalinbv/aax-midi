@@ -814,8 +814,8 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 {
                                     file[slen] = 0;
                                     bank.insert({n,{{name,file,note_on,note_off,
-                                                    1.0f,1.0f,spread,wide,count,
-                                                    min,max,stereo,false}}});
+                                                 1.0f,1.0f,0.0f,spread,wide,
+                                                 count,min,max,stereo,false}}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
@@ -905,10 +905,11 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* ens
         if (xlid)
         {
             float volume = 1.0f;
-
             if (xmlAttributeExists(xlid, "gain")) {
                volume = xmlAttributeGetDouble(xlid, "gain");
             }
+
+            float pan = xmlAttributeGetDouble(xlid, "pan");
 
             ensemble_map_t ensemble;
             char note_off[64] = "";
@@ -972,8 +973,8 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* ens
                     if (slen)
                     {
                         file[slen] = 0;
-                        ensemble.push_back({name,file,note_on,note_off,
-                                                 gain,pitch,spread,wide,count,
+                        ensemble.push_back({name,file,note_on,note_off,gain,
+                                                 pitch,pan,spread,wide,count,
                                                  min,max,stereo,true});
                     }
                 }

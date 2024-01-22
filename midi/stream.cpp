@@ -30,7 +30,8 @@
 using namespace aax;
 
 MIDIStream::MIDIStream(MIDIDriver& ptr, byte_stream& stream, size_t len,  uint16_t track)
-    : byte_stream(stream, len), midi(ptr), track_no(track)
+    : byte_stream(stream, len), midi(ptr), m_mt((std::random_device())()),
+      track_no(track)
 {
     timestamp_parts = pull_message()*24/600000;
 }

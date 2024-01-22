@@ -43,6 +43,7 @@ struct info_t
     float gain = 1.0f;
     float pitch = 1.0f;
 
+    float pan = 0.0f;
     float spread = 1.0f;
     int wide = 0;
 

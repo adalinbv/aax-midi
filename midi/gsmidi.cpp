@@ -139,9 +139,14 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                         midi.set_volume(float(value)/127.0f);
                         break;
                     case GSMIDI_MASTER_KEY_SHIFT:
+                    {
                         expl = "MASTER_KEY_SHIFT";
-                        LOG(99, "LOG: Unsupported GS sysex Key-Shift\n");
+                        float semitones = 24.0f * (float(value)-64.0f)/64.0f;
+                        for(auto& it : midi.get_channels()) {
+                            it.second->set_tuning_coarse(semitones);
+                        }
                         break;
+                    }
                     case GSMIDI_MASTER_PAN:
                         expl = "PAN";
                         if (mode != MIDI_MONOPHONIC) {
@@ -1090,22 +1095,18 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
     {
         expl = "PITCH_KEY_SHIFT";
         float semitones = 24.0f * (float(value)-64.0f)/64.0f;
-        for(auto& it : midi.get_channels()) {
-            it.second->set_tuning_coarse(semitones);
-        }
+        channel.set_tuning_coarse(semitones);
         break;
     }
     case GSMIDI_PART_PITCH_OFFSET_FINE: // -12.0 - +12.0 [Hz], default 08 00
-    { // Aows you to alter, by a specified frequency amount,
+    { // Allows you to alter, by a specified frequency amount,
       // the pitch at which notes will sound.
         expl = "PITCH_OFFSET_FINE";
         int val = (value & 0xf) << 4;
         byte = pull_byte();
         CSV(channel_no, ", %d", byte);
         val |= byte & 0xf;
-        for(auto& it : midi.get_channels()) {
-            it.second->set_tuning_offset(12.0f * (val-0x80)/64.0f);
-        }
+        channel.set_tuning_offset(12.0f * (val-0x80)/64.0f);
         break;
     }
     case GSMIDI_PART_VOLUME:
@@ -1123,8 +1124,12 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
         expl = "PAN";
         if (!pan_enabled) break;
         if (mode != MIDI_MONOPHONIC) {
-            if (value == -64) channel.set_pan(-1.0f + 2.0f*rand()/RAND_MAX);
-            else channel.set_pan((float(value)-63.f)/63.f);
+            if (value == -64) {
+                std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+                channel.set_pan(dis(m_mt));
+            } else {
+                channel.set_pan((float(value)-63.f)/63.f);
+            }
         }
         break;
     case GSMIDI_PART_KEYBOARD_RANGE_LOW:

@@ -292,6 +292,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 if (buffer) {
                     Ensemble::add_member(buffer, i.pitch, i.gain,
                                          i.min_note, i.max_note, i.count);
+                    Ensemble::set_pan(i.pan);
                 } else {
                     ERROR("Unable to open: " << i.file);
                 }
