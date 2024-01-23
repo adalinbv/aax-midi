@@ -206,6 +206,7 @@ link_directories(
 set(LIBMIDI aaxmidi)
 
 add_subdirectory(base)
+add_subdirectory(test)
 midi_subdirectory(src)
 midi_subdirectory(midi)
 midi_subdirectory(utils)
