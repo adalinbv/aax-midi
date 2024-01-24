@@ -143,13 +143,13 @@ int main(int argc, char **argv)
     float dt = 0.0f;
     printf("Processing buffer: %s\n", infile);
     aax::Buffer& buffer = aax.buffer(infile);
-    if (buffer)
+    float base_freq = buffer.get(AAX_BASE_FREQUENCY);
+    if (buffer && base_freq > 20.0f)
     {
         aax::Instrument instrument(aax, buffer);
 
         TRY( aax.add(instrument) );
 
-        float base_freq = buffer.get(AAX_BASE_FREQUENCY);
         float fraction = AAX_TO_FLOAT(buffer.get(AAX_PITCH_FRACTION));
  
         float pitch2, freq;
