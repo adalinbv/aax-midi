@@ -170,6 +170,7 @@ configure_file(
     "${CMAKE_CURRENT_BINARY_DIR}/include/config.h")
 
 install(FILES
+        include/aax/instrument
         include/aax/midi.h
         include/aax/buffer_map.hpp
         include/aax/byte_stream.hpp
