@@ -133,14 +133,14 @@ float add_buffer(aax::AeonWave& aax, aax::Ensemble& ensemble, const char *infile
                 {
                     if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
                     {
-                        float gain = volume;
+                        float pitch = 1.0f;
                         if (xmlAttributeExists(xpid, "pitch")) {
-                            gain *= xmlAttributeGetDouble(xpid, "pitch");
+                            pitch = xmlAttributeGetDouble(xpid, "pitch");
                         }
 
-                        float pitch = 1.0f;
+                        float gain = volume;
                         if (xmlAttributeExists(xpid, "gain")) {
-                            gain = xmlAttributeGetDouble(xpid, "gain");
+                            gain *= xmlAttributeGetDouble(xpid, "gain");
                         }
 
                         int min = xmlAttributeGetInt(xpid, "min");
