@@ -332,7 +332,7 @@ public:
                        it->second[i]->finish();
                    }
                 }
-                note_stopped[note_no] = std::move(note.at(note_no));
+                stopped_notes[note_no] = std::move(note.at(note_no));
                 note.erase(note_no);
                 it = note.end();
             }
@@ -371,10 +371,8 @@ public:
             current_note[i]->play(velocity, p.pitch_start, p.slide_state ? p.transition_time : 0.0f);
         }
         p.pitch_start = pitch;
-        for (auto it = note_stopped.begin(), next = it; it != note_stopped.end();
-             it = next)
+        for (auto it = stopped_notes.begin(); it != stopped_notes.end(); )
         {
-            ++next;
             bool finished = true;
             for (int i=0; i<it->second.size(); ++i) {
                 if (!it->second[i]->finished()) {
@@ -382,7 +380,8 @@ public:
                     break;
                 }
             }
-            if (finished) note_stopped.erase(it);
+            if (finished) it = stopped_notes.erase(it);
+            else ++it;
         }
     }
 
@@ -886,7 +885,7 @@ protected:
     bool playing = false;
     bool request_note_finish = false;
 
-    std::map<uint32_t,note_t> note_stopped;
+    std::map<uint32_t,note_t> stopped_notes;
     std::map<uint32_t,note_t> note;
 };
 
