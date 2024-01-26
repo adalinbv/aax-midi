@@ -72,7 +72,7 @@ MIDIStream::pull_message()
 
 // https://www.midi.org/specifications-old/item/table-3-control-change-messages-data-bytes-2
 bool
-MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value, std::string& expl)
+MIDIStream::registered_param(uint8_t channel, uint8_t controller, uint8_t value, const char* expl)
 {
     uint16_t type = value;
     bool data = false;
@@ -401,7 +401,7 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
                     midi.new_channel(channel_no, bank_no, program_no);
                     if (midi.is_drums(channel_no))
                     {
-                        auto frames = midi.get_configurations();
+                        auto& frames = midi.get_configurations();
                         auto it = frames.find(program_no);
                         if (it != frames.end()) {
                             name = it->second[0].name;
@@ -479,7 +479,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     bool rv = true;
 
     // http://midi.teragonaudio.com/tech/midispec/ctllist.htm
-    std::string expl = "Unkown";
+    const char* expl = "Unkown";
     uint32_t controller = pull_byte();
     uint32_t value = pull_byte();
     switch(controller)
@@ -554,8 +554,8 @@ bool MIDIStream::process_control(uint8_t track_no)
         if (prev != drums)
         {
             channel.set_drums(drums);
-            std::string name = midi.get_channel_type(track_no);
-            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+            const char* name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name);
         }
         break;
      }
@@ -599,8 +599,8 @@ bool MIDIStream::process_control(uint8_t track_no)
         if (prev != drums)
         {
             channel.set_drums(drums);
-            std::string name = midi.get_channel_type(track_no);
-            MESSAGE(3, "Set part %i to %s\n", track_no, name.c_str());
+            const char* name = midi.get_channel_type(track_no);
+            MESSAGE(3, "Set part %i to %s\n", track_no, name);
         }
         break;
     }
@@ -851,7 +851,7 @@ bool MIDIStream::process_control(uint8_t track_no)
         LOG(99, "LOG: Unsupported unkown control change: 0x%x (%i)\n", controller, controller);
         break;
     }
-    CSV(track_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl.c_str());
+    CSV(track_no, "Control_c, %d, %d, %d, %s\n", track_no, controller, value, expl);
 
     return rv;
 }
@@ -941,7 +941,7 @@ bool MIDIStream::process_meta()
     {
     case MIDI_TRACK_NAME:
     {
-        auto selections = midi.get_selections();
+        auto& selections = midi.get_selections();
         for (int i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }

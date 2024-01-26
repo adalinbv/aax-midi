@@ -432,8 +432,8 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                             bool drums = value ? true : false;
                             midi.channel(part_no).set_drums(drums);
 
-                            std::string name = midi.get_channel_type(part_no);
-                            MESSAGE(3, "Set part %i to %s\n", part_no, name.c_str());
+                            const char* name = midi.get_channel_type(part_no);
+                            MESSAGE(3, "Set part %i to %s\n", part_no, name);
                             rv = true;
                         }
                         break;
@@ -961,7 +961,7 @@ MIDIStream::GS_sysex_part(uint8_t part_no, uint8_t addr, uint8_t value, std::str
             midi.new_channel(channel_no, bank_no, program_no);
             if (midi.is_drums(channel_no))
             {
-                auto frames = midi.get_configurations();
+                auto& frames = midi.get_configurations();
                 auto it = frames.find(program_no);
                 if (it != frames.end()) {
                     name = it->second[0].name;

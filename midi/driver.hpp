@@ -87,7 +87,7 @@ public:
     void set_drum_file(std::string p) { drum = p; }
     void set_instrument_file(std::string p) { instr = p; }
     void set_file_path(std::string p) {
-        set(AAX_SHARED_DATA_DIR, p.c_str()); path = p;
+        path = p; set(AAX_SHARED_DATA_DIR, path.c_str());
     }
 
     const std::string& get_patch_set() { return patch_set; }
@@ -102,10 +102,10 @@ public:
         return active_track.empty() ? true : is_avail(active_track, t);
     }
 
-    void read_ensemble(program_map_t& bank, const char* name, const char *file, uint16_t bank_no, int n);
+    void read_ensemble(program_map_t& bank, const char* name, const char* file, uint16_t bank_no, int n);
     void read_instruments(std::string gmidi=std::string(), std::string gmdrums=std::string());
 
-    void grep(const std::string& filename, const char *grep);
+    void grep(const std::string& filename, const char* grep);
     void load(const std::string& name) { loaded.push_back(name); }
     bool is_loaded(const std::string& name) {
         return (std::find(loaded.begin(), loaded.end(), name) != loaded.end());
@@ -182,7 +182,7 @@ public:
     uint16_t get_ppqn() { return PPQN; }
 
     /* chorus */
-    bool set_chorus(const char *t, uint16_t type = -1, uint8_t vendor = 0);
+    bool set_chorus(const char* t, uint16_t type = -1, uint8_t vendor = 0);
     void set_chorus_delay(float delay);
     void set_chorus_depth(float depth);
     void set_chorus_feedback(float feedback);
@@ -198,7 +198,7 @@ public:
     void set_gm2_chorus_type(uint16_t value);
 
     /* delay */
-    bool set_delay(const char *t, uint16_t type = -1, uint8_t vendor = 0);
+    bool set_delay(const char* t, uint16_t type = -1, uint8_t vendor = 0);
     void set_delay_delay(float delay);
     void set_delay_depth(float depth);
     void set_delay_feedback(float feedback);
@@ -212,7 +212,7 @@ public:
     uint16_t get_delay_type() { return delay_type; }
 
     /* reverb */
-    bool set_reverb(const char *t, uint16_t type = -1, uint8_t vendor = 0);
+    bool set_reverb(const char* t, uint16_t type = -1, uint8_t vendor = 0);
     void set_reverb_cutoff_frequency(float value);
     void set_reverb_decay_depth(float value);
     void set_reverb_time_rt60(float value);
@@ -233,8 +233,8 @@ public:
         return std::filesystem::is_directory(path);
     }
 
-    std::string get_channel_type(uint16_t);
-    std::string get_channel_name(uint16_t);
+    const char* get_channel_type(uint16_t);
+    const char* get_channel_name(uint16_t);
 
     MIDIDriver &midi = *this;
     int capabilities = midi.get(AAX_CAPABILITIES);

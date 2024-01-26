@@ -294,7 +294,7 @@ MIDIFile::rewind()
 {
     midi.rewind();
     midi.set_lyrics(false);
-    for (auto it : streams) {
+    for (auto& it : streams) {
         it->rewind();
     }
 }

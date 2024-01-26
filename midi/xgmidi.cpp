@@ -906,8 +906,8 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                     expl = "PART_MODE";
                     bool drums = value ? true : false;
                     channel.set_drums(drums);
-                    std::string name = midi.get_channel_type(part_no);
-                    MESSAGE(3, "Set part %i to %s\n", part_no, name.c_str());
+                    const char* name = midi.get_channel_type(part_no);
+                    MESSAGE(3, "Set part %i to %s\n", part_no, name);
                     break;
                 }
                 case XGMIDI_NOTE_SHIFT: // -24 - +24 semitones

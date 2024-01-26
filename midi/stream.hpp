@@ -80,7 +80,7 @@ private:
     }
 
     uint32_t pull_message();
-    bool registered_param(uint8_t, uint8_t, uint8_t, std::string&);
+    bool registered_param(uint8_t, uint8_t, uint8_t, const char*);
     bool registered_param_3d(uint8_t, uint8_t, uint8_t);
 
     std::mt19937 m_mt;

@@ -46,7 +46,7 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
         std::sregex_token_iterator it{s.begin(), s.end(), regex, -1};
         selection = std::vector<std::string>{it, {}};
 
-        for(auto s : selection) {
+        for(auto& s : selection) {
             uint16_t t = atoi(s.c_str());
             if (t) active_track.push_back(t);
         }
@@ -234,7 +234,7 @@ MIDIDriver::set_gm2_chorus_type(uint16_t type)
 }
 
 bool
-MIDIDriver::set_chorus(const char *t, uint16_t type, uint8_t vendor)
+MIDIDriver::set_chorus(const char* t, uint16_t type, uint8_t vendor)
 {
     if (type != -1)
     {
@@ -309,7 +309,7 @@ MIDIDriver::set_chorus_level(uint16_t part_no, float val)
     }
 #endif
     MESSAGE(3, "Set part %i chorus to %.0f%%: %s\n",
-                part_no, val*100, get_channel_name(part_no).c_str());
+                part_no, val*100, get_channel_name(part_no));
 
     aax::Buffer& disabled = AeonWave::buffer("GM2/chorus0");
     part.set_chorus(val > 0.0f ? *chorus_buffer : disabled);
@@ -373,7 +373,7 @@ MIDIDriver::set_chorus_cutoff_frequency(float val)
 
 
 bool
-MIDIDriver::set_delay(const char *t, uint16_t type, uint8_t vendor)
+MIDIDriver::set_delay(const char* t, uint16_t type, uint8_t vendor)
 {
     if (type != -1)
     {
@@ -448,7 +448,7 @@ MIDIDriver::set_delay_level(uint16_t part_no, float val)
     }
 # endif
     MESSAGE(3, "Set part %i delay to %.0f%%: %s\n",
-                part_no, val*100, get_channel_name(part_no).c_str());
+                part_no, val*100, get_channel_name(part_no));
     aax::Buffer& disabled = AeonWave::buffer("GM2/delay0");
     part.set_delay(val > 0.0f ? *delay_buffer : disabled);
     part.set_delay_level(val);
@@ -497,7 +497,7 @@ MIDIDriver::set_delay_cutoff_frequency(float fc)
 }
 
 bool
-MIDIDriver::set_reverb(const char *t, uint16_t type, uint8_t vendor)
+MIDIDriver::set_reverb(const char* t, uint16_t type, uint8_t vendor)
 {
     if (type != -1)
     {
@@ -576,7 +576,7 @@ MIDIDriver::set_reverb_level(uint16_t part_no, float val)
                     reverb.add(*it->second);
                     reverb_channels[it->first] = it->second;
                     MESSAGE(3, "Set part %i reverb to %.0f%%: %s\n",
-                            part_no, val*100, get_channel_name(part_no).c_str());
+                            part_no, val*100, get_channel_name(part_no));
                 }
             }
         }
@@ -624,7 +624,7 @@ MIDIDriver::set_reverb_delay_depth(float val) {
 void
 MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 {
-    const char *filename, *type = "instrument";
+    const char* filename, *type = "instrument";
     auto imap = instrument_map;
 
     std::filesystem::path iname;
@@ -744,7 +744,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
                         // type is 'instrument' or ´patch' for drums/patch
                         inum = xmlNodeGetNum(xbid, type);
-                        auto bank = imap[bank_no];
+                        auto& bank = imap[bank_no];
                         for (int i=0; i<inum; i++)
                         {
                             if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
@@ -893,7 +893,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
  * file names from the XML files for a quick access during playback.
  */
 void
-MIDIDriver::read_ensemble(program_map_t& bank, const char *name, const char* ensemble_file, uint16_t bank_no, int program_no)
+MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ensemble_file, uint16_t bank_no, int program_no)
 {
     std::filesystem::path path = midi.info(AAX_SHARED_DATA_DIR);
     path.append(ensemble_file);
@@ -1201,7 +1201,7 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 }
 
 void
-MIDIDriver::grep(const std::string& filename, const char *grep)
+MIDIDriver::grep(const std::string& filename, const char* grep)
 {
     if (midi.get_csv()) return;
 
@@ -1211,9 +1211,9 @@ MIDIDriver::grep(const std::string& filename, const char *grep)
     auto selection = std::vector<std::string>{it, {}};
 
     bool found = false;
-    for (auto it : loaded)
+    for (auto& it : loaded)
     {
-        for (auto greps : selection)
+        for (auto& greps : selection)
         {
             if (it.find(greps) != std::string::npos)
             {
@@ -1344,17 +1344,17 @@ MIDIDriver::process(uint8_t track_no, uint8_t message, uint8_t note_no, uint8_t 
     return true;
 }
 
-std::string
+const char*
 MIDIDriver::get_channel_type(uint16_t part_no)
 {
     if (is_drums(part_no))  return "Drums";
     return "Instrument";
 }
 
-std::string
+const char*
 MIDIDriver::get_channel_name(uint16_t part_no)
 {
-    std::string rv;
+    const char* rv;
     if (is_drums(part_no))
     {
         rv = "Drums";
@@ -1362,8 +1362,8 @@ MIDIDriver::get_channel_name(uint16_t part_no)
         auto itb = configuration_map.find(bank_no);
         if (itb != configuration_map.end())
         {
-           auto bank = itb->second[0];
-           rv = bank.name;
+           auto& bank = itb->second[0];
+           rv = bank.name.c_str();
         }
     }
     else
@@ -1371,7 +1371,7 @@ MIDIDriver::get_channel_name(uint16_t part_no)
         uint16_t bank_no = channel(part_no).get_bank_no();
         uint8_t program_no = channel(part_no).get_program_no();
         auto& inst = midi.get_instrument(bank_no, program_no);
-        if (inst.size()) rv = inst[0].name;
+        if (inst.size()) rv = inst[0].name.c_str();
     }
     return rv;
 }
