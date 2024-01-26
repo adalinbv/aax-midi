@@ -840,6 +840,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 xmlFree(xaid);
             }
             else {
+                xmlFree(xaid);
                 ERROR("aeonwave/set not found in: " << filename);
             }
             xmlClose(xid);
@@ -980,13 +981,14 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ens
                 }
             }
             xmlFree(xpid);
+            xmlFree(xlid);
 
             bank.insert({program_no, std::move(ensemble)});
         }
         else {
             ERROR("aeonwave/set/layer not found in: " << path);
         }
-        xmlFree(xid);
+        xmlClose(xid);
     }
     else {
         ERROR("Unable to open: " << path);
