@@ -342,9 +342,9 @@ public:
             note_t n;
             for (int i=0; i<count; ++i) {
                 std::uniform_real_distribution<float> dis(0.995f*pitch, 1.005f*pitch);
-                Note *ptr = new Note(buffer_frequency,dis(m_mt),pan);
-                n.push_back(std::shared_ptr<Note>(ptr,
-                                       [this](Note *n) { Mixer::remove(*n); }));
+                Note *ptr = new Note(buffer_frequency,dis(m_mt), pan);
+                n.push_back(std::shared_ptr<Note>(ptr, // automatic deregistering
+                                  [this](Note *n) { Mixer::remove(*n); delete n; }));
             }
             auto ret = note.insert({note_no, n});
             current_note = ret.first->second;
@@ -368,7 +368,8 @@ public:
             current_note[i]->set_attack_time(p.attack_time);
             current_note[i]->set_release_time(p.release_time);
             current_note[i]->set_decay_time(p.decay_time);
-            current_note[i]->play(velocity, p.pitch_start, p.slide_state ? p.transition_time : 0.0f);
+            current_note[i]->play(velocity, p.pitch_start,
+                                           p.slide_state ? p.transition_time : 0.0f);
         }
         p.pitch_start = pitch;
         for (auto it = stopped_notes.begin(); it != stopped_notes.end(); )
@@ -379,7 +380,7 @@ public:
                     finished = false;
                     break;
                 }
-            }
+            } // notes are automatically deregistered
             if (finished) it = stopped_notes.erase(it);
             else ++it;
         }
