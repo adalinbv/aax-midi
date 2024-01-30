@@ -75,19 +75,19 @@ MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode
 void
 MIDIDriver::set_path()
 {
-    path = AeonWave::info(AAX_SHARED_DATA_DIR);
+    std::string dir = AeonWave::info(AAX_SHARED_DATA_DIR);
 
-    std::filesystem::path name = path;
-    if (instrument_mode == AAX_RENDER_NORMAL) {
+    std::filesystem::path name = dir;
+    if (instrument_mode == AAX_RENDER_NORMAL && !dir.find("ultrasynth")) {
         name.append("ultrasynth");
     }
-    if (midi.exists(name))
+    if (midi.is_directory(name))
     {
         path = name;
         AeonWave::set(AAX_SHARED_DATA_DIR, path.c_str());
     }
     else {
-        ERROR("Path does not exist: " << path);
+        ERROR("Path does not exist: " << name);
     }
 }
 
