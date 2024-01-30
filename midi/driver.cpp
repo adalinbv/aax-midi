@@ -1213,11 +1213,12 @@ MIDIDriver::grep(const std::string& filename, const char* grep)
     auto selection = std::vector<std::string>{it, {}};
 
     bool found = false;
-    for (auto& it : loaded)
+    for (auto& greps : selection)
     {
-        for (auto& greps : selection)
+        std::regex pattern(greps, std::regex_constants::icase);
+        for (auto& it : loaded)
         {
-            if (it.find(greps) != std::string::npos)
+            if (std::regex_search(it, pattern))
             {
                 if (!found) {
                     printf("%s found:\n", filename.c_str());
