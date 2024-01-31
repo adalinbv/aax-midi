@@ -78,8 +78,11 @@ MIDIDriver::set_path()
     std::string dir = AeonWave::info(AAX_SHARED_DATA_DIR);
 
     std::filesystem::path name = dir;
-    if (instrument_mode == AAX_RENDER_NORMAL && !dir.find("ultrasynth")) {
-        name.append("ultrasynth");
+    if (instrument_mode == AAX_RENDER_NORMAL)
+    {
+        if (dir.find("ultrasynth") == std::string::npos) {
+            name.append("ultrasynth");
+        }
     }
     if (midi.is_directory(name))
     {
