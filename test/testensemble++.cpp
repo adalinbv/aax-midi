@@ -165,8 +165,9 @@ float add_buffer(aax::AeonWave& aax, aax::Ensemble& ensemble, const char *infile
                     }
                 }
                 xmlFree(xpid);
+                xmlFree(xlid);
             }
-            xmlFree(xid);
+            xmlClose(xid);
         }
     }
     else
