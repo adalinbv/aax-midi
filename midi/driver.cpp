@@ -89,8 +89,12 @@ MIDIDriver::set_path()
         path = name;
         AeonWave::set(AAX_SHARED_DATA_DIR, path.c_str());
     }
-    else {
-        ERROR("Path does not exist: " << name);
+    else
+    {
+        path = dir;
+        if (!midi.is_directory(path)) {
+            ERROR("Path does not exist: " << name);
+        }
     }
 }
 
