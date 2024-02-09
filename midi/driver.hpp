@@ -264,6 +264,8 @@ private:
         return rv;
     }
 
+    const ensemble_map_t empty_map;
+
     std::string patch_set = "default";
     std::string patch_version = "1.0.0";
 

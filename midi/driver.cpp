@@ -838,7 +838,10 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 }
                             }
                         }
-                        imap[bank_no] = bank;
+
+                        if (bank.size() > 0) {
+                            imap[bank_no] = bank;
+                        }
                         xmlFree(xiid);
                     }
                 }
@@ -858,7 +861,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 
         if (id == 0)
         {
-            instrument_map = std::move(imap);
+            if (imap.size() > 0) {
+                instrument_map = std::move(imap);
+            }
 
             // next up: drums
             if (!gmdrums.empty())
@@ -877,8 +882,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
             type = "patch";
             imap = drum_map;
         }
-        else {
-            drum_map = std::move(imap);
+        else
+        {
+            if (imap.size() > 0)  {
+                drum_map = std::move(imap);
+            }
         }
     }
 
@@ -990,7 +998,9 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ens
             xmlFree(xpid);
             xmlFree(xlid);
 
-            bank.insert({program_no, std::move(ensemble)});
+            if (ensemble.size() > 0) {
+                bank.insert({program_no, std::move(ensemble)});
+            }
         }
         else {
             ERROR("aeonwave/set/layer not found in: " << path);
@@ -1010,8 +1020,6 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ens
 const MIDIDriver::ensemble_map_t&
 MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bool all)
 {
-    static const ensemble_map_t empty_map;
-
     if (program_no == 0 && drum_set_no != -1) {
         program_no = drum_set_no;
     }
@@ -1024,7 +1032,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
         bool bank_found = (itb != drum_map.end());
         if (bank_found)
         {
-            auto& bank = itb->second;
+            program_map_t& bank = itb->second;
             auto iti = bank.find(note_no);
             if (iti != bank.end())
             {
@@ -1106,10 +1114,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
     while (true);
 
     // default drums
-    auto itb = drum_map.find(program_no);
-    auto& bank = itb->second;
-    auto iti = bank.insert({note_no, std::move(empty_map)});
-    return iti.first->second;
+    return empty_map;
 }
 
 const MIDIDriver::ensemble_map_t&
