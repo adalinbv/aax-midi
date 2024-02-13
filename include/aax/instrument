@@ -903,7 +903,7 @@ class Ensemble : public Instrument
 {
 private:
     struct member_t {
-        member_t(Ensemble* e, Instrument *i, float p, float g, int n=0, int m=aeonwave::note::max)
+        member_t(Ensemble *e, Instrument *i, float p, float g, int n=0, int m=aeonwave::note::max)
           : ensemble(e), instrument(std::unique_ptr<Instrument>(i)),
             min_note(n), max_note(m), pitch(p), gain(g)
         {
@@ -1241,7 +1241,7 @@ private:
         }
     }
 
-    void note_modulation(float m) { //
+    void note_modulation(float m) {
         if (!member.size()) {
             Instrument::note_modulation(m);
         } else if (!p.is_drum_channel) {

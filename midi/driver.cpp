@@ -26,6 +26,15 @@ using namespace aax;
 MIDIDriver::MIDIDriver(const char* n, const char *selections, enum aaxRenderMode m)
         : AeonWave(n, m)
 {
+    char *rrate = getenv("AAX_MIDI_REFRESH_RATE");
+    float refrate;
+    if (rrate) refrate = atof(rrate);
+    else if (midi.get_refresh_rate() > 0.0f) refrate = midi.get_refresh_rate();
+    else if (simd64 && cores >=4) refrate = 90.0f;
+    else if (simd && cores >= 4) refrate = 60.0f;
+    else refrate = 45.0f;
+    midi.set(AAX_REFRESH_RATE, refrate);
+
     if (*this) {
         set_path();
     }
@@ -674,6 +683,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 {
                     polyphony =  xmlAttributeGetInt(xaid, "polyphony");
                     if (polyphony < 32) polyphony = 32;
+                    if (polyphony < UINT_MAX) {
+                        midi.set(AAX_MONO_EMITTERS, midi.get_polyphony());
+                    }
                 }
                 xmid = xmlNodeGet(xaid, "set"); // was: midi
             }

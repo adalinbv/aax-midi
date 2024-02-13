@@ -209,21 +209,8 @@ MIDIFile::initialize(const char *grep)
 
     if (!grep)
     {
-        char *rrate = getenv("AAX_MIDI_REFRESH_RATE");
         rewind();
         pos_sec = 0;
-
-        float refrate;
-        if (rrate) refrate = atof(rrate);
-        else if (midi.get_refresh_rate() > 0.0f) refrate = midi.get_refresh_rate();
-        else if (simd64 && cores >=4) refrate = 90.0f;
-        else if (simd && cores >= 4) refrate = 60.0f;
-        else refrate = 45.0f;
-
-        midi.set(AAX_REFRESH_RATE, refrate);
-        if (midi.get_polyphony() < UINT_MAX) {
-            midi.set(AAX_MONO_EMITTERS, midi.get_polyphony());
-        }
 
         midi.set(AAX_INITIALIZED);
         if (midi.get_effects().length())
