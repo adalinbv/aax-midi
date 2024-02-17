@@ -153,7 +153,9 @@ float add_buffer(aax::AeonWave& aax, aax::Ensemble& ensemble, const char *infile
 
                             std::string dir = aax.info(AAX_SHARED_DATA_DIR);
                             std::filesystem::path path = dir;
-                            path.append("ultrasynth");
+                            if (dir.find("ultrasynth") == std::string::npos) {
+                                path.append("ultrasynth");
+                            }
                             path.append(file);
                             path.replace_extension(".aaxs");
                             aax::Buffer& buffer = aax.buffer(path);
