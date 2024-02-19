@@ -1038,6 +1038,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
 
     uint16_t prev_program_no = program_no;
     uint16_t req_program_no = program_no;
+
     do
     {
         auto itb = drum_map.find(program_no << 7 | bank_no);
@@ -1059,7 +1060,6 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
                         auto itrb = drum_map.find(req_program_no << 7);
                         if (itrb != drum_map.end()) {
                             auto& bank = itrb->second;
-//                          bank.insert({note_no,{{"",""},{}}});
                             bank.insert({note_no,iti->second});
                         }
                     }
@@ -1075,7 +1075,7 @@ MIDIDriver::get_drum(uint16_t bank_no, uint16_t& program_no, uint8_t note_no, bo
         if (bank_no >> 7)
         {
             DISPLAY(4, "Drum %i not found in bank %i/%i, trying bank: 0/%i\n",
-                      note_no+1, bank_no >> 7, bank_no & 0x7F, bank_no &= 0x7F);
+                      note_no, bank_no >> 7, bank_no & 0x7F, bank_no & 0x7F);
             bank_no &= 0x7F;
             continue;
         }
