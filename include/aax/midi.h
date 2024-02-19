@@ -359,7 +359,7 @@ public:
     void set_csv(char v);
 
 private:
-    std::unique_ptr<MIDIFile> midi;
+    std::unique_ptr<MIDIFile> file;
 };
 
 namespace midi

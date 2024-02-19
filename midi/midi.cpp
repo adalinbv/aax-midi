@@ -28,7 +28,7 @@ using namespace aax;
 MIDI::MIDI(const char *devname, const char *filename,
           const char *selection, enum aaxRenderMode mode,
           const char *config)
-   : midi(new MIDIFile(devname, filename, selection, mode, config))
+   : file(new MIDIFile(devname, filename, selection, mode, config))
 {
 }
 
@@ -39,126 +39,126 @@ MIDI::~MIDI()
 void
 MIDI::start()
 {
-   midi->start();
+   file->start();
 }
 
 void MIDI::stop()
 {
-   midi->stop();
+   file->stop();
 }
 
 void MIDI::rewind()
 {
-   midi->rewind();
+   file->rewind();
 }
 
 void
 MIDI::initialize(const char *grep)
 {
-    midi->initialize(grep);
+    file->initialize(grep);
 }
 
 bool
 MIDI::process(uint64_t time_parts, uint32_t& next)
 {
-    return midi->process(time_parts, next);
+    return file->process(time_parts, next);
 }
 
 bool
 MIDI::wait(float t)
 {
-    return midi->wait(t);
+    return file->wait(t);
 }
 
 void
 MIDI::set_volume(float g) {
-    midi->set_volume(100.0f*g/127.0f);
+    file->set_volume(100.0f*g/127.0f);
 }
 
 bool
 MIDI::set(enum aaxSetupType t, const char* s)
 {
-    return midi->set(t, s);
+    return file->set(t, s);
 }
 
 #if 0
 bool
 MIDI::set(enum aaxSetupType t, float s)
 {
-    return midi->set(t, int(s));
+    return file->set(t, int(s));
 }
 #endif
 
 bool
 MIDI::set(enum aaxSetupType t, int64_t s)
 {
-    return midi->set(t, s);
+    return file->set(t, s);
 }
 
 bool
 MIDI::set(enum aaxState s)
 {
-    return midi->set(s);
+    return file->set(s);
 }
 
 int64_t
 MIDI::get(enum aaxSetupType t)
 {
-    return midi->get(t);
+    return file->get(t);
 }
 
 float
 MIDI::getf(enum aaxSetupType t)
 {
-    return midi->getf(t);
+    return file->getf(t);
 }
 
 float
 MIDI::get_pos_sec()
 {
-    return midi->get_pos_sec();
+    return file->get_pos_sec();
 }
 
 int32_t
 MIDI::get_uspp()
 {
-    return midi->get_uspp();
+    return file->get_uspp();
 }
 
 bool
 MIDI::add(Sensor& s)
 {
-    return midi->add(s);
+    return file->add(s);
 }
 
 bool
 MIDI::sensor(enum aaxState s)
 {
-    return midi->sensor(s);
+    return file->sensor(s);
 }
 
 Buffer
 MIDI::get_buffer()
 {
-    return midi->get_buffer();
+    return file->get_buffer();
 }
 
 void
 MIDI::set_mono(bool m)
 {
-    midi->set_mono(m);
+    file->set_mono(m);
 }
 
 void
 MIDI::set_verbose(char v)
 {
-    midi->set_verbose(v);
+    file->set_verbose(v);
 }
 
 void
 MIDI::set_csv(char v)
 {
-    midi->set_csv(v);
+    file->set_csv(v);
 }
 
 // -----------------------------------------------------------------------
