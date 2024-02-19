@@ -194,7 +194,6 @@ void play(char *devname, enum aaxRenderMode mode, char *infile, char *outfile,
                             auto next = std::chrono::high_resolution_clock::now();
                             std::chrono::duration<double, std::micro> dt_us = next - now;
 
-printf("wait_parts: %li, uspp: %i\n", wait_parts, midi.get_uspp());
                             wait_us = wait_parts*midi.get_uspp();
                             sleep_us = wait_us - dt_us.count();
 
