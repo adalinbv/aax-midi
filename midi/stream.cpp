@@ -257,19 +257,12 @@ MIDIStream::process(uint64_t time_offs_parts, uint32_t& elapsed_parts, uint32_t&
 {
     bool rv = !eof();
 
-#if 0
-    // SMPTE Offset is only used if your MIDI player is able to sync with a
-    // tape system. Something like you start the tape and once the timecode on
-    // the tape matches the SMPTE Offset value, the MIDI file will start. A
-    // MIDI player designed for just listening to MIDI files doesn't need to
-    // do anything with the SMPTE Offset.
     if (elapsed_parts < smpte_parts)
     {
         smpte_parts -= elapsed_parts;
         next = smpte_parts;
         return rv;
     }
-#endif
     smpte_parts = 0;
 
     if (elapsed_parts < wait_parts)
@@ -1090,7 +1083,12 @@ bool MIDIStream::process_meta()
 
         uint8_t ss = (hr >> 6);
         float framerate = smpte_framerate[ss];
-        uint64_t smpte_offset = (hr & 0x1f) * 60 * 60;
+
+        hr = (hr & 0x1f);
+        // smpte usually has a default offset of one hour which basically
+        // means start immediately when it is exact one hour.
+        uint64_t smpte_offset = ((hr > 0) ? hr-1 : hr) * 60 * 60;
+
         smpte_offset += mn * 60;
         smpte_offset += se;
         smpte_offset += (fr + ff/100.0f)/framerate;
