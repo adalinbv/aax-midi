@@ -169,40 +169,6 @@ void MIDIStream::XG_initialize()
     midi.set_mode(MIDI_EXTENDED_GENERAL_MIDI);
 }
 
-void
-MIDIStream::XG_display_data(uint32_t size, uint8_t padding, std::string &text)
-{
-    if (size > 6)
-    {
-        midi.set_display(true);
-        midi.reset_timer();
-
-        text.insert(0, padding, ' ');
-
-        size_t len = text.size();
-        if (len > 32) {
-            text = text.substr(0, 32);
-        }
-
-        len = text.size();
-        if (len > 16)
-        {
-            std::string line1 = text.substr(0, 16);
-            std::string line2 = text.substr(16);
-            MESSAGE(1, "Display: %-16s - %-16s\r",
-                     line1.c_str(), line2.c_str());
-        } else {
-            MESSAGE(1, "Display: %-16s%-19s\r", text.c_str(), "");
-        }
-        FLUSH();
-    }
-    else
-    {
-         MESSAGE(1, "Display: %-16s   %-16s\r", "", "");
-        midi.set_display(false);
-    }
-}
-
 bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
 {
     bool rv = false;
@@ -1101,7 +1067,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 for (int i=offset()-offs; i<size; ++i) {
                     toUTF8(text, pull_byte());
                 }
-                XG_display_data(size, addr_low, text);
+                midi.set_display_data(text);
                 break;
             }
             default:

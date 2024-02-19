@@ -1407,9 +1407,9 @@ MIDIDriver::get_channel_name(uint16_t part_no)
 bool
 MIDIDriver::elapsed_time(double dt)
 {
-    bool rv = display;
+    bool rv = false;
 
-    if (display && timer_started)
+    if (timer_started)
     {
         std::chrono::time_point<std::chrono::system_clock> end_time;
         end_time = std::chrono::system_clock::now();

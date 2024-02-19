@@ -542,7 +542,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                     for (int i=offset()-offs; i<size; ++i) {
                         toUTF8(text, pull_byte());
                     }
-                    MESSAGE(1, "Display: %s\n", text.c_str());
+                    midi.set_display_data(text);
                     break;
                 }
                 case GSMIDI_SYSTEM_PARAMETER_CHANGE:

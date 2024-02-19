@@ -336,6 +336,19 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
 
     if (midi.get_verbose() && (!midi.get_lyrics() || midi.elapsed_time(5.0)))
     {
+        std::string text = midi.get_display_data();
+        int len = text.size();
+        char display[41] = "";
+        if (len < 16) {
+            snprintf(display, 40, "%-32s", text.c_str());
+        }
+        else
+        {
+            snprintf(display, 40, "%32s", "");
+            sprintf(display, "%s %s", text.substr(0, 16).c_str(),
+                                      text.substr(16, 16).c_str());
+        }
+
         int hour, minutes, seconds;
 
         pos_sec += elapsed_parts*midi.get_uspp()*1e-6f;
@@ -346,9 +359,9 @@ MIDIFile::process(uint64_t time_parts, uint32_t& next)
         minutes = seconds/60;
         seconds -= minutes*60;
         if (hour) {
-            MESSAGE(1, "pos: %02i:%02i:%02i hours%16s\r", hour, minutes, seconds, "");
+            MESSAGE(1, "pos: %02i:%02i:%02i hours %s\r", hour, minutes, seconds, display);
         } else {
-            MESSAGE(1, "pos: %02i:%02i minutes%16s\r", minutes, seconds, "");
+            MESSAGE(1, "pos: %02i:%02i minutes %s\r", minutes, seconds, display);
         }
         if (!rv) MESSAGE(1, "\n\n");
         fflush(stdout);

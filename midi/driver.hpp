@@ -166,8 +166,6 @@ public:
 
     void set_lyrics(bool v) { lyrics = v; }
     bool get_lyrics() { return lyrics; }
-    void set_display(bool v) { display = v; }
-    bool get_display() { return display; }
 
     void set_format(uint16_t fmt) { format = fmt; }
     uint16_t get_format() { return format; }
@@ -249,6 +247,9 @@ public:
     }
     bool elapsed_time(double dt);
 
+    void set_display_data(std::string& s) { display_data = s; }
+    std::string& get_display_data() { return display_data; }
+
 private:
     void set_path();
 
@@ -271,6 +272,7 @@ private:
 
     std::string effects;
     std::string track_name;
+    std::string display_data;
     channel_map_t channels;
     channel_map_t chorus_channels;
     channel_map_t delay_channels;
@@ -317,7 +319,6 @@ private:
     bool initialize = false;
     char verbose = 0;
     bool lyrics = false;
-    bool display = false;
     bool grep_mode = false;
     bool mono = false;
     bool csv = false;
