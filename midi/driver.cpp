@@ -833,8 +833,9 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 {
                                     file[slen] = 0;
                                     bank.insert({n,{{name,file,note_on,note_off,
-                                                 1.0f,1.0f,0.0f,spread,wide,
-                                                 count,min,max,stereo,false}}});
+                                                 1.0f,1.0f,1.0f,0.0f,
+                                                 spread,wide,count,
+                                                 min,max,stereo,false}}});
 
 //                                  if (id == 0) printf("{%x, {%i, {%s, %i}}}\n", bank_no, n, file, wide);
                                 }
@@ -952,12 +953,16 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ens
                 if (xmlNodeGetPos(xlid, xpid, "patch", i) != 0)
                 {
                     float gain = volume;
-                    float pitch = 1.0f;
                     if (xmlAttributeExists(xpid, "gain")) {
                         gain *= xmlAttributeGetDouble(xpid, "gain");
                     }
+                    float pitch = 1.0f;
                     if (xmlAttributeExists(xpid, "pitch")) {
                         pitch = xmlAttributeGetDouble(xpid, "pitch");
+                    }
+                    float velocity = 1.0f;
+                    if (xmlAttributeExists(xpid, "velocity-fraction")) {
+                        velocity = xmlAttributeGetDouble(xpid, "velocity-fraction");
                     }
 
                     int count = 1;
@@ -1002,8 +1007,8 @@ MIDIDriver::read_ensemble(program_map_t& bank, const char* name, const char* ens
                     {
                         file[slen] = 0;
                         ensemble.push_back({name,file,note_on,note_off,gain,
-                                                 pitch,pan,spread,wide,count,
-                                                 min,max,stereo,true});
+                                                 pitch,velocity,pan,spread,wide,
+                                                 count,min,max,stereo,true});
                     }
                 }
             }

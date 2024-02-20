@@ -143,6 +143,11 @@ float add_buffer(aax::AeonWave& aax, aax::Ensemble& ensemble, const char *infile
                             gain *= xmlAttributeGetDouble(xpid, "gain");
                         }
 
+                        float velocity = 1.0f;
+                        if (xmlAttributeExists(xpid, "velocity-fraction")) {
+                            velocity = xmlAttributeGetDouble(xpid, "velocity-fraction");
+                        }
+
                         int min = xmlAttributeGetInt(xpid, "min");
                         int max = xmlAttributeGetInt(xpid, "max");
                         if (!max) max = 128;
@@ -162,7 +167,9 @@ float add_buffer(aax::AeonWave& aax, aax::Ensemble& ensemble, const char *infile
                             float dt = float(buffer.get(AAX_NO_SAMPLES));
                             dt /= float(buffer.get(AAX_SAMPLE_RATE));
                             if (dt > duration) duration = dt;
-                            ensemble.add_member(buffer, pitch, gain, min, max);
+                            auto& m = ensemble.add_member(buffer, pitch, gain);
+                            m->set_note_minmax(min, max);
+                            m->set_velocity_fraction(velocity);
                         }
                     }
                 }
