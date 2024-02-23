@@ -164,10 +164,62 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         {
             switch(program_no)
             {
+            case 26: // Analog Set
+                switch(note_no)
+                {
+                case 42: // EXC1: Closed Hi-Hat
+                    Instrument::stop(44);
+                    Instrument::stop(46);
+                    break;
+                case 44: // EXC1: Pedal Hi-Hat
+                    Instrument::stop(42);
+                    Instrument::stop(46);
+                    break;
+                case 46: // EXC1: Open Hi-Hat
+                    Instrument::stop(42);
+                    Instrument::stop(44);
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case 48: // Orchestra Set
+                switch(note_no)
+                {
+                case 27: // EXC1: Closed Hi-Hat
+                    Instrument::stop(28);
+                    Instrument::stop(29);
+                    break;
+                case 28: // EXC1: Pedal Hi-Ha
+                    Instrument::stop(27);
+                    Instrument::stop(29);
+                    break;
+                case 29: // EXC1: Open Hi-Hat
+                    Instrument::stop(27);
+                    Instrument::stop(28);
+                    break;
+                default:
+                    break;
+                }
+                break;
+            case 57: // SFX Set
+                switch(note_no)
+                {
+                case 41: // EXC7: Scratch Push
+                    Instrument::stop(42);
+                    break;
+                case 42: // EXC7: Scratch Pull
+                    Instrument::stop(41);
+                    break;
+                default:
+                    break;
+                }
+                break;
             case 0: // Standard Set
             case 16: // Power set
             case 32: // Jazz set
             case 40: // Brush set
+            default:
                 switch(note_no)
                 {
                 case 29: // EXC7: Scratch Push
@@ -221,59 +273,6 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 default:
                     break;
                 }
-                break;
-            case 26: // Analog Set
-                switch(note_no)
-                {
-                case 42: // EXC1: Closed Hi-Hat
-                    Instrument::stop(44);
-                    Instrument::stop(46);
-                    break;
-                case 44: // EXC1: Pedal Hi-Hat
-                    Instrument::stop(42);
-                    Instrument::stop(46);
-                    break;
-                case 46: // EXC1: Open Hi-Hat
-                    Instrument::stop(42);
-                    Instrument::stop(44);
-                    break;
-                default:
-                    break;
-                }
-                break;
-            case 48: // Orchestra Set
-                switch(note_no)
-                {
-                case 27: // EXC1: Closed Hi-Hat
-                    Instrument::stop(28);
-                    Instrument::stop(29);
-                    break;
-                case 28: // EXC1: Pedal Hi-Ha
-                    Instrument::stop(27);
-                    Instrument::stop(29);
-                    break;
-                case 29: // EXC1: Open Hi-Hat
-                    Instrument::stop(27);
-                    Instrument::stop(28);
-                    break;
-                default:
-                    break;
-                }
-                break;
-            case 57: // SFX Set
-                switch(note_no)
-                {
-                case 41: // EXC7: Scratch Pus
-                    Instrument::stop(42);
-                    break;
-                case 42: // EXC7: Scratch Pul
-                    Instrument::stop(41);
-                    break;
-                default:
-                    break;
-                }
-                break;
-            default:
                 break;
             }
 
