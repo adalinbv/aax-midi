@@ -276,7 +276,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 break;
             }
 
-            Instrument::play(note_no, velocity/127.0f, it->second);
+            Instrument::play(note_no, velocity, it->second);
             return;
         }
 
@@ -299,7 +299,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
                 }
             }
         }
-        Ensemble::play(note_no, velocity/127.0f, 1.0f);
+        Ensemble::play(note_no, velocity, 1.0f);
 
         bool all = midi.no_active_tracks() > 0;
         auto& inst = midi.get_instrument(bank_no, program_no, all);
@@ -350,7 +350,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
 }
 
 void
-MIDIEnsemble::stop(int note_no, float velocity)
+MIDIEnsemble::stop(int note_no, uint8_t velocity)
 {
     Ensemble::stop(note_no, velocity);
     if (is_drums()) return;

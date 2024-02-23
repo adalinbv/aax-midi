@@ -53,7 +53,7 @@ public:
     MIDIEnsemble& operator=(MIDIEnsemble&&) = default;
 
     void play(int note_no, uint8_t velocity);
-    void stop(int note_no, float velocity = 0);
+    void stop(int note_no, uint8_t velocity = 0); // default to note off
 
     uint16_t get_channel_no() { return channel_no; }
     void set_channel_no(uint16_t channel) { channel_no = channel; }

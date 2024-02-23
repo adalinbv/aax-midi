@@ -144,7 +144,7 @@ public:
         Emitter::matrix(m);
     }
 
-    bool play(float velocity, float start_pitch=1.0f, float time=0.0f) {
+    bool play(uint8_t velocity, float start_pitch=1.0f, float time=0.0f) {
         if (time > 0.0f && start_pitch != pitch) {
            aeonwave::dsp dsp = Emitter::get(AAX_PITCH_EFFECT);
            dsp.set(AAX_PITCH_START, start_pitch);
@@ -153,16 +153,16 @@ public:
            Emitter::set(dsp);
         }
         Emitter::set(AAX_INITIALIZED);
-        Emitter::set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, 127.0f*velocity);
+        Emitter::set(AAX_MIDI_ATTACK_VELOCITY_FACTOR, velocity);
         if (!playing) playing = Emitter::set(AAX_PLAYING);
         return playing;
     }
 
     // When a Note-Off is received and the Damper is ON, the Note-Off shall
     // be deferred (ignored for now)
-    bool stop(float velocity=1.0f) {
+    bool stop(uint8_t velocity=64) {
         playing = false;
-        Emitter::set(AAX_MIDI_RELEASE_VELOCITY_FACTOR, 127.0f*velocity);
+        Emitter::set(AAX_MIDI_RELEASE_VELOCITY_FACTOR, velocity);
         return damper ? true : Emitter::set(AAX_STOPPED);
     }
 
@@ -195,8 +195,8 @@ public:
         return (s != AAX_PLAYING);
     }
 
-    void set_soft(float s) {
-        Emitter::set(AAX_MIDI_SOFT_FACTOR, 127.0f*s);
+    void set_soft(uint8_t s) {
+        Emitter::set(AAX_MIDI_SOFT_FACTOR, 127.0*s);
     }
     void set_pressure(float pressure) {
         Emitter::set(AAX_MIDI_PRESSURE_FACTOR, 127.0f*pressure);
@@ -312,7 +312,7 @@ public:
 
     // It's tempting to store the instrument buffer as a class parameter
     // but drums require a different buffer for every note_no
-    void play(int note_no, float velocity, Buffer& buffer, float pitch=1.0f) {
+    void play(int note_no, uint8_t velocity, Buffer& buffer, float pitch=1.0f) {
         note_no = get_note(note_no);
         pitch *= get_note_pitch(note_no);
         if (p.monophonic || p.legato) {
@@ -387,11 +387,11 @@ public:
     }
 
     // So support both
-    void play(int note_no, float velocity, float pitch=1.0f) {
+    void play(int note_no, uint8_t velocity, float pitch=1.0f) {
         note_play(note_no, velocity, pitch);
     }
 
-    void stop(int note_no, float velocity=0) {
+    void stop(int note_no, uint8_t velocity=0) {
        note_stop(get_note(note_no), velocity);
     }
 
@@ -562,11 +562,11 @@ protected:
         return true;
     }
 
-    virtual void note_play(int note_no, float velocity, float pitch) {
+    virtual void note_play(int note_no, uint8_t velocity, float pitch) {
         play(note_no, velocity, buffer, pitch);
     }
 
-    virtual void note_stop(int note_no, float velocity=0) {
+    virtual void note_stop(int note_no, uint8_t velocity=0) {
         if (!p.legato) {
             auto it = note.find(note_no);
             if (it != note.end()) {
@@ -986,7 +986,7 @@ private:
 
     float master_pan = 0.0f;
 
-    void note_play(int note_no, float velocity, float pitch)
+    void note_play(int note_no, uint8_t velocity, float pitch)
     {
         for(int i=0; i<members.size(); ++i) {
             auto& m = members[i];
@@ -995,13 +995,13 @@ private:
                 inst->set_params(p);
                 inst->set_gain(m->gain);
 
-                velocity = m->velocity_fraction*(velocity - 1.0f) + 1.0f;
+                velocity = m->velocity_fraction*(velocity - 127) + 127;
                 inst->play(note_no, velocity, pitch*m->pitch);
             }
         }
     }
 
-    void note_stop(int note_no, float velocity) {
+    void note_stop(int note_no, uint8_t velocity) {
         if (!members.size()) {
             Instrument::note_stop(note_no, velocity);
         } else if (!p.legato) {
