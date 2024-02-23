@@ -1387,7 +1387,7 @@ MIDIDriver::get_channel_type(uint16_t part_no)
 const char*
 MIDIDriver::get_channel_name(uint16_t part_no)
 {
-    const char* rv;
+    const char* rv = "Unkown";
     if (is_drums(part_no))
     {
         rv = "Drums";
