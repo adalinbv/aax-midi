@@ -65,6 +65,7 @@ void help()
     printf("  -i, --input <file>\t\tplayback audio from a file\n");
     printf("      --key-on <file>\t\tSet the key-on sample file\n");
     printf("      --key-off <file>\t\tSet the key-off sample file\n");
+    printf("      --velocity <1-127>\tSet the note velocity\n");
     printf("  -n, --note <note>\t\tset the playback note\n");
     printf("  -o, --output <file>\t\talso write to an audio file (optional)\n");
     printf("  -p, --pitch <pitch>\t\tset the playback pitch\n");
@@ -220,6 +221,12 @@ int main(int argc, char **argv)
     char *devname = getDeviceName(argc, argv);
     char *infile = getInputFile(argc, argv, FILE_PATH);
 
+    uint8_t velocity = 64;
+    char *env_velocity = getCommandLineOption(argc, argv, "--velocity");
+    if (env_velocity) velocity = rintf(127.f*atof(env_velocity));
+    if (!velocity) velocity++;
+    printf("Note velocity: %i\n", velocity);
+
     // Open the device for playback
     aax::AeonWave aax(devname, AAX_MODE_WRITE_STEREO);
     TRY( aax.set(AAX_INITIALIZED) );
@@ -234,7 +241,7 @@ int main(int argc, char **argv)
         TRY( aax.add(ensemble) );
 
         ensemble.set_gain(gain);
-        ensemble.play(note, 1.0f);
+        ensemble.play(note, velocity);
 
         printf("Playing sound at %.0f%% volume "
                 "for %3.1f seconds of %3.1f seconds,\n"
