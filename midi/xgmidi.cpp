@@ -34,6 +34,7 @@
 namespace aeonwave
 {
 
+#if 0
 static float XGMIDI_LFO_table[128] = { // Hz
  0.f, 0.08f, 0.08f, 0.16f, 0.16f, 0.25f, 0.25f, 0.33f, 0.33f, 0.42f, 0.42f,
  0.5f, 0.5f, 0.58f, 0.58f, 0.67f, 0.67f, 0.75f, 0.75f, 0.84, 0.84f, 0.92f,
@@ -62,6 +63,7 @@ static float XGMIDI_delay_offset_table[128] = {
  29.6f, 31.2f, 32.8f, 34.3f, 35.9f, 37.f, 39.f, 40.6f, 42.2f, 43.7f, 45.3f,
  46.9f, 48.4f, 50.f
 };
+#endif
 
 static float XGMIDI_delay_time_table[128] = { // ms
  0.1f, 1.7f, 3.2f, 4.8f, 6.4f, 8.0f, 9.5f, 11.1f, 12.7f, 14.3f, 15.8f, 17.4f,
@@ -88,6 +90,7 @@ static float XGMIDI_EQ_frequency_table[61] = {
  9000.f, 10000.f, 11000.0f, 12000.f, 14000.f, 16000.f, 18000.f, 20000.f
 };
 
+#if 0
 static float XGMIDI_room_size_table[45] = {
  0.1f, 0.3f, 0.4f, 0.6f, .7f, 0.9f, 1.f, 1.2f, 1.4f, 1.5f, 1.7f, 1.8f, 2.f,
  2.1f, 2.3f, 2.5f, 2.6f, 2.8f, 2.9f, 3.1f, 4.2f, 3.4f, 3.5f, 3.7f, 3.9f, 4.f,
@@ -103,6 +106,7 @@ static float XGMIDI_compressor_release_time_table[16] = {
 static float XGMIDI_compressor_ratio_table[8] = {
  1.f, 1.5f, 2.f, 3.f, 5.f, 7.f, 10.f, 20.0f
 };
+#endif
 
 static float XGMIDI_reverb_time[70] = {
  0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.f, 1.1f, 1.2f, 1.3f, 1.4f, 1.5f,
@@ -113,6 +117,7 @@ static float XGMIDI_reverb_time[70] = {
  18.f, 19.f, 20.f, 25.f, 30.f
 };
 
+#if 0
 static float XGMIDI_reverb_dimensions[105] = {
  0.5f, 0.8f, 1.f, 1.3f, 1.5f, 1.8f, 2.f, 2.3f, 2.6f, 2.8f, 3.1f, 3.3f, 3.6f,
  3.9f, 4.1f, 4.4f, 4.6f, 4.9f, 5.2f, 5.4f, 5.7f, 5.9f, 6.2f, 6.5f, 6.7f, 7.f,
@@ -124,12 +129,14 @@ static float XGMIDI_reverb_dimensions[105] = {
  24.5f, 24.9f, 25.2f, 25.5f, 25.8f, 27.1f, 27.5f, 27.8f, 28.1f, 28.5f, 28.8f,
  29.2f, 29.5f, 29.9f, 30.2f
 };
+#endif
 
 typedef struct {
     const char* name;
     int param[16];
 } XGMIDI_effect_t;
 
+#if 0
 #define XGMIDI_MAX_DISTORTION_TYPES	2
 static XGMIDI_effect_t XGMIDI_distortion_types[XGMIDI_MAX_DISTORTION_TYPES] = {
  { "DISTORTION", 40, 20, 72, 53, 48, 0, 43, 74, 10, 127, 120, 0, 0, 0, 0, 0 },
@@ -141,6 +148,7 @@ static XGMIDI_effect_t XGMIDI_EQ_types[XGMIDI_MAX_EQ_TYPES] = {
  { "3-BAND EQ", 70, 34, 60, 10, 70, 28, 46, 0, 0, 127,  0,  0, 0,  0,  0,  0 },
  { "2-BAND EQ", 28, 70, 46, 70,  0,  0,  0, 0, 0, 127, 34, 64, 10, 0,  0,  0 }
 };
+#endif
 
 }
 
@@ -173,7 +181,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
 {
     bool rv = false;
     uint64_t offs = offset();
-    uint8_t type, devno;
+    uint8_t type;
     uint8_t byte;
 
 #if 0
@@ -186,7 +194,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
 
     type = pull_byte();
     CSV(channel_no, ", %d", type);
-    devno = type & 0xF;
+//  uint8_t devno = type & 0xF;
     switch (type & 0xF0)
     {
     case XGMIDI_BULK_DUMP:
@@ -1064,7 +1072,7 @@ bool MIDIStream::XG_process_sysex(uint64_t size, std::string& expl)
                 expl = "DISPLAY_DATA";
                 std::string text;
                 toUTF8(text, value);
-                for (int i=offset()-offs; i<size; ++i) {
+                for (size_t i=offset()-offs; i<size; ++i) {
                     toUTF8(text, pull_byte());
                 }
                 midi.set_display_data(text);

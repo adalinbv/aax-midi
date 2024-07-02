@@ -43,7 +43,7 @@ MIDIFile::MIDIFile(const char *devname, const char *filename,
     }
 
     std::ifstream file(filename, std::ios::in|std::ios::binary|std::ios::ate);
-    ssize_t size = file.tellg();
+    size_t size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     if (config)
@@ -246,8 +246,16 @@ MIDIFile::initialize(const char *grep)
                 r += to_string(aaxCapabilities(midi_mode));
             }
             MESSAGE(1, "Rendering : %s\n", r.c_str());
+
+            capabilities = midi.get(AAX_CAPABILITIES);
+            r = to_string(aaxCapabilities(capabilities & 0xFFF));
+            MESSAGE(1, "Hardware  : %s\n", r.c_str());
             MESSAGE(1, "Patch set : %s", midi.get_patch_set().c_str());
             MESSAGE(1, " instrument set version %s\n", midi.get_patch_version().c_str());
+            MESSAGE(1, "Render Mode: ");
+            if (capabilities & AAX_RENDER_SYNTHESIZER) printf("Synthesizer\n");
+            else if (capabilities & AAX_RENDER_ARCADE) printf("Arcade\n");
+            else printf("Normal\n");
             MESSAGE(1, "Directory : %s\n", midi.info(AAX_SHARED_DATA_DIR));
 
             int hour, minutes, seconds;

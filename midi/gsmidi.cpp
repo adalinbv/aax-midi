@@ -63,7 +63,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
 {
     bool rv = false;
     uint64_t offs = offset();
-    uint8_t type, devno;
+    uint8_t type;
     uint8_t byte;
 
 #if 0
@@ -76,7 +76,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
 
     type = pull_byte();
     CSV(channel_no, ", %d", type);
-    devno = type & 0xF;
+//  uint8_t devno = type & 0xF;
     switch (type & 0xF0)
     {
     case 0x70:
@@ -539,7 +539,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
                 {
                     expl = "DISPLAY_DATA";
                     std::string text;
-                    for (int i=offset()-offs; i<size; ++i) {
+                    for (size_t i=offset()-offs; i<size; ++i) {
                         toUTF8(text, pull_byte());
                     }
                     midi.set_display_data(text);
@@ -617,7 +617,7 @@ bool MIDIStream::GS_process_sysex(uint64_t size, std::string& expl)
     } // GSMIDI_SYSTEM
     default:
         expl = "Unkown SYSEX " + std::to_string(type & 0xF);
-        LOG(99, "LOG: Unsupported GS sysex category type: 0x%02x (%d)\n", byte, byte);
+        LOG(99, "LOG: Unsupported GS sysex category type: 0x%02x (%d)\n", type, type);
         break;
     }
 

@@ -129,9 +129,6 @@ int main(int argc, char **argv)
         note = tone2note(env);
     }
 
-    char *key_on_file = getCommandLineOption(argc, argv, "--key-on");
-    char *key_off_file = getCommandLineOption(argc, argv, "--key-off");
-
     char *devname = getDeviceName(argc, argv);
     char *infile = getInputFile(argc, argv, FILE_PATH);
 
@@ -152,8 +149,8 @@ int main(int argc, char **argv)
 
         float fraction = AAX_TO_FLOAT(buffer.get(AAX_PITCH_FRACTION));
  
-        float pitch2, freq;
-        float pitch = 1.0f;
+        float freq;
+        pitch = 1.0f;
         if (note) {
             freq = aax::math::note2freq(note);
         } else {
@@ -167,7 +164,6 @@ int main(int argc, char **argv)
         {
             freq = fraction*(freq - base_freq) + base_freq;
             if (base_freq) pitch = freq/base_freq;
-            pitch2 = 0.0f;
         }
 
         instrument.set_gain(gain);

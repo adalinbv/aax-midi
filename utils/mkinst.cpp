@@ -1964,7 +1964,6 @@ void
 print_GM2()
 {
    printf("  <!-- GM2 -->\n");
-   bool first = true;
    for (int b=0; b<10; ++b)
    {
       bool f = false;
@@ -2241,7 +2240,6 @@ int main(int argc, char **argv)
    const char *pname = strrchr(argv[0], '/');
    const char *env;
    int mode = GM;
-   int b;
 
    if (argc < 2) help(argv[0]);
 

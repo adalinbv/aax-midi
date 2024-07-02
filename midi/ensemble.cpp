@@ -23,8 +23,7 @@ using namespace aax;
 MIDIEnsemble::MIDIEnsemble(MIDIDriver& ptr, Buffer &buffer,
                     uint8_t channel, uint16_t bank, uint8_t program, bool drums)
    : Ensemble(ptr, buffer, channel == MIDI_DRUMS_CHANNEL), midi(ptr),
-     channel_no(channel), bank_no(bank),
-     program_no(program)
+     bank_no(bank), channel_no(channel), program_no(program)
 {
     set_gain(aax::math::ln(100.0f/127.0f));
     set_expression(aax::math::ln(127.0f/127.0f));
@@ -44,7 +43,7 @@ MIDIEnsemble::set_stereo(bool s)
     {
         std::string name = "stereo";
         Buffer &buffer = midi.buffer(name);
-        int res = MIDIEnsemble::add(buffer);
+        MIDIEnsemble::add(buffer);
     }
 }
 
@@ -284,7 +283,7 @@ MIDIEnsemble::play(int note_no, uint8_t velocity)
         {
             bool all = midi.no_active_tracks() > 0;
             auto& ens = midi.get_instrument(bank_no, program_no, all);
-            for (int n=0; n<ens.size(); ++n)
+            for (size_t n=0; n<ens.size(); ++n)
             {
                 auto& i = ens[n];
                 Buffer& buffer = midi.buffer(i.file);

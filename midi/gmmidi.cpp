@@ -93,8 +93,6 @@ std::string MIDIStream::GM_initialize(uint8_t mode)
 bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
 {
     bool rv = true;
-    uint64_t offs = offset();
-    uint8_t type, devno;
     uint8_t value;
 
 #if 0
@@ -139,8 +137,6 @@ bool MIDIStream::GM_process_sysex_non_realtime(uint64_t size, std::string& expl)
 bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
 {
     bool rv = true;
-    uint64_t offs = offset();
-    uint8_t type, devno;
     int32_t value;
 
 #if 0
@@ -320,7 +316,7 @@ bool MIDIStream::GM_process_sysex_realtime(uint64_t size, std::string& expl)
         case MIDI_KEY_BASED_INSTRUMENT:
         default:
             expl = "Unkown BROADCAST";
-            value <= 8;
+            value <<= 8;
             value += pull_byte();
             CSV(channel_no, ", %d", value & 0xff);
             LOG(99, "LOG: Unsupported realtime sysex sub id: %x %x (%d %d)\n",

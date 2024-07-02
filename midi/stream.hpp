@@ -138,14 +138,14 @@ private:
     };
     std::map<uint16_t,struct param_t> param_3d;
 
-    const std::string type_name[9] = {
+    const std::string type_name[10] = {
         "Sequencey", "Text", "Copyright", "Title", "Instrument", "Lyrics",
-        "Marker", "Cue", "Device"
+        "Marker", "Cue", "Program", "Device"
     };
-    const std::string csv_name[9] = {
+    const std::string csv_name[10] = {
         "Sequence_number", "Text_t", "Copyright_t", "Title_t",
         "Instrument_name_t", "Lyrics_t", "Marker_t", "Cue_point_t",
-        "Device_name_t"
+        "Program_name_t", "Device_name_t"
     };
 
     bool process_control(uint8_t);

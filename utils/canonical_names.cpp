@@ -172,7 +172,6 @@ tokenize_words(std::string& str)
 std::size_t
 find_word(std::string& name, std::string& section)
 {
-    bool found = false;
     std::size_t pos = name.find(section);
     if (pos != std::string::npos)
     {
@@ -215,7 +214,6 @@ str_prepend(std::string& name, std::string section, const char *replacement = nu
 void
 str_append(std::string& name, std::string& suffix, std::string section, const char *replacement = nullptr)
 {
-    bool found = false;
     std::size_t pos;
 
     tokenize_words(section);

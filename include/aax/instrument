@@ -62,7 +62,7 @@ public:
     float get() { return pan; }
     void set(float p, bool init=false) {
         pan = p;
-        panned = ~init;
+        panned = !init;
 
         if (!init && abs(wide) > 0) {
             p = floorf(pan*wide)/abs(wide);
@@ -318,7 +318,7 @@ public:
         if (p.monophonic || p.legato) {
             auto it = note.find(note_prev);
             if (it != note.end()) {
-               for (int i=0; i<it->second.size(); ++i) it->second[i]->stop();
+               for (size_t i=0; i<it->second.size(); ++i) it->second[i]->stop();
             }
             note_prev = note_no;
         }
@@ -328,7 +328,7 @@ public:
             current_note = it->second;
             if (request_note_finish && !current_note[0]->finished()) {
                 if (it != note.end()) {
-                   for (int i=0; i<it->second.size(); ++i) {
+                   for (size_t i=0; i<it->second.size(); ++i) {
                        it->second[i]->finish();
                    }
                 }
@@ -340,7 +340,7 @@ public:
         if (it == note.end()) {
             float buffer_frequency = buffer.get(AAX_BASE_FREQUENCY);
             note_t n;
-            for (int i=0; i<count; ++i) {
+            for (size_t i=0; i<count; ++i) {
                 std::uniform_real_distribution<float> dis(0.995f*pitch, 1.005f*pitch);
                 Note *ptr = new Note(buffer_frequency,dis(m_mt), pan);
                 n.push_back(std::shared_ptr<Note>(ptr, // automatic deregistering
@@ -352,7 +352,7 @@ public:
                 Mixer::add(buffer);
                 playing = true;
             }
-            for (int i=0; i<current_note.size(); ++i) {
+            for (size_t i=0; i<current_note.size(); ++i) {
                 if (p.is_drum_channel && !pan.panned) {
                     current_note[i]->matrix(pan.mtx_panned);
                 } else if (pan.panned && abs(pan.wide) > 1) {
@@ -362,7 +362,7 @@ public:
             }
         }
 
-        for (int i=0; i<current_note.size(); ++i) {
+        for (size_t i=0; i<current_note.size(); ++i) {
             Mixer::add(*current_note[i]);
             current_note[i]->set_soft(p.soft);
             current_note[i]->set_attack_time(p.attack_time);
@@ -375,7 +375,7 @@ public:
         for (auto it = stopped_notes.begin(); it != stopped_notes.end(); )
         {
             bool finished = true;
-            for (int i=0; i<it->second.size(); ++i) {
+            for (size_t i=0; i<it->second.size(); ++i) {
                 if (!it->second[i]->finished()) {
                     finished = false;
                     break;
@@ -547,7 +547,7 @@ public:
 protected:
     virtual void note_finish(void) {
         for (auto& it : note) {
-            for (int i=0; i<it.second.size(); ++i) {
+            for (size_t i=0; i<it.second.size(); ++i) {
                 it.second[i]->stop();
             }
         }
@@ -555,7 +555,7 @@ protected:
 
     virtual bool note_finished(void) {
         for (auto& it : note) {
-            for (int i=0; i<it.second.size(); ++i) {
+            for (size_t i=0; i<it.second.size(); ++i) {
                 if (!it.second[i]->finished()) return false;
             }
         }
@@ -570,7 +570,7 @@ protected:
         if (!p.legato) {
             auto it = note.find(note_no);
             if (it != note.end()) {
-                for (int i=0; i<it->second.size(); ++i) {
+                for (size_t i=0; i<it->second.size(); ++i) {
                     it->second[i]->stop(velocity);
                 }
             }
@@ -579,7 +579,7 @@ protected:
 
     virtual void note_pitch(float pitch) {
         for (auto& it : note) {
-            for (int i=0; i<it.second.size(); ++i) {
+            for (size_t i=0; i<it.second.size(); ++i) {
                 it.second[i]->set_pitch(pitch);
             }
         }
@@ -588,7 +588,7 @@ protected:
     virtual void note_pitch(int note_no, float pitch) {
         auto it = note.find(note_no);
         if (it != note.end()) {
-            for (int i=0; i<it->second.size(); ++i) {
+            for (size_t i=0; i<it->second.size(); ++i) {
                 it->second[i]->set_pitch(pitch);
             }
         }
@@ -614,7 +614,7 @@ protected:
         p.soft = (!p.is_drum_channel) ? 1.0f - 0.293f*s : 1.0f;
         set_filter_cutoff();
         for (auto& it : note) {
-            for (int i=0; i<it.second.size(); ++i) {
+            for (size_t i=0; i<it.second.size(); ++i) {
                 it.second[i]->set_soft(s);
             }
         }
@@ -622,7 +622,7 @@ protected:
 
     virtual void note_pressure(float p) {
         for (auto& it : note) {
-            for (int i=0; i<it.second.size(); ++i) {
+            for (size_t i=0; i<it.second.size(); ++i) {
                 it.second[i]->set_pressure(p);
             }
         }
@@ -631,7 +631,7 @@ protected:
     virtual void note_pressure(int note_no, float p) {
         auto it = note.find(note_no);
         if (it != note.end()) {
-            for (int i=0; i<it->second.size(); ++i) {
+            for (size_t i=0; i<it->second.size(); ++i) {
                 it->second[i]->set_pressure(p);
             }
         }
@@ -650,7 +650,7 @@ protected:
         pan.mtx = m;
         if (p.is_drum_channel || pan.wide) {
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->matrix(pan.mtx);
                 }
             }
@@ -663,7 +663,7 @@ protected:
         if (!p.is_drum_channel) {
             auto it = note.find(note_no);
             if (it != note.end()) {
-                for (int i=0; i<it->second.size(); ++i) {
+                for (size_t i=0; i<it->second.size(); ++i) {
                     it->second[i]->set_hold(h);
                 }
             }
@@ -673,7 +673,7 @@ protected:
     virtual void note_hold(bool h) {
         if (!p.is_drum_channel) {
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->set_hold(h);
                 }
             }
@@ -683,7 +683,7 @@ protected:
     virtual void note_sustain(bool s) {
         if (!p.is_drum_channel) {
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->set_sustain(s);
                 }
             }
@@ -694,7 +694,7 @@ protected:
         if (!p.is_drum_channel) {
             p.attack_time = t;
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->set_attack_time(t);
                 }
             }
@@ -704,7 +704,7 @@ protected:
         if (!p.is_drum_channel) {
             p.release_time = t;
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->set_release_time(t);
                 }
             }
@@ -714,7 +714,7 @@ protected:
         if (!p.is_drum_channel) {
             p.decay_time = t;
             for (auto& it : note) {
-                for (int i=0; i<it.second.size(); ++i) {
+                for (size_t i=0; i<it.second.size(); ++i) {
                     it.second[i]->set_decay_time(t);
                 }
             }
@@ -962,7 +962,7 @@ public:
         add_member(buf, 1.0f, 1.0f);
     }
 
-    int no_members() { return members.size(); }
+    size_t no_members() { return members.size(); }
 
     void set_master_pan(float pn) {
         master_pan = pn;
@@ -972,7 +972,7 @@ public:
             pn = floorf(pn * note::pan_levels)/note::pan_levels;
             pan.set(pn);
             if (p.is_drum_channel || pan.wide) {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_pos(pan.mtx);
                 }
             } else {
@@ -988,7 +988,7 @@ private:
 
     void note_play(int note_no, uint8_t velocity, float pitch)
     {
-        for(int i=0; i<members.size(); ++i) {
+        for(size_t i=0; i<members.size(); ++i) {
             auto& m = members[i];
             if (note_no >= m->min_note && note_no < m->max_note) {
                 auto &inst = m->instrument;
@@ -1005,7 +1005,7 @@ private:
         if (!members.size()) {
             Instrument::note_stop(note_no, velocity);
         } else if (!p.legato) {
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->stop(note_no, velocity);
             }
         }
@@ -1014,7 +1014,7 @@ private:
     void note_finish(void) {
         if (!members.size()) {
             Instrument::note_finish();
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->finish();
         }
     }
@@ -1023,7 +1023,7 @@ private:
         if (!members.size()) {
             return Instrument::note_finished();
         }
-        for(int i=0; i<members.size(); ++i) {
+        for(size_t i=0; i<members.size(); ++i) {
             if (!members[i]->instrument->finished()) return false;
         }
         return true;
@@ -1032,7 +1032,7 @@ private:
     void note_pitch(float p) {
         if (!members.size()) {
             Instrument::note_pitch(p);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_pitch(p);
         }
     }
@@ -1040,7 +1040,7 @@ private:
     void note_pitch(int note_no, float pitch) {
         if (!members.size()) {
             Instrument::note_pitch(note_no, pitch);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_pitch(note_no, pitch);
         }
     }
@@ -1049,7 +1049,7 @@ private:
         p.master_coarse_tuning = s;
         if (!members.size()) {
             Instrument::note_master_tuning_coarse(s);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_master_tuning_coarse(s);
         }
     }
@@ -1058,7 +1058,7 @@ private:
         p.coarse_tuning = s;
         if (!members.size()) {
             Instrument::note_tuning_coarse(s);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_tuning_coarse(s);
         }
     }
@@ -1067,7 +1067,7 @@ private:
         p.master_fine_tuning = s/100.0f;
         if (!members.size()) {
             Instrument::note_master_tuning_fine(s, n);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_master_tuning_fine(s, n);
         }
     }
@@ -1076,7 +1076,7 @@ private:
         p.fine_tuning = s/100.0f;
         if (!members.size()) {
             Instrument::note_tuning_fine(s, n);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_tuning_fine(s, n);
         }
     }
@@ -1085,7 +1085,7 @@ private:
         p.tuning_offset = f;
         if (!members.size()) {
             Instrument::note_tuning_offset(f);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_tuning_offset(f);;
         }
     }
@@ -1094,7 +1094,7 @@ private:
         p.detune = level;
         if (!members.size()) {
             Instrument::note_celeste_depth(level);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_celeste_depth(level);
         }
     }
@@ -1103,7 +1103,7 @@ private:
         p.modulation_range = d;
         if (!members.size()) {
             Instrument::note_modulation_depth(d);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_modulation_depth(d);
         }
      }
@@ -1114,7 +1114,7 @@ private:
             Instrument::note_soft(s);
         } else {
             set_filter_cutoff();
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_soft(s);
             }
         }
@@ -1123,7 +1123,7 @@ private:
     void note_pressure(float p) {
         if (!members.size()) {
             Instrument::note_pressure(p);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_pressure(p);
         }
     }
@@ -1131,7 +1131,7 @@ private:
     void note_pressure(int note_no, float p) {
         if (!members.size()) {
             Instrument::note_pressure(note_no, p);
-        } else for(int i=0; i<members.size(); ++i) {
+        } else for(size_t i=0; i<members.size(); ++i) {
             members[i]->instrument->set_pressure(note_no, p);
         }
     }
@@ -1145,7 +1145,7 @@ private:
             if (pn != pan_prev) {
                 pan.set(pn);
                 if (p.is_drum_channel || pan.wide) {
-                    for(int i=0; i<members.size(); ++i) {
+                    for(size_t i=0; i<members.size(); ++i) {
                         members[i]->instrument->set_pos(pan.mtx);
                     }
                 } else {
@@ -1160,7 +1160,7 @@ private:
         if (!p.is_drum_channel) {
             if (!members.size()) {
                 Instrument::note_hold(note_no, h);
-            } else for(int i=0; i<members.size(); ++i) {
+            } else for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_hold(note_no, h);
             }
         }
@@ -1170,7 +1170,7 @@ private:
         if (!p.is_drum_channel) {
             if (!members.size()) {
                 Instrument::note_hold(h);
-            } else for(int i=0; i<members.size(); ++i) {
+            } else for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_hold(h);
             }
         }
@@ -1180,7 +1180,7 @@ private:
         if (!members.size()) {
             Instrument::note_sustain(s);
         } else if (!p.is_drum_channel) {
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_sustain(s);
             }
         }
@@ -1192,7 +1192,7 @@ private:
             if (!members.size()) {
                 Instrument::note_attack_time(t);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_attack_time(t);
                 }
             }
@@ -1204,7 +1204,7 @@ private:
             if (!members.size()) {
                 Instrument::note_release_time(t);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_release_time(t);
                 }
             }
@@ -1216,7 +1216,7 @@ private:
             if (!members.size()) {
                 Instrument::note_decay_time(t);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_decay_time(t);
                 }
             }
@@ -1227,7 +1227,7 @@ private:
         if (!members.size()) {
             Instrument::note_set_finish(finish);
         } else if (!p.is_drum_channel) {
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_note_finish(finish);
             }
         }
@@ -1238,7 +1238,7 @@ private:
             if (!members.size()) {
                 Instrument::note_monophonic(m);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_monophonic(m);
                 }
             }
@@ -1249,7 +1249,7 @@ private:
         if (!members.size()) {
             Instrument::note_modulation(m);
         } else if (!p.is_drum_channel) {
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_modulation(m);
             }
         }
@@ -1262,7 +1262,7 @@ private:
         if (!members.size()) {
             Instrument::note_pitch_start(p.pitch_start);
         } else if (!p.is_drum_channel) {
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_pitch_slide_state(p.pitch_start);
             }
         }
@@ -1271,7 +1271,7 @@ private:
         if (!members.size()) {
             Instrument::note_pitch_start(s);
         } else if (!p.is_drum_channel) { p.pitch_start = s;
-            for(int i=0; i<members.size(); ++i) {
+            for(size_t i=0; i<members.size(); ++i) {
                 members[i]->instrument->set_pitch_start(s);
             }
         }
@@ -1282,7 +1282,7 @@ private:
             if (!members.size()) {
                 Instrument::note_pitch_slide_state(s);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_pitch_slide_state(s);
                 }
             }
@@ -1294,7 +1294,7 @@ private:
             if (!members.size()) {
                 Instrument::note_pitch_transition_time(t);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_pitch_transition_time(t);
                 }
             }
@@ -1307,7 +1307,7 @@ private:
             if (!members.size()) {
                 Instrument::note_pitch_depth(s);
             } else {
-                for(int i=0; i<members.size(); ++i) {
+                for(size_t i=0; i<members.size(); ++i) {
                     members[i]->instrument->set_pitch_depth(s);
                 }
             }

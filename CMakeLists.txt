@@ -86,18 +86,18 @@ if(WERROR)
 endif()
 
 if(MSVC)
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${CMAKE_C_FLAGS_RELWITHDEBINFO} -D_DEBUG /LD")
-    set(CMAKE_C_FLAGS_MINSIZEREL "${CMAKE_C_FLAGS_MINSIZEREL} -DNDEBUG /LD")
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -DNDEBUG /LD")
-    set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -D_DEBUG /LD")
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -D_DEBUG /LD")
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL} -DNDEBUG /LD")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -DNDEBUG /LD")
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_DEBUG /LD")
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
     add_definitions(-D_CRT_NONSTDC_NO_DEPRECATE)
 
     option(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" ON)
     if(FORCE_STATIC_VCRT)
         foreach(flag_var
-                CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
-                CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+                CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+                CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
             if(${flag_var} MATCHES "/MD")
                 STRING(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
             endif()
@@ -109,11 +109,8 @@ else(MSVC)
         set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wl,--hash-style=both -Wpointer-arith -Wparentheses")
       endif(GCC OR CLANG)
     else()
-       add_definitions(-U__STRICT_ANSI__)
-       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static -static-libstdc++" CACHE STRING
-          "Flags used by MingW."
-          FORCE)
-       set(CMAKE_C_FLAGS "${C_FLAGS} -static -static-libgcc" CACHE STRING
+       add_definitions(-D__STRICT_ANSI__)
+       set(CMAKE_SHARED_LINKER_FLAGS "${LD_FLAGS} -static-libstdc++" CACHE STRING
           "Flags used by MingW."
           FORCE)
     endif()
@@ -121,25 +118,26 @@ else(MSVC)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17" CACHE STRING
           "Flags used by al build types."
           FORCE)
-    set(C_FLAGS "${C_FLAGS} -Os -Werror=format-security -std=c99 -Wall" CACHE STRING
+    set(C_FLAGS "${C_FLAGS} -Os -Werror=format-security -Wall" CACHE STRING
         "Flags used by al build types."
         FORCE)
-    set(CMAKE_C_FLAGS_RELWITHDEBINFO "${C_FLAGS} -g -O2 -D_DEBUG" CACHE STRING
+    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${C_FLAGS} -g -O2 -D_DEBUG" CACHE STRING
         "Flags used by the compiler during Release with Debug Info builds."
         FORCE)
-    set(CMAKE_C_FLAGS_MINSIZEREL "${C_FLAGS} -Os -s -fomit-frame-pointer -DNDEBUG" CACHE STRING
+    set(CMAKE_CXX_FLAGS_MINSIZEREL "${C_FLAGS} -Os -s -fomit-frame-pointer -DNDEBUG" CACHE STRING
         "Flags used by the compiler during release minsize builds."
         FORCE)
-    set(CMAKE_C_FLAGS_RELEASE "${C_FLAGS} -Os -s -fomit-frame-pointer -DNDEBUG"
+    set(CMAKE_CXX_FLAGS_RELEASE "${C_FLAGS} -Os -s -fomit-frame-pointer -DNDEBUG"
         CACHE STRING "Flags used by the compiler during release builds"
         FORCE)
-    set(CMAKE_C_FLAGS_DEBUG "${C_FLAGS} -g3 -D_DEBUG" CACHE STRING
+    set(CMAKE_CXX_FLAGS_DEBUG "${C_FLAGS} -g3 -D_DEBUG" CACHE STRING
         "Flags used by the compiler during debug builds."
         FORCE)
 endif(MSVC)
 
 # Required libraries
 find_package(AAX COMPONENTS aax REQUIRED)
+find_package(XML COMPONENTS xml REQUIRED)
 ##find_package(AeonWave COMPONENTS aax REQUIRED)
 if((GCC OR CLANG) AND RMALLOC)
   set(C_FLAGS "${C_FLAGS} -fsanitize=address")
@@ -201,6 +199,7 @@ include_directories(
 )
 link_directories(
   ${PROJECT_BINARY_DIR}/src
+  ${PROJECT_BINARY_DIR}/file
   ${PROJECT_BINARY_DIR}/midi
 )
 
@@ -241,6 +240,7 @@ endif()
 
 target_link_libraries(${LIBMIDI}
   ${EXTRA_LIBS}
+  ${AAX_LIBRARY}
   ${XML_LIBRARY}
 )
 

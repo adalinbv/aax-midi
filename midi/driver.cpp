@@ -640,7 +640,8 @@ MIDIDriver::set_reverb_delay_depth(float val) {
 void
 MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
 {
-    const char* filename, *type = "instrument";
+    std::string type = "instrument";
+    std::string filename;
     auto imap = instrument_map;
 
     std::filesystem::path iname;
@@ -660,7 +661,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
     filename = iname.c_str();
     for(unsigned int id=0; id<2; ++id)
     {
-        xmlId *xid = xmlOpen(filename);
+        xmlId *xid = xmlOpen(filename.c_str());
         if (xid)
         {
             xmlId *xaid = xmlNodeGet(xid, "aeonwave");
@@ -683,7 +684,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                 {
                     polyphony =  xmlAttributeGetInt(xaid, "polyphony");
                     if (polyphony < 32) polyphony = 32;
-                    if (polyphony < UINT_MAX) {
+                    if (polyphony < INT_MAX) {
                         midi.set(AAX_MONO_EMITTERS, midi.get_polyphony());
                     }
                 }
@@ -762,11 +763,11 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                         }
 
                         // type is 'instrument' or ´patch' for drums/patch
-                        inum = xmlNodeGetNum(xbid, type);
+                        inum = xmlNodeGetNum(xbid, type.c_str());
                         auto& bank = imap[bank_no];
-                        for (int i=0; i<inum; i++)
+                        for (size_t i=0; i<inum; i++)
                         {
-                            if (xmlNodeGetPos(xbid, xiid, type, i) != 0)
+                            if (xmlNodeGetPos(xbid, xiid, type.c_str(), i) != 0)
                             {
                                 float gain = 1.0f;
                                 float pitch = 1.0f;
@@ -833,7 +834,7 @@ MIDIDriver::read_instruments(std::string gmmidi, std::string gmdrums)
                                 {
                                     file[slen] = 0;
                                     bank.insert({n,{{name,file,note_on,note_off,
-                                                 1.0f,1.0f,1.0f,0.0f,
+                                                 gain,pitch,1.0f,0.0f,
                                                  spread,wide,count,
                                                  min,max,stereo,false}}});
 
@@ -1139,7 +1140,6 @@ MIDIDriver::get_instrument(uint16_t bank_no, uint8_t program_no, bool all)
 {
     static const ensemble_map_t empty_map;
     uint16_t prev_bank_no = bank_no;
-    uint16_t req_bank_no = bank_no;
 
     do
     {

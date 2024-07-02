@@ -1,4 +1,6 @@
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
 
 #include <map>
 #include <vector>
@@ -109,7 +111,6 @@ unsigned int
 get_elem(const char *dir, std::string &file)
 {
     unsigned int rv = 0;
-    size_t fpos;
     xmlId *xid;
 
     std::filesystem::path path(dir);
@@ -118,7 +119,7 @@ get_elem(const char *dir, std::string &file)
     std::filesystem::path fname = path;
     fname.replace_filename(file + ".aaxs");
 
-    xid = xmlOpen(fname.c_str());
+    xid = xmlOpen(fname.string().c_str());
     if (xid)
     {
         xmlId *xsid = xmlNodeGet(xid, "/aeonwave/sound");
@@ -134,7 +135,7 @@ get_elem(const char *dir, std::string &file)
     {
         fname = path;
         fname.replace_filename(file + ".xml");
-        xid = xmlOpen(fname.c_str());
+        xid = xmlOpen(fname.string().c_str());
         if (xid)
         {
             xmlId *xlid = xmlNodeGet(xid, "/instrument/layer");
@@ -292,7 +293,6 @@ print_xml(bank_t &bank, bank_t &bank2, const char *dir, bool it)
         const char *type = "GM";
         int bank_msb = bank_pos >> 16;
         int bank_lsb = bank_pos & 0xffff;
-        int i = 0;
 //
         if (bank_msb == 0x79) type = "GM2";
         else if (bank_msb == 127 && bank_lsb == 0) type = "MT32";
@@ -593,7 +593,7 @@ print_drums(bank_t &bank, bank_t &bank2, const char *dir, enum mode_e mode)
             case HTML:
                 printf("   <tr>\n");
                 if (first) {
-                    printf("    <td class=\"arch\" rowspan=\"%lu\" style=\"vertical-align:top\">"
+                    printf("    <td class=\"arch\" rowspan=\"%" PRIu64 "\" style=\"vertical-align:top\">"
                                     "%3i %1i</td>\n", entry.size(), msb, lsb);
                     first = false;
                 }

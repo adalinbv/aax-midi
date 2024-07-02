@@ -45,7 +45,7 @@ namespace aax = aeonwave;
 # define CSV_TEXT(t,c,s) \
   if(midi.get_initialize() && midi.get_csv(t)) do { \
     printf("%s, \"",c); \
-    for (int i=0; i<strlen(s); ++i) { \
+    for (size_t i=0; i<strlen(s); ++i) { \
       if (s[i] == '\"') printf("\"\""); \
       else if ((s[i]<' ') || ((s[i]>'~') && (s[i]<=160))) \
         printf("\\%03o", s[i]); \

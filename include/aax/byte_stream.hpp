@@ -47,13 +47,13 @@ public:
     }
 
     inline void forward(size_t offs = -1) {
-        pos = (offs == -1) ? size() : pos+offs;
+        pos = (offs == size_t(-1)) ? size() : pos+offs;
         if (pos > size()) {
             throw(std::out_of_range("index beyond buffer length"));
         }
     }
     inline void rewind(size_t offs = -1) {
-        pos = (offs == -1) ? 0 : pos-offs;
+        pos = (offs == size_t(-1)) ? 0 : pos-offs;
         if (pos > size()) {
             throw(std::out_of_range("index beyond buffer length"));
         }
@@ -63,13 +63,15 @@ public:
     inline void push_byte() { --pos; }
 
     inline uint16_t pull_word() {
-        return (uint16_t(get(pos++)) << 8 | get(pos++));
+        uint16_t rv = (uint16_t(get(pos)) << 8 | get(pos+1)); pos += 2;
+        return rv;
     }
     inline void push_word() { pos -= 2; }
 
     inline uint32_t pull_long() {
-        return (uint32_t(get(pos++)) << 24 | uint32_t(get(pos++)) << 16 |
-                uint32_t(get(pos++)) << 8  | get(pos++));
+        uint32_t rv (uint32_t(get(pos)) << 24 | uint32_t(get(pos+1)) << 16 |
+                     uint32_t(get(pos+2)) << 8  | get(pos+3)); pos += 4;
+        return rv;
     }
     inline void push_long() { pos -= 4; }
 

@@ -766,7 +766,7 @@ bool MIDIStream::process_control(uint8_t track_no)
     case MIDI_PORTAMENTO_TIME|MIDI_FINE:
     {
         expl = "PORTAMENTO_TIME LSB";
-        float val = value/127.0f;
+//      float val = value/127.0f;
         break;
     }
     case MIDI_PORTAMENTO_SWITCH:
@@ -863,7 +863,6 @@ bool MIDIStream::process_sysex()
     uint64_t size = pull_message();
     uint64_t offs = offset();
     uint8_t byte = pull_byte();
-    const char *s = nullptr;
 
 #if 0
  printf(" System Exclusive:");
@@ -942,7 +941,7 @@ bool MIDIStream::process_meta()
     case MIDI_TRACK_NAME:
     {
         auto& selections = midi.get_selections();
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         if (!track_no) {
@@ -957,7 +956,7 @@ bool MIDIStream::process_meta()
         break;
     }
     case MIDI_COPYRIGHT:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         if (!track_no) {
@@ -967,14 +966,14 @@ bool MIDIStream::process_meta()
         CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_INSTRUMENT_NAME:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%-10s: %s\n", type_name[meta].c_str(), text.c_str());
         CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_TEXT:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
             toUTF8(text, pull_byte());
         }
         if (text.front() == '\\') {
@@ -1001,14 +1000,14 @@ bool MIDIStream::process_meta()
         break;
     case MIDI_LYRICS:
         midi.set_lyrics(true);
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s", text.c_str()); FLUSH();
         CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_MARKER:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         if (!track_no) {
@@ -1018,14 +1017,14 @@ bool MIDIStream::process_meta()
         CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_CUE_POINT:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s: %s", type_name[meta].c_str(), text.c_str());
         CSV_TEXT(channel_no, csv_name[meta].c_str(), text.c_str());
         break;
     case MIDI_DEVICE_NAME:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            toUTF8(text, pull_byte());
         }
         MESSAGE(1, "%s", text.c_str());
@@ -1066,7 +1065,7 @@ bool MIDIStream::process_meta()
         uint8_t dd = pull_byte();
         uint8_t cc = pull_byte(); // 1 << cc
         uint8_t bb = pull_byte();
-        uint16_t QN = 100000.0f / float(cc);
+//      uint16_t QN = 100000.0f / float(cc);
         CSV(channel_no, "%s, %d, %d, %d, %d\n", "Time_signature",
                                     nn, dd, cc, bb);
         break;
@@ -1104,21 +1103,21 @@ bool MIDIStream::process_meta()
         break;
     }
     case MIDI_SEQUENCERSPECIFICMETAEVENT:
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            text += pull_byte();
         }
         CSV(channel_no, "%s, %lu", "Sequencer_specific", size);
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
             CSV(channel_no, ", %d", text[i]);
         }
         CSV(channel_no, "\n");
         break;
     default:        // unsupported
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
            text += pull_byte();
         }
         CSV(channel_no, "%s, %d, %lu", "Unknown_meta_event", meta, size);
-        for (int i=0; i<size; ++i) {
+        for (size_t i=0; i<size; ++i) {
             CSV(channel_no, ", %d", text[i]);
         }
         CSV(channel_no, "\n");
